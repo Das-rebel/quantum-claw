@@ -1,0 +1,51 @@
+{
+  "name": "quantum-claw",
+  "version": "2.2.0",
+  "description": "Revolutionary Multi-Provider AI Orchestration System - Universal API for 8+ AI providers with intelligent routing, multi-language support, and context-aware conversations",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test src/tests/*.test.js",
+    "deploy": "node scripts/deploy.js",
+    "docker:build": "docker build -t quantum-claw .",
+    "docker:run": "docker run -p 3000:3000 quantum-claw"
+  },
+  "keywords": [
+    "AI",
+    "multi-provider",
+    "orchestration",
+    "Claude",
+    "GPT",
+    "LLM",
+    "routing",
+    "multi-language",
+    "context-aware",
+    "Alexa",
+    "chatbot",
+    "voice assistant"
+  ],
+  "author": "Quantum Claw Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/quantum-claw.git"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "node-fetch": "^3.3.2",
+    "body-parser": "^1.20.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "node:test": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
