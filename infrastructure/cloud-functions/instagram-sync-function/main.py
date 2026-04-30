@@ -1,10 +1,17 @@
-# Instagram Saved Posts Sync - FREE (No Apify)
-# Serves existing GCS data + attempts free public profile fetch
-# The original 30 saved posts were populated by browser extension on Apr 22
+#!/usr/bin/env python3
+"""
+Instagram Saved Posts Sync via instagrapi (NO Apify, NO paid APIs)
+
+Uses the proprietary instagrapi library to:
+1. Load session cookies from GCS
+2. Fallback to username/password login
+3. Fetch saved post collections
+4. Upload merged results to GCS
+"""
 
 import os
 import json
-import time
+import traceback
 from datetime import datetime, timezone
 import functions_framework
 
@@ -13,216 +20,294 @@ try:
     GCS_AVAILABLE = True
 except ImportError:
     GCS_AVAILABLE = False
-    print("google-cloud-storage not available")
+    print("[INSTAGRAM] google-cloud-storage not available")
+
+try:
+    from instagrapi import Client
+    INSTAGRAPH_AVAILABLE = True
+except ImportError:
+    INSTAGRAPH_AVAILABLE = False
+    print("[INSTAGRAM] instagrapi not installed")
 
 try:
     import requests
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
-    print("requests not available")
 
+# ---------------------------------------------------------------------------
 # Configuration
+# ---------------------------------------------------------------------------
 BUCKET_NAME = "omniclaw-knowledge-graph"
+GCS_COOKIE_PATH = "vault/cookies/instagram_cookies.json"
 GCS_INSTAGRAM_PATH = "vault/instagram_saved_automated.json"
 GCS_SYNC_SUMMARY_PATH = "vault/latest_sync_summary.json"
-INSTAGRAM_USERNAME = "sdas22"
 
+INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME", "sdas22")
+INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD", "")
 
-def _cors_headers():
-    return {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-    }
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
 
+def log(msg):
+    print(f"[INSTAGRAM] {datetime.now(timezone.utc).isoformat()} {msg}", flush=True)
 
-def _get_gcs_blob(filename):
-    """Get a GCS blob object."""
+# ---------------------------------------------------------------------------
+# GCS helpers
+# ---------------------------------------------------------------------------
+
+def _gcs_client():
     if not GCS_AVAILABLE:
-        return None
+        return None, None
     try:
         client = storage.Client()
         bucket = client.bucket(BUCKET_NAME)
-        return bucket.blob(filename)
+        return client, bucket
     except Exception as e:
-        print(f"GCS client error: {e}")
-        return None
+        log(f"GCS client error: {e}")
+        return None, None
 
 
-def _read_gcs_json(filename):
-    """Read and parse JSON from GCS. Handles double-encoded strings."""
-    blob = _get_gcs_blob(filename)
-    if blob is None:
+def _read_gcs_json(path):
+    _, bucket = _gcs_client()
+    if bucket is None:
         return None
     try:
+        blob = bucket.blob(path)
         if not blob.exists():
             return None
         raw = blob.download_as_text()
         data = json.loads(raw)
-        # Handle double-encoded JSON (existing data is stored this way)
         if isinstance(data, str):
             data = json.loads(data)
         return data
     except Exception as e:
-        print(f"Error reading {filename} from GCS: {e}")
+        log(f"Error reading {path}: {e}")
         return None
 
 
-def _write_gcs_json(filename, data, make_public=True):
-    """Write JSON to GCS."""
-    blob = _get_gcs_blob(filename)
-    if blob is None:
-        print(f"Cannot write to GCS: {filename}")
+def _write_gcs_json(path, data):
+    _, bucket = _gcs_client()
+    if bucket is None:
         return False
     try:
+        blob = bucket.blob(path)
         blob.upload_from_string(
             json.dumps(data, indent=2),
             content_type="application/json",
         )
-        if make_public:
-            try:
-                blob.make_public()
-            except Exception:
-                pass  # Public access may not be configured
-        print(f"Uploaded to GCS: {filename}")
+        log(f"Uploaded to GCS: {path}")
         return True
     except Exception as e:
-        print(f"GCS upload failed for {filename}: {e}")
+        log(f"GCS upload failed for {path}: {e}")
         return False
 
+# ---------------------------------------------------------------------------
+# instagrapi session management
+# ---------------------------------------------------------------------------
 
-def _get_existing_data_status():
-    """Get status of existing Instagram data in GCS."""
-    data = _read_gcs_json(GCS_INSTAGRAM_PATH)
+def _create_client():
+    """Create an instagrapi Client."""
+    if not INSTAGRAPH_AVAILABLE:
+        raise RuntimeError("instagrapi not installed")
+    cl = Client()
+    # Set a realistic user-agent to reduce challenge risk
+    cl.set_user_agent(
+        "Mozilla/5.0 (Linux; Android 13; Pixel 7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.6099.230 Mobile Safari/537.36"
+    )
+    return cl
+
+
+def _verify_session(cl):
+    """Return True if the current session is valid.
+    Tests a PRIVATE endpoint, not a public one.
+    user_id_from_username works without auth — useless for verification.
+    """
+    try:
+        # This is a private endpoint that requires valid session cookies
+        # If cookies are expired, this will raise LoginRequired or 403
+        cl.user_info(cl.user_id)
+        log(f"Session valid (user_id={cl.user_id})")
+        return True
+    except Exception as e:
+        err = str(e)
+        if "login" in err.lower() or "403" in err or "401" in err:
+            log(f"Session EXPIRED (private endpoint check failed): {err}")
+            return False
+        # If user_id is not set, try setting it first
+        try:
+            cl.user_id = cl.user_id_from_username(INSTAGRAM_USERNAME)
+            cl.user_info(cl.user_id)
+            log(f"Session valid after user_id resolution (user_id={cl.user_id})")
+            return True
+        except Exception as e2:
+            log(f"Session verification failed: {e2}")
+            return False
+
+
+def _init_session_with_cookies(cl, cookies):
+    """Load cookies into the client and verify against a private endpoint."""
+    log("Loading cookies into instagrapi client")
+    cl.set_settings({"cookies": cookies})
+    # Inject username
+    try:
+        cl._username = INSTAGRAM_USERNAME
+        cl.user_id = cl.user_id_from_username(INSTAGRAM_USERNAME)
+    except Exception as e:
+        log(f"Could not resolve user_id from username: {e}")
+    return _verify_session(cl)
+
+
+def _init_session_with_password(cl):
+    """Login with username/password. Raises on failure."""
+    if not INSTAGRAM_PASSWORD:
+        raise RuntimeError("INSTAGRAM_PASSWORD not set; cannot fallback to password login")
+    log(f"Attempting password login as {INSTAGRAM_USERNAME}")
+    try:
+        cl.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+        log("Password login succeeded")
+        return True
+    except Exception as e:
+        err = str(e)
+        if "challenge" in err.lower() or "two_factor" in err.lower() or "2fa" in err.lower():
+            log(f"PASSWORD LOGIN BLOCKED: 2FA/challenge required from cloud IP: {err}")
+            raise RuntimeError(
+                "Instagram requires 2FA or challenge from this cloud IP. "
+                "Upload fresh cookies to GCS instead."
+            ) from e
+        if "login" in err.lower() or "password" in err.lower():
+            log(f"PASSWORD LOGIN FAILED: {err}")
+            raise
+        raise
+
+# ---------------------------------------------------------------------------
+# Cookie loading
+# ---------------------------------------------------------------------------
+
+def _load_cookies_gcs():
+    """Load cookies from GCS. Returns dict or None."""
+    data = _read_gcs_json(GCS_COOKIE_PATH)
     if data is None:
-        return {
-            "has_data": False,
-            "message": "No existing Instagram data in GCS",
-        }
+        log(f"No cookie file at gs://{BUCKET_NAME}/{GCS_COOKIE_PATH}")
+        return None
 
-    posts = data.get("posts", []) if isinstance(data, dict) else []
-    synced_at = data.get("synced_at", "unknown") if isinstance(data, dict) else "unknown"
-    count = data.get("count", len(posts)) if isinstance(data, dict) else len(posts)
-    source = posts[0].get("source", "unknown") if posts else "unknown"
+    cookies = data.get("cookies", data) if isinstance(data, dict) else None
+    if not cookies or not isinstance(cookies, dict):
+        log("Cookie file has unexpected format")
+        return None
+
+    if not cookies.get("sessionid"):
+        log("Cookie file missing sessionid")
+        return None
 
     # Check freshness
-    age_hours = None
-    try:
-        if synced_at != "unknown":
-            synced_dt = datetime.fromisoformat(synced_at.replace("Z", "+00:00"))
-            age_hours = (datetime.now(timezone.utc) - synced_dt).total_seconds() / 3600
-    except Exception:
-        pass
+    ts = data.get("timestamp", "")
+    log(f"Loaded cookies from GCS (uploaded: {ts or 'unknown'})")
+    return cookies
 
-    return {
-        "has_data": True,
-        "count": count,
-        "last_synced": synced_at,
-        "source": source,
-        "age_hours": round(age_hours, 1) if age_hours is not None else None,
-        "stale": age_hours is not None and age_hours > 72,
-    }
+# ---------------------------------------------------------------------------
+# Core scraping
+# ---------------------------------------------------------------------------
 
-
-def _try_public_profile_fetch():
+def _scrape_saved_posts(cl):
     """
-    Attempt to fetch recent posts from public Instagram profile.
-    This gets the user's own posts (not saved posts), which is still useful.
-    Uses the public Instagram page HTML parsing approach.
+    Fetch all saved-post collections via instagrapi.
+    Returns list of post dicts.
     """
-    if not REQUESTS_AVAILABLE:
-        return None, "requests library not available"
-
-    # Try multiple free approaches
-    errors = []
-
-    # Approach 1: Instagram public page with __a=1 (may require login now)
+    log("Fetching saved post collections...")
     try:
-        url = f"https://www.instagram.com/{INSTAGRAM_USERNAME}/?__a=1&__d=dis"
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
-            "Accept": "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-        }
-        resp = requests.get(url, headers=headers, timeout=15)
-        if resp.status_code == 200:
-            data = resp.json()
-            # GraphQL structure
-            user_data = data.get("graphql", {}).get("user", {})
-            timeline = user_data.get("edge_owner_to_timeline_media", {})
-            edges = timeline.get("edges", [])
-            if edges:
-                posts = []
-                for edge in edges[:20]:
-                    node = edge.get("node", {})
-                    caption_edges = node.get("edge_media_to_caption", {}).get("edges", [])
-                    caption = caption_edges[0]["node"]["text"] if caption_edges else ""
-                    posts.append({
-                        "id": f"p_{node.get('shortcode', '')}",
-                        "url": f"https://www.instagram.com/p/{node.get('shortcode', '')}/",
-                        "image_url": node.get("display_url", ""),
-                        "caption": caption,
-                        "timestamp": datetime.fromtimestamp(
-                            node.get("taken_at_timestamp", 0),
-                            tz=timezone.utc,
-                        ).isoformat() if node.get("taken_at_timestamp") else "",
-                        "likes": node.get("edge_liked_by", {}).get("count", 0),
-                        "source": "instagram_public_profile",
-                        "synced_at": datetime.now(timezone.utc).isoformat(),
-                    })
-                return posts, "public_profile"
-        errors.append(f"__a=1 returned {resp.status_code}")
+        collections = cl.collections()
     except Exception as e:
-        errors.append(f"__a=1 error: {e}")
+        err = str(e)
+        log(f"collections() threw: {err}")
+        if "login" in err.lower() or "403" in err or "401" in err:
+            raise RuntimeError(f"LoginRequired during collections fetch: {err}") from e
+        raise
 
-    # Approach 2: Parse HTML from public profile page
-    try:
-        url = f"https://www.instagram.com/{INSTAGRAM_USERNAME}/"
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (compatible; Googlebot/2.1; "
-                "+http://www.google.com/bot.html)"
-            ),
-        }
-        resp = requests.get(url, headers=headers, timeout=15)
-        if resp.status_code == 200:
-            html = resp.text
-            # Look for shortcode references in the HTML
-            import re
-            shortcodes = re.findall(r'/p/([A-Za-z0-9_-]+)/', html)
-            # Deduplicate
-            seen = set()
-            unique_codes = []
-            for code in shortcodes:
-                if code not in seen and len(code) > 5:
-                    seen.add(code)
-                    unique_codes.append(code)
-            if unique_codes:
-                posts = []
-                for code in unique_codes[:20]:
-                    posts.append({
-                        "id": f"p_{code}",
-                        "url": f"https://www.instagram.com/p/{code}/",
-                        "caption": "",
-                        "source": "instagram_public_html",
-                        "synced_at": datetime.now(timezone.utc).isoformat(),
-                    })
-                return posts, "public_html"
-        errors.append(f"HTML parse returned {resp.status_code}")
-    except Exception as e:
-        errors.append(f"HTML parse error: {e}")
+    if not collections:
+        # Could be genuinely empty or session expired mid-call
+        # Verify session is still alive
+        try:
+            cl.user_info(cl.user_id)
+            log("No collections found (session valid, account has no saved posts)")
+        except Exception:
+            log("No collections AND session dead — cookies expired")
+            raise RuntimeError("LoginRequired: session expired during collections fetch")
+        return []
 
-    return None, "; ".join(errors)
+    log(f"Found {len(collections)} collection(s)")
 
+    all_posts = []
+    seen_pks = set()
 
-def _merge_with_existing(new_posts, existing_data):
-    """Merge new posts with existing data, deduplicating by id."""
+    for coll in collections:
+        coll_name = getattr(coll, "name", str(coll))
+        coll_id = getattr(coll, "id", None)
+        log(f"Fetching collection: {coll_name} (id={coll_id})")
+        try:
+            items = cl.collection_items(coll_id)
+            for item in items:
+                media = getattr(item, "media", None)
+                if media is None:
+                    continue
+
+                pk = str(getattr(media, "pk", ""))
+                if pk in seen_pks:
+                    continue
+                seen_pks.add(pk)
+
+                code = getattr(media, "code", "")
+                caption = ""
+                if hasattr(media, "caption_text"):
+                    caption = media.caption_text or ""
+
+                thumbnail = ""
+                if hasattr(media, "thumbnail_url"):
+                    thumbnail = str(media.thumbnail_url) if media.thumbnail_url else ""
+                elif hasattr(media, "resources") and media.resources:
+                    # Carousel — use first item
+                    first = media.resources[0]
+                    if hasattr(first, "thumbnail_url"):
+                        thumbnail = str(first.thumbnail_url) if first.thumbnail_url else ""
+
+                post = {
+                    "id": f"ig_{pk}",
+                    "type": "instagram_saved",
+                    "pk": pk,
+                    "shortcode": code,
+                    "url": f"https://www.instagram.com/p/{code}/" if code else "",
+                    "caption": caption[:500] if caption else "",
+                    "image_url": thumbnail,
+                    "media_type": getattr(media, "media_type", 0),
+                    "like_count": getattr(media, "like_count", 0),
+                    "comment_count": getattr(media, "comment_count", 0),
+                    "collection": coll_name,
+                    "source": "instagrapi_saved",
+                    "synced_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+                # User tags if available
+                if hasattr(media, "usertags") and hasattr(media.usertags, "users"):
+                    post["usertags"] = [str(u.user.pk) for u in media.usertags.users]
+
+                all_posts.append(post)
+
+        except Exception as e:
+            log(f"Error fetching collection {coll_name}: {e}")
+            traceback.print_exc()
+            continue
+
+    return all_posts
+
+# ---------------------------------------------------------------------------
+# Merge + upload
+# ---------------------------------------------------------------------------
+
+def _merge_posts(new_posts, existing_data):
+    """Merge new posts into existing data, dedup by pk."""
     if not existing_data:
         return {
             "synced_at": datetime.now(timezone.utc).isoformat(),
@@ -231,143 +316,281 @@ def _merge_with_existing(new_posts, existing_data):
         }
 
     existing_posts = existing_data.get("posts", [])
-    existing_ids = {p.get("id") for p in existing_posts}
+    existing_pks = {p.get("pk") or p.get("id", "") for p in existing_posts}
 
-    # Add new posts that don't already exist
     added = 0
     for post in new_posts:
-        if post.get("id") not in existing_ids:
+        pk = post.get("pk", "")
+        if pk and pk not in existing_pks:
             existing_posts.append(post)
-            existing_ids.add(post.get("id"))
+            existing_pks.add(pk)
             added += 1
 
-    # Update sync metadata
     existing_data["synced_at"] = datetime.now(timezone.utc).isoformat()
     existing_data["count"] = len(existing_posts)
+    return existing_data, added
 
-    return existing_data
 
-
-def _write_sync_summary(instagram_result, send_summary=True):
-    """Write or merge sync summary to GCS."""
+def _write_sync_summary(result, send_summary=True):
     if not send_summary:
         return
-
-    # Read existing summary (may have twitter data)
     existing = _read_gcs_json(GCS_SYNC_SUMMARY_PATH) or {}
-
     existing["instagram"] = {
         "synced_at": datetime.now(timezone.utc).isoformat(),
-        "success": instagram_result.get("success", False),
-        "count": instagram_result.get("count", 0),
-        "source": instagram_result.get("source", "none"),
+        "success": result.get("success", False),
+        "count": result.get("count", 0),
+        "source": result.get("source", "none"),
+        "new_added": result.get("new_added", 0),
     }
     existing["last_updated"] = datetime.now(timezone.utc).isoformat()
-
     _write_gcs_json(GCS_SYNC_SUMMARY_PATH, existing)
 
+# ---------------------------------------------------------------------------
+# Main sync logic
+# ---------------------------------------------------------------------------
+
+def _do_sync(force_refresh=False, send_summary=True):
+    """
+    Full sync pipeline:
+    1. Try GCS cookies → instagrapi session
+    2. Fallback to password login
+    3. Fetch saved collections
+    4. Merge with existing GCS data
+    5. Upload results
+    """
+    if not INSTAGRAPH_AVAILABLE:
+        return {
+            "success": False,
+            "error": "instagrapi not installed — check requirements.txt",
+            "source": "none",
+            "count": 0,
+        }
+
+    cl = _create_client()
+    auth_method = None
+
+    # --- Step 1: Try GCS cookies ---
+    cookies = _load_cookies_gcs()
+    if cookies:
+        try:
+            if _init_session_with_cookies(cl, cookies):
+                auth_method = "gcs_cookies"
+                log("Authenticated via GCS cookies")
+            else:
+                log("GCS cookies expired or invalid")
+        except Exception as e:
+            log(f"GCS cookie auth failed: {e}")
+
+    # --- Step 2: Fallback to password login ---
+    if auth_method is None and INSTAGRAM_PASSWORD:
+        try:
+            _init_session_with_password(cl)
+            auth_method = "password_login"
+        except RuntimeError as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "source": "password_login_blocked",
+                "count": 0,
+            }
+        except Exception as e:
+            log(f"Password login failed: {e}")
+            # Don't give up yet — we may have existing data
+
+    if auth_method is None:
+        # No auth method worked; serve existing data
+        existing = _read_gcs_json(GCS_INSTAGRAM_PATH)
+        count = 0
+        if existing and isinstance(existing, dict):
+            count = existing.get("count", 0)
+        msg = (
+            "No valid auth method available. "
+            "Upload fresh cookies to GCS or set INSTAGRAM_PASSWORD. "
+            f"Existing data has {count} posts."
+        )
+        log(msg)
+        result = {
+            "success": count > 0,
+            "error": msg if count == 0 else None,
+            "source": "existing_stale" if count > 0 else "none",
+            "count": count,
+        }
+        _write_sync_summary(result, send_summary)
+        return result
+
+    # --- Step 3: Fetch saved posts ---
+    log(f"Authenticated via {auth_method}, fetching saved posts...")
+    try:
+        posts = _scrape_saved_posts(cl)
+    except Exception as e:
+        err = str(e)
+        log(f"Scraping failed: {err}")
+        traceback.print_exc()
+        # Check if it's a LoginRequired / session expired error
+        err_lower = err.lower()
+        if "loginrequired" in err_lower or "login_required" in err_lower or "session expired" in err_lower:
+            # Try password fallback if we were using cookies
+            if auth_method == "gcs_cookies" and INSTAGRAM_PASSWORD:
+                log("Session expired with cookies, trying password fallback...")
+                try:
+                    cl2 = _create_client()
+                    _init_session_with_password(cl2)
+                    auth_method = "password_fallback"
+                    posts = _scrape_saved_posts(cl2)
+                    cl = cl2  # Use the new client for cookie saving
+                except Exception as pw_err:
+                    log(f"Password fallback also failed: {pw_err}")
+                    return {
+                        "success": False,
+                        "error": f"Cookies expired and password login failed: {pw_err}",
+                        "source": "cookies_then_password_both_failed",
+                        "count": 0,
+                    }
+            else:
+                return {
+                    "success": False,
+                    "error": "Instagram session expired mid-request (LoginRequired). Upload fresh cookies.",
+                    "source": auth_method,
+                    "count": 0,
+                }
+
+    log(f"Fetched {len(posts)} saved posts via instagrapi")
+
+    # --- Step 4: Merge and upload ---
+    existing = _read_gcs_json(GCS_INSTAGRAM_PATH)
+    if existing:
+        merged, added = _merge_posts(posts, existing)
+    else:
+        merged = {
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "count": len(posts),
+            "posts": posts,
+        }
+        added = len(posts)
+
+    _write_gcs_json(GCS_INSTAGRAM_PATH, merged)
+
+    result = {
+        "success": True,
+        "source": f"instagrapi_{auth_method}",
+        "count": merged["count"],
+        "new_added": added,
+        "fetched_now": len(posts),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # --- Step 5: Try to save refreshed cookies back to GCS ---
+    try:
+        settings = cl.get_settings()
+        fresh_cookies = settings.get("cookies", {})
+        if fresh_cookies and fresh_cookies.get("sessionid"):
+            _write_gcs_json(GCS_COOKIE_PATH, {
+                "cookies": fresh_cookies,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+            log("Saved refreshed cookies back to GCS")
+    except Exception as e:
+        log(f"Could not save refreshed cookies: {e}")
+
+    _write_sync_summary(result, send_summary)
+    return result
+
+# ---------------------------------------------------------------------------
+# CORS helpers
+# ---------------------------------------------------------------------------
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Content-Type": "application/json",
+}
+
+CORS_PREFLIGHT = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+}
+
+# ---------------------------------------------------------------------------
+# Cloud Function entry point
+# ---------------------------------------------------------------------------
 
 @functions_framework.http
 def fetch_instagram_saved(request):
     """
-    HTTP Cloud Function for Instagram sync.
-    No Apify. No paid APIs. Uses:
-      1. Existing GCS data (populated by browser extension)
-      2. Free public profile fetch as augmentation
-      3. GCS passthrough for all downstream consumers
+    HTTP Cloud Function for Instagram saved posts sync.
+    Uses instagrapi (NOT Apify). Zero paid APIs.
+
+    GET  → health check + existing data status
+    POST → trigger sync
+      Body: {
+        "force_refresh": false,
+        "send_summary": true
+      }
     """
     # CORS preflight
     if request.method == "OPTIONS":
-        return ("", 204, {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        })
-
-    headers = _cors_headers()
+        return ("", 204, CORS_PREFLIGHT)
 
     # Health check
     if request.method == "GET":
-        status = _get_existing_data_status()
-        return json.dumps({
+        existing = _read_gcs_json(GCS_INSTAGRAM_PATH)
+        cookie_data = _read_gcs_json(GCS_COOKIE_PATH)
+
+        cookie_status = "none"
+        if cookie_data:
+            ts = cookie_data.get("timestamp", "unknown")
+            cookie_status = f"present (uploaded: {ts})"
+
+        count = 0
+        last_sync = "never"
+        if existing and isinstance(existing, dict):
+            count = existing.get("count", 0)
+            last_sync = existing.get("synced_at", "never")
+
+        return (json.dumps({
             "service": "instagram-sync",
+            "engine": "instagrapi",
             "status": "healthy",
             "apify_required": False,
             "cost": "$0/month",
-            "existing_data": status,
+            "instagrapi_available": INSTAGRAPH_AVAILABLE,
+            "cookies_in_gcs": cookie_status,
+            "password_configured": bool(INSTAGRAM_PASSWORD),
+            "existing_data": {
+                "count": count,
+                "last_synced": last_sync,
+            },
             "timestamp": datetime.now(timezone.utc).isoformat(),
-        }), 200, headers
+        }, indent=2), 200, CORS_HEADERS)
 
-    # Parse request parameters
+    # --- POST: trigger sync ---
     try:
         req_json = request.get_json(silent=True) or {}
     except Exception:
         req_json = {}
 
-    send_summary = req_json.get("send_summary", True)
     force_refresh = req_json.get("force_refresh", False)
+    send_summary = req_json.get("send_summary", True)
 
-    print(f"[{datetime.now(timezone.utc).isoformat()}] Instagram sync triggered "
-          f"(force_refresh={force_refresh})")
+    log(f"Sync triggered (force_refresh={force_refresh})")
 
-    # Step 1: Check existing data
-    existing_data = _read_gcs_json(GCS_INSTAGRAM_PATH)
-    existing_status = _get_existing_data_status()
-
-    result = {
-        "success": True,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "source": "existing",
-        "count": 0,
-    }
-
-    # Step 2: Try free public fetch to augment existing data
-    new_posts = None
-    fetch_source = None
-    if REQUESTS_AVAILABLE:
-        new_posts, fetch_source = _try_public_profile_fetch()
-        if new_posts:
-            print(f"Fetched {len(new_posts)} posts via {fetch_source}")
-            result["source"] = f"merged_with_{fetch_source}"
-
-    # Step 3: Merge and upload
-    if new_posts and existing_data:
-        merged = _merge_with_existing(new_posts, existing_data)
-        _write_gcs_json(GCS_INSTAGRAM_PATH, merged)
-        result["count"] = merged["count"]
-        result["new_added"] = merged["count"] - existing_status.get("count", 0)
-    elif new_posts and not existing_data:
-        payload = {
-            "synced_at": datetime.now(timezone.utc).isoformat(),
-            "count": len(new_posts),
-            "posts": new_posts,
+    try:
+        result = _do_sync(force_refresh=force_refresh, send_summary=send_summary)
+    except Exception as e:
+        log(f"Unhandled error: {e}")
+        traceback.print_exc()
+        result = {
+            "success": False,
+            "error": str(e),
+            "source": "error",
+            "count": 0,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        _write_gcs_json(GCS_INSTAGRAM_PATH, payload)
-        result["count"] = len(new_posts)
-        result["source"] = fetch_source
-    elif existing_data:
-        # No new data fetched, keep existing
-        result["count"] = existing_status.get("count", 0)
-        result["message"] = (
-            f"Using existing data from {existing_status.get('last_synced', 'unknown')}. "
-            f"Public profile fetch: {fetch_source or 'skipped'}. "
-            f"Note: Instagram saved posts require browser extension or manual export."
-        )
-    else:
-        result["success"] = False
-        result["message"] = (
-            "No existing data and no free fetch method succeeded. "
-            "Populate via browser extension export or manual upload."
-        )
-        result["public_fetch_error"] = fetch_source
 
-    # Step 4: Write sync summary
-    _write_sync_summary(result, send_summary)
-
-    status_code = 200 if result["success"] else 404
-    return json.dumps(result), status_code, headers
+    code = 200 if result.get("success") else 502
+    return (json.dumps(result, indent=2), code, CORS_HEADERS)
 
 
+# Backward-compatible alias
 def fetch_instagram_bookmarks(request):
-    """Alias for backward compatibility."""
     return fetch_instagram_saved(request)

@@ -1,4 +1,5 @@
 functions-framework>=3.0
-flask
-requests
-google-cloud-storage
+flask>=2.0
+httpx>=0.24
+google-cloud-storage>=2.0
+twscrape>=0.17.0

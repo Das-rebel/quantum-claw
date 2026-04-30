@@ -1,319 +1,109 @@
-# Instagram Saved Posts Sync - Setup Guide
+# Instagram Saved Posts Sync — instagrapi (Zero Paid APIs)
 
-## 🎯 What This Does
-
-Automatically syncs your Instagram saved posts to GCS daily using Apify's Instagram scraper.
+## Architecture
 
 ```
-Daily at 8:30 AM IST → Cloud Function → Apify → GCS → Your VM/Alexa
+Cloud Function (instagrapi) → Instagram API → GCS bucket
+                                  ↓ (if cookies expired)
+                            Password login fallback
+                                  ↓ (if cloud IP blocked)
+                            Report clear error, serve existing data
 ```
 
-## 💰 Cost
+## Cost: $0/month
 
-- **Apify Instagram Scraper:** $5/month
-- **Cloud Function:** Free (within free tier)
-- **GCS Storage:** Free (within free tier)
-- **Total:** ~$5/month
+- No Apify, no paid APIs
+- instagrapi is open-source (MIT)
+- Cloud Function free tier
+- GCS free tier
 
----
+## Auth Flow (3-tier)
 
-## 📋 Step-by-Step Setup
+1. **GCS cookies** — Load from `vault/cookies/instagram_cookies.json`
+2. **Password login** — Fallback if cookies are dead
+3. **Existing data** — Serve stale data from GCS if both fail
 
-### Step 1: Get Apify API Key (5 minutes)
+## Cloud IP Limitation
 
-1. **Sign up for Apify:**
-   - Go to: https://apify.com/sign-up
-   - Sign up (free to start, $5/month for Instagram scraper)
+Instagram aggressively blocks/rate-limits API calls from known cloud IPs (GCP, AWS, etc.).
+The password login may succeed, but subsequent API calls often get `PleaseWaitFewMinutes`.
 
-2. **Get your API key:**
-   - Go to: https://console.apify.com/account
-   - Copy your **API Token**
-   - It looks like: `apify_api_1234567890...`
+**Solutions:**
+- Upload fresh cookies regularly (browser extension or manual export)
+- Run from a residential IP instead (local cron job)
+- Use a proxy service (not free)
 
-3. **Verify pricing:**
-   - Instagram scraper: $5/month per 100K results
-   - More than enough for daily sync
-   - Check: https://apify.com/apify/instagram-scraper#pricing
+## Cookie Upload
 
-### Step 2: Deploy Cloud Function
+Cookies go to: `gs://omniclaw-knowledge-graph/vault/cookies/instagram_cookies.json`
 
-```bash
-cd /Users/Subho/omniclaw-personal-assistant/infrastructure/cloud-functions/instagram-sync-function
-
-# Set your Apify API key
-export APIFY_API_KEY="your-apify-api-key-here"
-
-# Deploy the function
-gcloud functions deploy instagram-sync \
-  --runtime python312 \
-  --trigger-http \
-  --allow-unauthenticated \
-  --region asia-south1 \
-  --memory 256MB \
-  --timeout 120s \
-  --max-instances 3 \
-  --source . \
-  --entry-point fetch_instagram_saved \
-  --project omniclaw-personal-assistant \
-  --set-env-vars APIFY_API_KEY=$APIFY_API_KEY
-```
-
-### Step 3: Test the Function
-
-```bash
-# Test health check
-curl https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync/health
-
-# Test manual sync
-curl -X POST https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync
-```
-
-**Expected response:**
+Format:
 ```json
 {
-  "success": true,
-  "count": <number of posts>,
-  "source": "apify",
-  "timestamp": "2026-04-17T..."
+  "cookies": {
+    "sessionid": "...",
+    "ds_user_id": "...",
+    "csrftoken": "...",
+    "ig_did": "...",
+    "mid": "...",
+    "rur": "..."
+  },
+  "timestamp": "2026-04-30T00:00:00Z"
 }
 ```
 
-### Step 4: Set Up Cloud Scheduler
+To extract cookies from browser:
+1. Login to instagram.com
+2. Open DevTools → Application → Cookies → instagram.com
+3. Export the cookies above
+4. Upload to GCS
+
+## Deploy
 
 ```bash
-gcloud scheduler jobs create http instagram-sync-daily \
-  --schedule="0 3 * * *" \
-  --time-zone="UTC" \
-  --location=asia-south1 \
-  --uri="https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync" \
-  --description="Daily Instagram saved posts sync at 8:30 AM IST" \
-  --http-method=POST \
-  --headers="Content-Type=application/json" \
-  --project omniclaw-personal-assistant
-```
+cd infrastructure/cloud-functions/instagram-sync-function
 
----
-
-## 📊 Output Format
-
-### File: `vault/instagram_saved_automated.json`
-
-```json
-[
-  {
-    "id": "1234567890_123456789",
-    "url": "https://www.instagram.com/p/ABC123/",
-    "caption": "Post caption here...",
-    "image_url": "https://instagram.f...",
-    "timestamp": "2026-04-15T10:30:00.000Z",
-    "likes": 1234,
-    "synced_at": "2026-04-17T06:40:00.000000"
-  }
-]
-```
-
----
-
-## 🎯 What Gets Synced
-
-Currently syncs:
-- ✅ Your posts (public posts from your profile)
-- ✅ Post metadata (caption, image URL, likes)
-- ✅ Timestamps
-
-**Note:** "Saved posts" (bookmarks) require additional Instagram authentication. This syncs your public posts first. To sync saved posts, you'll need to provide Instagram cookies (see Advanced section).
-
----
-
-## 🔧 Advanced: Sync Actual Saved Posts
-
-To sync your actual **saved posts** (not just your posts), you need to authenticate with Instagram.
-
-### Option A: Use Instagram Cookies (Recommended)
-
-1. **Get your Instagram cookies:**
-   - Use browser extension (like we did for Twitter)
-   - Or use browser DevTools
-
-2. **Store cookies securely:**
-   - Save to GCS: `gs://omniclaw-knowledge-graph/vault/cookies/instagram_cookies.json`
-
-3. **Update function to use cookies:**
-   - Modify `run_apify_scraper()` to load cookies
-   - Pass cookies to Apify actor
-
-### Option B: Use Instagram Credentials
-
-⚠️ **Not recommended** - Security risk. Use cookies instead.
-
----
-
-## 🔄 Making Changes
-
-### Update Apify API Key
-
-```bash
 gcloud functions deploy instagram-sync \
-  --runtime python312 \
-  --trigger-http \
-  --allow-unauthenticated \
-  --region asia-south1 \
-  --memory 256MB \
-  --timeout 120s \
-  --max-instances 3 \
-  --source . \
-  --entry-point fetch_instagram_saved \
-  --project omniclaw-personal-assistant \
-  --update-env-vars APIFY_API_KEY=<new-key>
+  --gen2 --region=asia-south1 --runtime=python311 \
+  --entry-point=fetch_instagram_saved \
+  --trigger-http --allow-unauthenticated \
+  --project=omniclaw-personal-assistant \
+  --source=. \
+  --memory=512MB --timeout=120s \
+  --set-env-vars="INSTAGRAM_USERNAME=sdas22,INSTAGRAM_PASSWORD=<password>"
 ```
 
-### Change Schedule
+## Test
 
 ```bash
-# Delete existing job
-gcloud scheduler jobs delete instagram-sync-daily \
-  --location=asia-south1 \
-  --project omniclaw-personal-assistant
+# Health check
+curl https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync
 
-# Recreate with new schedule
-gcloud scheduler jobs create http instagram-sync-daily \
-  --schedule="0 3 * * *" \
-  --time-zone="UTC" \
-  --location=asia-south1 \
-  --uri="https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync" \
-  --description="Daily Instagram sync" \
-  --http-method=POST \
-  --headers="Content-Type=application/json" \
-  --project omniclaw-personal-assistant
+# Trigger sync
+curl -X POST https://asia-south1-omniclaw-personal-assistant.cloudfunctions.net/instagram-sync \
+  -H "Content-Type: application/json" \
+  -d '{"force_refresh": true}'
 ```
 
----
+## GCS Output
 
-## 📈 Monitoring
+| Path | Description |
+|------|-------------|
+| `vault/instagram_saved_automated.json` | Saved posts data |
+| `vault/latest_sync_summary.json` | Sync status (merged with other services) |
+| `vault/cookies/instagram_cookies.json` | Input cookies |
 
-### View Function Logs
+## Response Codes
 
-```bash
-gcloud functions logs read instagram-sync \
-  --region=asia-south1 \
-  --limit=50 \
-  --project=omniclaw-personal-assistant
-```
+- **200** — Success (new data fetched or existing data served)
+- **502** — Auth failure (cookies expired + password login failed)
 
-### Check Apify Runs
+## Key Differences from Old Apify Version
 
-```bash
-# List recent Apify runs
-curl -H "Authorization: Bearer $APIFY_API_KEY" \
-  "https://api.apify.com/v2/actor-runs"
-```
-
-### Verify GCS Upload
-
-```bash
-# Check file exists
-gsutil stat gs://omniclaw-knowledge-graph/vault/instagram_saved_automated.json
-
-# View contents
-gsutil cat gs://omniclaw-knowledge-graph/vault/instagram_saved_automated.json
-```
-
----
-
-## 🆚 Instagram vs Twitter
-
-| Feature | Twitter | Instagram |
-|---------|---------|-----------|
-| **Official API** | ❌ Bookmarks not in API | ❌ Saved posts not in API |
-| **Free Solution** | ✅ Nitter (open source) | ❌ No Nitter equivalent |
-| **Automated Solution** | ✅ Free (Nitter) | ⚠️ $5/month (Apify) |
-| **Reliability** | ⚠️ Nitter can be flaky | ✅ Apify is reliable |
-| **Setup Time** | 5 minutes | 10 minutes |
-| **Data Retrieved** | Bookmarks | Posts/Saved posts |
-
----
-
-## ❓ FAQ
-
-### Q: Do I need to pay $5/month?
-
-**A:** Yes, for Instagram. Twitter is free (via Nitter), but Instagram doesn't have a free alternative. $5/month covers up to 100K results per month - more than enough for daily sync.
-
-### Q: Can I sync for free?
-
-**A:** Only if you manually export data from Instagram and upload to GCS. Not automated.
-
-### Q: Is my Instagram data secure?
-
-**A:** Yes. Apify is GDPR compliant, and data goes directly to your GCS bucket. Apify doesn't store your data after the scrape completes.
-
-### Q: What if I want to cancel?
-
-**A:** Cancel your Apify subscription anytime. Your historical data remains in GCS.
-
-### Q: Can I sync saved posts instead of my posts?
-
-**A:** Yes, but requires Instagram authentication (cookies). See Advanced section above.
-
----
-
-## 📞 Troubleshooting
-
-### Issue: "Apify API key not configured"
-
-**Solution:**
-1. Check environment variable is set: `APIFY_API_KEY`
-2. Redeploy function with API key
-3. Verify key at: https://console.apify.com/account
-
-### Issue: "Apify run failed"
-
-**Solution:**
-1. Check Apify status: https://status.apify.com
-2. Verify Instagram username is correct
-3. Check Apify console: https://console.apify.com/actors
-4. Check function logs for specific error
-
-### Issue: "No posts returned"
-
-**Possible causes:**
-1. Instagram account is private
-2. No posts on profile
-3. Rate limit reached
-
-**Solution:**
-1. Make account public (or use cookies for private account)
-2. Wait 24 hours for rate limit to reset
-3. Check Apify console for detailed logs
-
----
-
-## ✅ Success Criteria
-
-You'll know it's working when:
-
-- [x] Apify account created and API key obtained
-- [x] Cloud Function deployed successfully
-- [x] Health check returns: `"apify_configured": true`
-- [x] Manual sync returns posts: `"success": true, "count": > 0`
-- [x] File created in GCS: `vault/instagram_saved_automated.json`
-- [x] Cloud Scheduler job created
-- [x] VM can read from GCS
-
----
-
-## 🎉 You're Done!
-
-**What happens now:**
-- 📅 **Daily at 8:30 AM IST**: Function runs automatically
-- 🌐 **Apify scrapes Instagram**: Uses residential proxies (not blocked)
-- 📊 **Data uploaded to GCS**: VM can access it
-- 🔊 **Alexa integration**: Ready to use!
-
-**Cost:** ~$5/month
-**Reliability:** ⭐⭐⭐⭐⭐
-**Maintenance:** Zero
-
----
-
-*Built with ❤️ using Apify + Google Cloud Functions*
+| Aspect | Old (Apify) | New (instagrapi) |
+|--------|-------------|-------------------|
+| Cost | $5/month | $0 |
+| Saved posts | No (only public profile) | Yes (collections API) |
+| Auth | None (public scrape) | Cookies + password fallback |
+| Data quality | Low (HTML parsing) | High (official API) |
+| Cloud IP | Works (proxy) | Blocked (no proxy) |

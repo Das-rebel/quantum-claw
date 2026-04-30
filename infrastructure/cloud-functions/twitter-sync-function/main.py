@@ -1,15 +1,21 @@
-# Twitter Timeline Sync via Cloud Functions
-# Replaces dead Nitter instances with working free APIs
-#
-# Method priority:
-#   1. Twitter Syndication API (timeline-profile) — returns full tweet JSON, no auth
-#   2. RSSHub Twitter route — included for when/if routes come back
-#   3. oEmbed enrichment — used to flesh out individual tweets if needed
+"""
+Twitter Bookmark Sync — Cloud Function
+
+Strategy:
+  1. Load auth cookies from GCS (vault/cookies/twitter_cookies.json)
+  2. Hit Twitter's GraphQL Bookmarks endpoint directly using cookies
+  3. If that fails, try twscrape library with password fallback
+  4. Upload results to GCS
+"""
 
 import os
-import re
 import json
-from datetime import datetime
+import asyncio
+import traceback
+import random
+import time
+from datetime import datetime, timezone
+
 import functions_framework
 
 try:
@@ -17,288 +23,437 @@ try:
     GCS_AVAILABLE = True
 except ImportError:
     GCS_AVAILABLE = False
-    print("google-cloud-storage not available")
 
 try:
-    import requests
-    REQUESTS_AVAILABLE = True
+    import httpx
+    HTTPX_AVAILABLE = True
 except ImportError:
-    REQUESTS_AVAILABLE = False
-    print("requests not available")
+    HTTPX_AVAILABLE = False
+
+try:
+    from twscrape import API, AccountsPool
+    TWSCRAPE_AVAILABLE = True
+except ImportError:
+    TWSCRAPE_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-BUCKET_NAME = "omniclaw-knowledge-graph"
-TWITTER_USERNAME = "sdas22"
+BUCKET_NAME = os.getenv("GCS_BUCKET", "omniclaw-knowledge-graph")
+COOKIE_PATH = "vault/cookies/twitter_cookies.json"
+BOOKMARKS_PATH = "vault/twitter_bookmarks_automated.json"
+SUMMARY_PATH = "vault/latest_sync_summary.json"
 
-SYNDICATION_URL = (
-    "https://syndication.twitter.com/srv/timeline-profile/screen-name/{username}"
-)
-RSSHUB_URL = "https://rsshub.app/twitter/user/{username}"
-OEMBED_URL = "https://publish.twitter.com/oembed?url={tweet_url}"
+TWITTER_USERNAME = os.getenv("TWITTER_USERNAME", "")
+TWITTER_PASSWORD = os.getenv("TWITTER_PASSWORD", "")
+TWITTER_EMAIL = os.getenv("TWITTER_EMAIL", "")
 
-REQUEST_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/125.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://platform.twitter.com/",
+MAX_BOOKMARKS = int(os.getenv("MAX_BOOKMARKS", "800"))
+ATTEMPT_TIMEOUT = int(os.getenv("ATTEMPT_TIMEOUT", "45"))
+
+# Twitter GraphQL endpoint for bookmarks
+BOOKMARKS_GRAPHQL_URL = "https://api.x.com/graphql/{query_id}/Bookmarks"
+# Known query ID (changes periodically; this is the current one)
+QUERY_ID = "WUAL-t2Pq4sg3dZp5-6Srw"
+
+# Twitter API headers
+TWITTER_HEADERS = {
+    "authorization": "Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA",
+    "x-twitter-active-user": "yes",
+    "x-twitter-client-language": "en",
 }
 
-# Month abbreviation -> number for parsing "Thu Apr 28 00:56:58 +0000 2022"
-_MONTH_MAP = {
-    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
-    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+# Feature flags required by the bookmarks endpoint (as of 2026)
+FEATURES = {
+    "rweb_tipjar_consumption_enabled": True,
+    "responsive_web_graphql_exclude_directive_enabled": True,
+    "verified_phone_label_enabled": False,
+    "creator_subscriptions_tweet_preview_api_enabled": True,
+    "responsive_web_graphql_timeline_navigation_enabled": True,
+    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+    "communities_web_enable_tweet_community_results_fetch": True,
+    "c9s_tweet_anatomy_moderator_badge_enabled": True,
+    "articles_preview_enabled": True,
+    "responsive_web_edit_tweet_api_enabled": True,
+    "graphql_is_translatable_rweb_tweet_is_translatable_enabled": True,
+    "view_counts_everywhere_api_enabled": True,
+    "longform_notetweets_consumption_enabled": True,
+    "responsive_web_twitter_article_tweet_consumption_enabled": True,
+    "tweet_awards_web_tipping_enabled": False,
+    "creator_subscriptions_quote_tweet_preview_enabled": False,
+    "freedom_of_speech_not_reach_fetch_enabled": True,
+    "standardized_nudges_misinfo": True,
+    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+    "rweb_video_timestamps_enabled": True,
+    "longform_notetweets_rich_text_read_enabled": True,
+    "longform_notetweets_inline_media_enabled": True,
+    "responsive_web_enhance_cards_enabled": False,
 }
 
-
 # ---------------------------------------------------------------------------
-# Helpers
+# Logging
 # ---------------------------------------------------------------------------
 
-def _parse_twitter_date(ts: str) -> str:
-    """Convert 'Thu Apr 28 00:56:58 +0000 2022' → ISO-8601."""
-    try:
-        parts = ts.split()
-        # dow month day time tz year
-        month = _MONTH_MAP.get(parts[1], 1)
-        day = int(parts[2])
-        year = int(parts[5])
-        h, m, s = parts[3].split(":")
-        return datetime(year, month, day, int(h), int(m), int(s)).isoformat()
-    except Exception:
-        return ts
-
-
-def _tweet_entry_to_bookmark(entry: dict) -> dict | None:
-    """Convert a syndication entry into the canonical bookmark shape."""
-    tweet = entry.get("content", {}).get("tweet", {})
-    tweet_id = tweet.get("id_str") or tweet.get("conversation_id_str")
-    if not tweet_id:
-        # fall back to entry_id which is "tweet-12345"
-        eid = entry.get("entry_id", "")
-        if eid.startswith("tweet-"):
-            tweet_id = eid.split("-", 1)[1]
-    if not tweet_id:
-        return None
-
-    screen_name = tweet.get("user", {}).get("screen_name", TWITTER_USERNAME)
-    full_text = tweet.get("full_text", "")
-    created_at = tweet.get("created_at", "")
-    iso_ts = _parse_twitter_date(created_at) if created_at else datetime.now().isoformat()
-
-    return {
-        "id": str(tweet_id),
-        "url": f"https://twitter.com/{screen_name}/status/{tweet_id}",
-        "text": full_text,
-        "timestamp": iso_ts,
-    }
-
-
-def _rss_item_to_bookmark(item: dict) -> dict | None:
-    """Convert an RSS <item> dict (from feedparser-style parsing) into a bookmark."""
-    link = item.get("link", "")
-    if not link:
-        return None
-    # extract tweet id from URL
-    m = re.search(r"/status/(\d+)", link)
-    tweet_id = m.group(1) if m else ""
-    title = item.get("title", "")
-    pub_date = item.get("pubDate", item.get("published", ""))
-    if pub_date:
-        try:
-            from email.utils import parsedate_to_datetime
-            iso_ts = parsedate_to_datetime(pub_date).isoformat()
-        except Exception:
-            iso_ts = pub_date
-    else:
-        iso_ts = datetime.now().isoformat()
-
-    return {
-        "id": tweet_id,
-        "url": link,
-        "text": title,
-        "timestamp": iso_ts,
-    }
+def log(msg: str):
+    ts = datetime.now(timezone.utc).isoformat()
+    print(f"[twitter-sync] {ts} {msg}", flush=True)
 
 
 # ---------------------------------------------------------------------------
-# Fetch methods
+# GCS helpers
 # ---------------------------------------------------------------------------
 
-def fetch_via_syndication(username: str) -> tuple[list[dict], str]:
-    """
-    Primary method.  Twitter Syndication API returns an HTML page whose
-    <script id="__NEXT_DATA__"> contains a full JSON payload with tweet
-    entries.  No auth required.
-
-    Includes retry with backoff for 429 responses (rate limit = 30 req/min).
-    """
-    import time
-
-    url = SYNDICATION_URL.format(username=username)
-    print(f"[syndication] GET {url}")
-
-    resp = None
-    for attempt in range(2):  # at most 2 attempts (initial + 1 retry)
-        resp = requests.get(url, headers=REQUEST_HEADERS, timeout=30, allow_redirects=True)
-        if resp.status_code == 429 and attempt == 0:
-            # Respect rate-limit-reset header if present, capped at 10s
-            # (Cloud Function max runtime is typically 60s-9min depending on config)
-            wait = 10
-            print(f"[syndication] 429 rate-limited, retrying in {wait}s")
-            time.sleep(wait)
-            continue
-        break
-
-    if resp is None or resp.status_code != 200:
-        print(f"[syndication] HTTP {resp.status_code if resp else 'N/A'}")
-        return [], "syndication"
-
-    html = resp.text
-    marker = '__NEXT_DATA__'
-    start = html.find(marker)
-    if start < 0:
-        print("[syndication] No __NEXT_DATA__ in response")
-        return [], "syndication"
-
-    json_start = html.find("{", start)
-    json_end = html.find("</script>", json_start)
-    if json_start < 0 or json_end < 0:
-        print("[syndication] Could not locate JSON bounds")
-        return [], "syndication"
-
-    try:
-        data = json.loads(html[json_start:json_end])
-    except json.JSONDecodeError as exc:
-        print(f"[syndication] JSON parse error: {exc}")
-        return [], "syndication"
-
-    entries = (
-        data.get("props", {})
-        .get("pageProps", {})
-        .get("timeline", {})
-        .get("entries", [])
-    )
-    print(f"[syndication] {len(entries)} entries found")
-
-    bookmarks = []
-    for entry in entries:
-        bm = _tweet_entry_to_bookmark(entry)
-        if bm:
-            bookmarks.append(bm)
-
-    return bookmarks, "syndication"
-
-
-def fetch_via_rsshub(username: str) -> tuple[list[dict], str]:
-    """
-    Fallback method.  RSSHub /twitter/user/{name} used to work; currently
-    returns 404 but we keep it as a fallback in case routes are restored.
-    """
-    url = RSSHUB_URL.format(username=username)
-    print(f"[rsshub] GET {url}")
-
-    resp = requests.get(url, headers=REQUEST_HEADERS, timeout=20, allow_redirects=True)
-    if resp.status_code != 200:
-        print(f"[rsshub] HTTP {resp.status_code}")
-        return [], "rss"
-
-    # Parse RSS XML
-    import xml.etree.ElementTree as ET
-    try:
-        root = ET.fromstring(resp.text)
-    except ET.ParseError:
-        print("[rsshub] XML parse error")
-        return [], "rss"
-
-    ns = {"rss": "http://purl.org/rss/1.0/", "atom": "http://www.w3.org/2005/Atom"}
-    items = root.findall(".//item") or root.findall(".//rss:item", ns)
-    if not items:
-        # Try Atom <entry>
-        items = root.findall(".//{http://www.w3.org/2005/Atom}entry")
-
-    print(f"[rsshub] {len(items)} items found")
-    bookmarks = []
-    for item in items:
-        # Build a simple dict from the element children
-        child_tags = {}
-        for child in item:
-            tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
-            child_tags[tag] = child.text or ""
-        bm = _rss_item_to_bookmark(child_tags)
-        if bm:
-            bookmarks.append(bm)
-
-    return bookmarks, "rss"
-
-
-def enrich_via_oembed(bookmarks: list[dict]) -> list[dict]:
-    """
-    Last-resort enrichment.  For bookmarks that have a URL but empty text,
-    hit the oEmbed endpoint to fill in the text.  Rate-limited to 1 req/sec
-    and capped at 20 requests to avoid abuse.
-    """
-    import time
-    enriched = 0
-    for bm in bookmarks:
-        if bm.get("text") or not bm.get("url"):
-            continue
-        if enriched >= 20:
-            break
-        try:
-            oembed_url = OEMBED_URL.format(tweet_url=bm["url"])
-            resp = requests.get(oembed_url, headers=REQUEST_HEADERS, timeout=10)
-            if resp.status_code == 200:
-                data = resp.json()
-                # oEmbed html contains the tweet text in a <p> tag
-                html = data.get("html", "")
-                m = re.search(r"<p[^>]*>(.*?)</p>", html, re.DOTALL)
-                if m:
-                    raw = m.group(1)
-                    # strip HTML entities
-                    import html as html_mod
-                    bm["text"] = html_mod.unescape(raw).strip()
-                    enriched += 1
-            time.sleep(1)
-        except Exception as exc:
-            print(f"[oembed] Error enriching {bm['url']}: {exc}")
-    if enriched:
-        print(f"[oembed] Enriched {enriched} bookmarks")
-    return bookmarks
-
-
-# ---------------------------------------------------------------------------
-# GCS upload
-# ---------------------------------------------------------------------------
-
-def upload_to_gcs(filename: str, data):
-    """Upload JSON data to GCS bucket."""
+def _gcs_client():
     if not GCS_AVAILABLE:
-        print("GCS not available, skipping upload")
-        return False
+        return None
+    return storage.Client()
 
+
+def gcs_download_json(path: str) -> dict | None:
     try:
-        client = storage.Client()
+        client = _gcs_client()
+        if client is None:
+            return None
         bucket = client.bucket(BUCKET_NAME)
-        blob = bucket.blob(filename)
+        blob = bucket.blob(path)
+        if not blob.exists():
+            log(f"GCS blob not found: {path}")
+            return None
+        return json.loads(blob.download_as_text())
+    except Exception as exc:
+        log(f"GCS download failed for {path}: {exc}")
+        return None
+
+
+def gcs_upload_json(path: str, data):
+    try:
+        client = _gcs_client()
+        if client is None:
+            log("GCS unavailable, skipping upload")
+            return False
+        bucket = client.bucket(BUCKET_NAME)
+        blob = bucket.blob(path)
         blob.upload_from_string(
             json.dumps(data, indent=2, ensure_ascii=False),
             content_type="application/json",
         )
-        try:
-            blob.make_public()
-        except Exception:
-            pass  # fine if uniform bucket-level access is on
-        print(f"[gcs] Uploaded {filename}")
+        log(f"Uploaded {path} to GCS")
         return True
     except Exception as exc:
-        print(f"[gcs] Upload failed: {exc}")
+        log(f"GCS upload failed for {path}: {exc}")
         return False
+
+
+# ---------------------------------------------------------------------------
+# Cookie loading
+# ---------------------------------------------------------------------------
+
+def load_cookies_from_gcs() -> dict | None:
+    data = gcs_download_json(COOKIE_PATH)
+    if data is None:
+        return None
+    cookies = data.get("cookies", {})
+    if not cookies.get("auth_token") and not cookies.get("ct0"):
+        log("Cookie file present but missing auth_token/ct0")
+        return None
+    ts = data.get("timestamp", "unknown")
+    log(f"Loaded cookies from GCS (uploaded: {ts})")
+    return cookies
+
+
+# ---------------------------------------------------------------------------
+# Method 1: Direct GraphQL API with cookies (no twscrape dependency)
+# ---------------------------------------------------------------------------
+
+def _extract_bookmarks_from_response(data: dict) -> tuple[list[dict], str | None]:
+    """
+    Parse the GraphQL response JSON and extract bookmark entries.
+    Returns (bookmarks_list, cursor_for_next_page).
+    """
+    bookmarks = []
+    cursor = None
+
+    try:
+        instructions = (
+            data.get("data", {})
+            .get("viewer", {})
+            .get("bookmarks_timeline", {})
+            .get("timeline", {})
+            .get("instructions", [])
+        )
+
+        for instruction in instructions:
+            entries = instruction.get("entries", [])
+            for entry in entries:
+                entry_id = entry.get("entryId", "")
+
+                # Cursor entry (pagination)
+                if "cursor-bottom" in entry_id:
+                    content = entry.get("content", {})
+                    cursor = (
+                        content.get("value", "")
+                        or content.get("itemContent", {}).get("value", "")
+                    )
+                    continue
+
+                # Tweet entry
+                if not entry_id.startswith("tweet-"):
+                    continue
+
+                tweet_results = (
+                    entry.get("content", {})
+                    .get("itemContent", {})
+                    .get("tweet_results", {})
+                    .get("result", {})
+                )
+
+                # Sometimes nested under __typename == "TweetWithVisibilityResults"
+                if tweet_results.get("__typename") == "TweetWithVisibilityResults":
+                    tweet_results = tweet_results.get("tweet", {})
+
+                legacy = tweet_results.get("legacy", {})
+                core = tweet_results.get("core", {}).get("user_results", {}).get("result", {})
+                user_legacy = core.get("legacy", {})
+                tweet_id = tweet_results.get("rest_id") or entry_id.replace("tweet-", "")
+
+                bm = {
+                    "id": str(tweet_id),
+                    "url": f"https://x.com/{user_legacy.get('screen_name', 'i')}/status/{tweet_id}",
+                    "text": legacy.get("full_text", ""),
+                    "author": user_legacy.get("screen_name", ""),
+                    "author_name": user_legacy.get("name", ""),
+                    "created_at": legacy.get("created_at", ""),
+                    "like_count": legacy.get("favorite_count", 0),
+                    "retweet_count": legacy.get("retweet_count", 0),
+                    "reply_count": legacy.get("reply_count", 0),
+                    "view_count": (
+                        tweet_results.get("views", {}).get("count", 0)
+                        or 0
+                    ),
+                    "scraped_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+                # Media
+                media = legacy.get("extended_entities", {}).get("media", [])
+                if media:
+                    bm["media"] = [
+                        {
+                            "type": m.get("type", "photo"),
+                            "url": m.get("media_url_https", ""),
+                        }
+                        for m in media
+                    ]
+
+                bookmarks.append(bm)
+
+    except Exception as exc:
+        log(f"Error parsing GraphQL response: {exc}")
+
+    return bookmarks, cursor
+
+
+async def _fetch_graphql_bookmarks(cookies: dict) -> list[dict]:
+    """
+    Fetch bookmarks using Twitter's GraphQL API directly with cookies.
+    Handles pagination to fetch up to MAX_BOOKMARKS entries.
+    """
+    if not HTTPX_AVAILABLE:
+        raise RuntimeError("httpx not installed")
+
+    auth_token = cookies.get("auth_token", "")
+    ct0 = cookies.get("ct0", "")
+
+    if not auth_token or not ct0:
+        raise ValueError("Missing auth_token or ct0 in cookies")
+
+    all_bookmarks = []
+    cursor = None
+    page = 0
+
+    # Build cookie jar
+    cookie_jar = {
+        "auth_token": auth_token,
+        "ct0": ct0,
+    }
+
+    async with httpx.AsyncClient(
+        cookies=cookie_jar,
+        headers={
+            **TWITTER_HEADERS,
+            "x-csrf-token": ct0,
+            "content-type": "application/json",
+        },
+        follow_redirects=True,
+        timeout=30,
+    ) as client:
+        while len(all_bookmarks) < MAX_BOOKMARKS:
+            page += 1
+            log(f"Fetching bookmarks page {page} (have {len(all_bookmarks)} so far)")
+
+            url = BOOKMARKS_GRAPHQL_URL.format(query_id=QUERY_ID)
+            params = {
+                "variables": json.dumps({
+                    "count": 20,
+                    "includePromotedContent": False,
+                    **({"cursor": cursor} if cursor else {}),
+                }),
+                "features": json.dumps(FEATURES),
+            }
+
+            resp = await client.get(url, params=params)
+
+            if resp.status_code == 429:
+                log("Rate limited (429), waiting 60s")
+                await asyncio.sleep(60)
+                continue
+
+            if resp.status_code != 200:
+                log(f"GraphQL returned HTTP {resp.status_code}")
+                # Try to log a snippet of the response
+                body = resp.text[:500]
+                log(f"Response: {body}")
+                if resp.status_code in (401, 403):
+                    raise ValueError(f"Auth failed (HTTP {resp.status_code}): cookies may be stale")
+                # For other errors, break out
+                break
+
+            data = resp.json()
+            page_bookmarks, cursor = _extract_bookmarks_from_response(data)
+
+            if not page_bookmarks:
+                log(f"Page {page} returned 0 bookmarks, stopping pagination")
+                break
+
+            all_bookmarks.extend(page_bookmarks)
+            log(f"Page {page}: got {len(page_bookmarks)} bookmarks (total: {len(all_bookmarks)})")
+
+            if not cursor:
+                log("No more pages (no cursor)")
+                break
+
+            # Small delay between pages to avoid rate limiting
+            await asyncio.sleep(random.uniform(1.0, 2.5))
+
+    return all_bookmarks[:MAX_BOOKMARKS]
+
+
+# ---------------------------------------------------------------------------
+# Method 2: twscrape with password login (fallback)
+# ---------------------------------------------------------------------------
+
+async def _attempt_twscrape_password() -> tuple[list[dict], str | None]:
+    """Fallback: use twscrape with username/password."""
+    if not TWSCRAPE_AVAILABLE:
+        return [], "twscrape not installed"
+    if not TWITTER_USERNAME or not TWITTER_PASSWORD:
+        return [], "TWITTER_USERNAME or TWITTER_PASSWORD not set"
+
+    log(f"Attempting twscrape password login for {TWITTER_USERNAME}")
+    try:
+        pool = AccountsPool()
+        await pool.add_account(
+            username=TWITTER_USERNAME,
+            password=TWITTER_PASSWORD,
+            email=TWITTER_EMAIL or f"{TWITTER_USERNAME}@gmail.com",
+            email_password=TWITTER_PASSWORD,
+        )
+        await pool.login_all()
+        api = API(pool)
+
+        bookmarks = []
+        async for tweet in api.bookmarks(limit=MAX_BOOKMARKS):
+            entry = {
+                "id": str(tweet.id),
+                "url": f"https://x.com/i/status/{tweet.id}",
+                "text": tweet.rawText if hasattr(tweet, "rawText") else (tweet.text or ""),
+                "author": "",
+                "created_at": "",
+                "like_count": 0,
+                "retweet_count": 0,
+                "reply_count": 0,
+                "view_count": 0,
+                "scraped_at": datetime.now(timezone.utc).isoformat(),
+            }
+            if hasattr(tweet, "user") and tweet.user:
+                user = tweet.user
+                entry["author"] = getattr(user, "username", "") or getattr(user, "screenName", "")
+                entry["url"] = f"https://x.com/{entry['author']}/status/{tweet.id}"
+            if hasattr(tweet, "date") and tweet.date:
+                entry["created_at"] = tweet.date.isoformat()
+            for field in ("like_count", "retweet_count", "reply_count", "view_count"):
+                if hasattr(tweet, field):
+                    entry[field] = getattr(tweet, field, 0) or 0
+            bookmarks.append(entry)
+
+        return bookmarks, None
+    except Exception as exc:
+        return [], str(exc)
+
+
+# ---------------------------------------------------------------------------
+# Core orchestrator
+# ---------------------------------------------------------------------------
+
+async def _fetch_bookmarks() -> dict:
+    """
+    Primary: GraphQL direct API with GCS cookies.
+    Fallback: twscrape password login.
+    """
+    errors = []
+
+    # --- Attempt 1: Direct GraphQL with GCS cookies ---
+    log("--- Attempt 1: Direct GraphQL with GCS cookies ---")
+    gcs_cookies = load_cookies_from_gcs()
+    if gcs_cookies and HTTPX_AVAILABLE:
+        try:
+            bookmarks = await asyncio.wait_for(
+                _fetch_graphql_bookmarks(gcs_cookies),
+                timeout=ATTEMPT_TIMEOUT,
+            )
+            if bookmarks:
+                return {
+                    "success": True,
+                    "bookmarks": bookmarks,
+                    "count": len(bookmarks),
+                    "auth_method": "graphql_gcs_cookies",
+                }
+            log("GraphQL returned 0 bookmarks")
+            errors.append("graphql_cookies: returned 0 bookmarks")
+        except asyncio.TimeoutError:
+            log(f"GraphQL attempt timed out after {ATTEMPT_TIMEOUT}s")
+            errors.append(f"graphql_cookies: timed out after {ATTEMPT_TIMEOUT}s")
+        except Exception as exc:
+            log(f"GraphQL attempt failed: {exc}")
+            errors.append(f"graphql_cookies: {exc}")
+    elif not gcs_cookies:
+        errors.append("graphql_cookies: no cookies in GCS")
+    else:
+        errors.append("graphql_cookies: httpx not installed")
+
+    # --- Attempt 2: twscrape with password ---
+    log("--- Attempt 2: twscrape password fallback ---")
+    try:
+        bookmarks, err = await asyncio.wait_for(
+            _attempt_twscrape_password(),
+            timeout=ATTEMPT_TIMEOUT,
+        )
+        if bookmarks:
+            return {
+                "success": True,
+                "bookmarks": bookmarks,
+                "count": len(bookmarks),
+                "auth_method": "twscrape_password",
+            }
+        errors.append(f"twscrape_password: {err or 'returned 0 bookmarks'}")
+    except asyncio.TimeoutError:
+        errors.append(f"twscrape_password: timed out after {ATTEMPT_TIMEOUT}s")
+    except Exception as exc:
+        errors.append(f"twscrape_password: {exc}")
+
+    return {
+        "success": False,
+        "error": "All methods failed: " + " | ".join(errors),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -308,143 +463,107 @@ def upload_to_gcs(filename: str, data):
 @functions_framework.http
 def fetch_twitter_bookmarks(request):
     """
-    HTTP Cloud Function.
-    Fetches the public Twitter timeline for TWITTER_USERNAME using free,
-    no-auth APIs and uploads the result to GCS.
+    HTTP Cloud Function — fetches Twitter bookmarks.
+
+    Methods:
+      1. Direct GraphQL API with cookies from GCS
+      2. twscrape library with password login (fallback)
 
     Query / JSON params:
-      send_summary (bool)  – if true, also writes vault/latest_sync_summary.json
+      send_summary (bool) – if true, also writes vault/latest_sync_summary.json
     """
-    # ---- CORS ----
-    cors_headers = {
+    cors = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
     }
     if request.method == "OPTIONS":
-        return ("", 204, cors_headers)
+        return ("", 204, cors)
 
-    resp_headers = {**cors_headers, "Content-Type": "application/json"}
+    resp_headers = {**cors, "Content-Type": "application/json"}
 
-    # ---- Health check ----
-    if request.method == "GET" and request.path in ("/health", "/", ""):
+    # Health check
+    if request.method == "GET":
         return (
             json.dumps({
                 "service": "twitter-sync",
+                "engine": "graphql_direct",
                 "status": "healthy",
-                "timestamp": datetime.now().isoformat(),
+                "twscrape_available": TWSCRAPE_AVAILABLE,
+                "gcs_available": GCS_AVAILABLE,
+                "httpx_available": HTTPX_AVAILABLE,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }),
             200,
             resp_headers,
         )
 
-    # ---- Determine params ----
+    # Parse params
     try:
         payload = request.get_json(silent=True) or {}
     except Exception:
         payload = {}
     send_summary = payload.get("send_summary", False)
 
-    # ---- Fetch pipeline ----
-    bookmarks: list[dict] = []
-    method_used = "none"
-    status = "failed"
-    last_error = None
+    log("=" * 60)
+    log(f"Twitter bookmark sync started (timeout={ATTEMPT_TIMEOUT}s)")
+    log(f"send_summary={send_summary}")
 
+    # Run async scraper
     try:
-        print(f"[{datetime.now().isoformat()}] Starting sync for @{TWITTER_USERNAME}")
-
-        # 1) Syndication API (primary)
-        if REQUESTS_AVAILABLE:
-            bookmarks, method_used = fetch_via_syndication(TWITTER_USERNAME)
-
-        # 2) RSSHub fallback
-        if not bookmarks and REQUESTS_AVAILABLE:
-            bookmarks, method_used = fetch_via_rsshub(TWITTER_USERNAME)
-
-        # 3) oEmbed enrichment for entries missing text
-        if bookmarks and REQUESTS_AVAILABLE:
-            empty_text = sum(1 for b in bookmarks if not b.get("text"))
-            if empty_text > 0 and empty_text <= 20:
-                bookmarks = enrich_via_oembed(bookmarks)
-
-        # If we got nothing from all methods, still record a clean result
-        if bookmarks:
-            status = "success"
-            # Upload bookmarks
-            if GCS_AVAILABLE:
-                upload_to_gcs("vault/twitter_bookmarks_automated.json", bookmarks)
-        else:
-            status = "no_data"
-            last_error = (
-                "Syndication returned 0 entries and RSSHub returned no data. "
-                "The account may be private, empty, or the username may be incorrect."
-            )
-
-        # ---- Build response ----
-        result = {
-            "success": len(bookmarks) > 0,
-            "count": len(bookmarks),
-            "status": status,
-            "method": method_used,
-            "timestamp": datetime.now().isoformat(),
-        }
-        if last_error:
-            result["error"] = last_error
-
-        # ---- Optional summary file ----
-        if send_summary:
-            summary = {
-                "twitter": {
-                    "status": status,
-                    "count": len(bookmarks),
-                    "method": method_used,
-                    "timestamp": datetime.now().isoformat(),
-                },
-                "instagram": {
-                    "status": "pending",
-                    "note": "separate function",
-                },
-                "generated_at": datetime.now().isoformat(),
-            }
-            if GCS_AVAILABLE:
-                upload_to_gcs("vault/latest_sync_summary.json", summary)
-
-        print(f"[sync] Done: {status}, {len(bookmarks)} items via {method_used}")
-
-        code = 200 if bookmarks else 200  # 200 even for 0 results (not an error)
-        return json.dumps(result), code, resp_headers
-
+        result = asyncio.run(_fetch_bookmarks())
     except Exception as exc:
-        print(f"[sync] Unhandled error: {exc}")
+        log(f"Unhandled async error: {exc}")
+        traceback.print_exc()
         return (
             json.dumps({
                 "success": False,
                 "error": str(exc),
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }),
             500,
             resp_headers,
         )
 
+    # Process result
+    bookmarks = result.pop("bookmarks", [])
+    success = result.get("success", False)
+    count = result.get("count", 0)
+    auth_method = result.get("auth_method", "none")
+    error = result.get("error")
 
-# ---------------------------------------------------------------------------
-# Placeholder — kept for backward compatibility
-# ---------------------------------------------------------------------------
+    # Upload to GCS
+    gcs_ok = False
+    if success and bookmarks:
+        gcs_ok = gcs_upload_json(BOOKMARKS_PATH, bookmarks)
+        if not gcs_ok:
+            log("WARNING: Bookmarks fetched but GCS upload failed")
 
-def fetch_instagram_bookmarks(request):
-    """Placeholder for Instagram (not part of this sync)."""
-    resp_headers = {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
+    # Optional summary
+    if send_summary:
+        summary = {
+            "twitter": {
+                "status": "success" if success else "failed",
+                "count": count,
+                "auth_method": auth_method,
+                "gcs_uploaded": gcs_ok,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                **({"error": error} if error else {}),
+            },
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        gcs_upload_json(SUMMARY_PATH, summary)
+
+    response = {
+        "success": success,
+        "count": count,
+        "auth_method": auth_method,
+        "gcs_uploaded": gcs_ok,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
-    return (
-        json.dumps({
-            "success": False,
-            "error": "Instagram integration requires additional setup",
-            "recommendation": "Use Apify or manual export",
-            "note": "Twitter sync uses Syndication API",
-        }),
-        200,
-        resp_headers,
-    )
+    if error:
+        response["error"] = error
+
+    code = 200 if success else (500 if error else 200)
+    log(f"Done: success={success}, count={count}, auth={auth_method}")
+    return json.dumps(response), code, resp_headers
