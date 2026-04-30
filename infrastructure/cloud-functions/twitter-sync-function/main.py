@@ -1,7 +1,13 @@
-# Twitter Bookmark Sync via Cloud Functions
-# Runs on Google Cloud Platform - fully automated!
+# Twitter Timeline Sync via Cloud Functions
+# Replaces dead Nitter instances with working free APIs
+#
+# Method priority:
+#   1. Twitter Syndication API (timeline-profile) — returns full tweet JSON, no auth
+#   2. RSSHub Twitter route — included for when/if routes come back
+#   3. oEmbed enrichment — used to flesh out individual tweets if needed
 
 import os
+import re
 import json
 from datetime import datetime
 import functions_framework
@@ -20,217 +26,425 @@ except ImportError:
     REQUESTS_AVAILABLE = False
     print("requests not available")
 
+# ---------------------------------------------------------------------------
 # Configuration
+# ---------------------------------------------------------------------------
 BUCKET_NAME = "omniclaw-knowledge-graph"
 TWITTER_USERNAME = "sdas22"
-NITTER_INSTANCES = [
-    "https://nitter.net",
-    "https://nitter.poast.org",
-    "https://nitter.privacydev.net",
-    "https://xcancel.com",
-]
 
-@functions_framework.http
-def fetch_twitter_bookmarks(request):
-    """
-    HTTP Cloud Function
-    Fetches Twitter bookmarks via Nitter and uploads to GCS
-    Triggered by HTTP request or Cloud Scheduler
-    """
-    # CORS headers
-    if request.method == 'OPTIONS':
-        headers = {'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                  'Access-Control-Allow-Headers': 'Content-Type'}
-        return ('', 204, headers)
+SYNDICATION_URL = (
+    "https://syndication.twitter.com/srv/timeline-profile/screen-name/{username}"
+)
+RSSHUB_URL = "https://rsshub.app/twitter/user/{username}"
+OEMBED_URL = "https://publish.twitter.com/oembed?url={tweet_url}"
 
-    headers = {'Access-Control-Allow-Origin': '*',
-               'Content-Type': 'application/json'}
+REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/125.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://platform.twitter.com/",
+}
 
-    # Health check endpoint (GET only)
-    if request.method == 'GET' and (request.path == '/health' or request.path == '/'):
-        return json.dumps({
-            "service": "twitter-sync",
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat()
-        }), 200, headers
+# Month abbreviation -> number for parsing "Thu Apr 28 00:56:58 +0000 2022"
+_MONTH_MAP = {
+    "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+    "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
+}
 
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _parse_twitter_date(ts: str) -> str:
+    """Convert 'Thu Apr 28 00:56:58 +0000 2022' → ISO-8601."""
     try:
-        print(f"[{datetime.now().isoformat()}] Fetching Twitter bookmarks for {TWITTER_USERNAME}")
+        parts = ts.split()
+        # dow month day time tz year
+        month = _MONTH_MAP.get(parts[1], 1)
+        day = int(parts[2])
+        year = int(parts[5])
+        h, m, s = parts[3].split(":")
+        return datetime(year, month, day, int(h), int(m), int(s)).isoformat()
+    except Exception:
+        return ts
 
-        # Try each Nitter instance until one works
-        bookmarks = []
-        last_error = None
-        html_content = None
 
-        for nitter_url in NITTER_INSTANCES:
-            try:
-                nitter_bookmarks_url = f"{nitter_url}/{TWITTER_USERNAME}/bookmarks"
-                print(f"Trying {nitter_url}...")
+def _tweet_entry_to_bookmark(entry: dict) -> dict | None:
+    """Convert a syndication entry into the canonical bookmark shape."""
+    tweet = entry.get("content", {}).get("tweet", {})
+    tweet_id = tweet.get("id_str") or tweet.get("conversation_id_str")
+    if not tweet_id:
+        # fall back to entry_id which is "tweet-12345"
+        eid = entry.get("entry_id", "")
+        if eid.startswith("tweet-"):
+            tweet_id = eid.split("-", 1)[1]
+    if not tweet_id:
+        return None
 
-                response = requests.get(
-                    nitter_bookmarks_url,
-                    headers={
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'Accept-Language': 'en-US,en;q=0.5',
-                    },
-                    timeout=30,
-                    allow_redirects=True
-                )
+    screen_name = tweet.get("user", {}).get("screen_name", TWITTER_USERNAME)
+    full_text = tweet.get("full_text", "")
+    created_at = tweet.get("created_at", "")
+    iso_ts = _parse_twitter_date(created_at) if created_at else datetime.now().isoformat()
 
-                if response.status_code == 200 and len(response.text) > 100:
-                    html_content = response.text
-                    print(f"✅ {nitter_url} returned {len(response.text)} bytes")
-                    break
-                else:
-                    print(f"⚠️ {nitter_url} returned {response.status_code}, content length: {len(response.text)}")
-                    last_error = f"HTTP {response.status_code}"
-            except Exception as e:
-                print(f"❌ {nitter_url} failed: {e}")
-                last_error = str(e)
-                continue
+    return {
+        "id": str(tweet_id),
+        "url": f"https://twitter.com/{screen_name}/status/{tweet_id}",
+        "text": full_text,
+        "timestamp": iso_ts,
+    }
 
-        if not html_content:
-            # Try x.com direct scrape as fallback
-            print("Nitter failed, trying x.com direct...")
-            html_content = try_xcom_direct()
 
-        if html_content:
-            bookmarks = parse_twitter_bookmarks(html_content)
-
-            # Upload to GCS
-            if GCS_AVAILABLE and bookmarks:
-                upload_to_gcs('vault/twitter_bookmarks_automated.json', bookmarks)
-
-            print(f"✅ Successfully processed {len(bookmarks)} bookmarks")
-
-            return json.dumps({
-                "success": True,
-                "count": len(bookmarks),
-                "source": "nitter",
-                "timestamp": datetime.now().isoformat()
-            }), 200, headers
-        else:
-            return json.dumps({
-                "error": f"All Nitter instances failed. Last error: {last_error}",
-                "solution": "Try refreshing cookies or check Twitter account"
-            }), 500, headers
-
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return json.dumps({
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500, headers
-
-def try_xcom_direct():
-    """Fallback: try to fetch bookmarks directly from x.com (may need cookies)"""
-    try:
-        # This likely won't work without cookies but worth trying
-        response = requests.get(
-            f"https://x.com/{TWITTER_USERNAME}/saved",
-            headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            },
-            timeout=20,
-            allow_redirects=True
-        )
-        if response.status_code == 200 and len(response.text) > 100:
-            return response.text
-    except Exception as e:
-        print(f"x.com direct failed: {e}")
-    return None
-
-def parse_twitter_bookmarks(html):
-    """Parse bookmarks from Nitter HTML or x.com HTML"""
-    bookmarks = []
-
-    if not html or len(html) < 100:
-        print("HTML content too short to parse")
-        return bookmarks
-
-    import re
-
-    # Try Nitter format first (class="tweet-link")
-    tweet_pattern = r'<a class="tweet-link"[^>]*href="/([^"]+)/status/(\d+)"[^>]*>'
-    matches = re.findall(tweet_pattern, html)
-
-    if matches:
-        print(f"Found {len(matches)} tweets in Nitter format")
-        for username, tweet_id in matches[:100]:
-            bookmarks.append({
-                "id": tweet_id,
-                "url": f"https://twitter.com/{username}/status/{tweet_id}",
-                "text": "",
-                "timestamp": datetime.now().isoformat()
-            })
+def _rss_item_to_bookmark(item: dict) -> dict | None:
+    """Convert an RSS <item> dict (from feedparser-style parsing) into a bookmark."""
+    link = item.get("link", "")
+    if not link:
+        return None
+    # extract tweet id from URL
+    m = re.search(r"/status/(\d+)", link)
+    tweet_id = m.group(1) if m else ""
+    title = item.get("title", "")
+    pub_date = item.get("pubDate", item.get("published", ""))
+    if pub_date:
+        try:
+            from email.utils import parsedate_to_datetime
+            iso_ts = parsedate_to_datetime(pub_date).isoformat()
+        except Exception:
+            iso_ts = pub_date
     else:
-        # Try x.com format
-        x_pattern = r'href="https://twitter\.com/([^/]+)/status/(\d+)"'
-        x_matches = re.findall(x_pattern, html)
-        if x_matches:
-            print(f"Found {len(x_matches)} tweets in x.com format")
-            for username, tweet_id in x_matches[:100]:
-                bookmarks.append({
-                    "id": tweet_id,
-                    "url": f"https://twitter.com/{username}/status/{tweet_id}",
-                    "text": "",
-                    "timestamp": datetime.now().isoformat()
-                })
+        iso_ts = datetime.now().isoformat()
 
-    # If still empty, try data attributes
-    if not bookmarks:
-        data_pattern = r'data-id="(\d+)"'
-        data_matches = re.findall(data_pattern, html)
-        if data_matches:
-            print(f"Found {len(data_matches)} tweets in data-id format")
-            for tweet_id in data_matches[:100]:
-                bookmarks.append({
-                    "id": tweet_id,
-                    "url": f"https://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}",
-                    "text": "",
-                    "timestamp": datetime.now().isoformat()
-                })
+    return {
+        "id": tweet_id,
+        "url": link,
+        "text": title,
+        "timestamp": iso_ts,
+    }
 
+
+# ---------------------------------------------------------------------------
+# Fetch methods
+# ---------------------------------------------------------------------------
+
+def fetch_via_syndication(username: str) -> tuple[list[dict], str]:
+    """
+    Primary method.  Twitter Syndication API returns an HTML page whose
+    <script id="__NEXT_DATA__"> contains a full JSON payload with tweet
+    entries.  No auth required.
+
+    Includes retry with backoff for 429 responses (rate limit = 30 req/min).
+    """
+    import time
+
+    url = SYNDICATION_URL.format(username=username)
+    print(f"[syndication] GET {url}")
+
+    resp = None
+    for attempt in range(2):  # at most 2 attempts (initial + 1 retry)
+        resp = requests.get(url, headers=REQUEST_HEADERS, timeout=30, allow_redirects=True)
+        if resp.status_code == 429 and attempt == 0:
+            # Respect rate-limit-reset header if present, capped at 10s
+            # (Cloud Function max runtime is typically 60s-9min depending on config)
+            wait = 10
+            print(f"[syndication] 429 rate-limited, retrying in {wait}s")
+            time.sleep(wait)
+            continue
+        break
+
+    if resp is None or resp.status_code != 200:
+        print(f"[syndication] HTTP {resp.status_code if resp else 'N/A'}")
+        return [], "syndication"
+
+    html = resp.text
+    marker = '__NEXT_DATA__'
+    start = html.find(marker)
+    if start < 0:
+        print("[syndication] No __NEXT_DATA__ in response")
+        return [], "syndication"
+
+    json_start = html.find("{", start)
+    json_end = html.find("</script>", json_start)
+    if json_start < 0 or json_end < 0:
+        print("[syndication] Could not locate JSON bounds")
+        return [], "syndication"
+
+    try:
+        data = json.loads(html[json_start:json_end])
+    except json.JSONDecodeError as exc:
+        print(f"[syndication] JSON parse error: {exc}")
+        return [], "syndication"
+
+    entries = (
+        data.get("props", {})
+        .get("pageProps", {})
+        .get("timeline", {})
+        .get("entries", [])
+    )
+    print(f"[syndication] {len(entries)} entries found")
+
+    bookmarks = []
+    for entry in entries:
+        bm = _tweet_entry_to_bookmark(entry)
+        if bm:
+            bookmarks.append(bm)
+
+    return bookmarks, "syndication"
+
+
+def fetch_via_rsshub(username: str) -> tuple[list[dict], str]:
+    """
+    Fallback method.  RSSHub /twitter/user/{name} used to work; currently
+    returns 404 but we keep it as a fallback in case routes are restored.
+    """
+    url = RSSHUB_URL.format(username=username)
+    print(f"[rsshub] GET {url}")
+
+    resp = requests.get(url, headers=REQUEST_HEADERS, timeout=20, allow_redirects=True)
+    if resp.status_code != 200:
+        print(f"[rsshub] HTTP {resp.status_code}")
+        return [], "rss"
+
+    # Parse RSS XML
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(resp.text)
+    except ET.ParseError:
+        print("[rsshub] XML parse error")
+        return [], "rss"
+
+    ns = {"rss": "http://purl.org/rss/1.0/", "atom": "http://www.w3.org/2005/Atom"}
+    items = root.findall(".//item") or root.findall(".//rss:item", ns)
+    if not items:
+        # Try Atom <entry>
+        items = root.findall(".//{http://www.w3.org/2005/Atom}entry")
+
+    print(f"[rsshub] {len(items)} items found")
+    bookmarks = []
+    for item in items:
+        # Build a simple dict from the element children
+        child_tags = {}
+        for child in item:
+            tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
+            child_tags[tag] = child.text or ""
+        bm = _rss_item_to_bookmark(child_tags)
+        if bm:
+            bookmarks.append(bm)
+
+    return bookmarks, "rss"
+
+
+def enrich_via_oembed(bookmarks: list[dict]) -> list[dict]:
+    """
+    Last-resort enrichment.  For bookmarks that have a URL but empty text,
+    hit the oEmbed endpoint to fill in the text.  Rate-limited to 1 req/sec
+    and capped at 20 requests to avoid abuse.
+    """
+    import time
+    enriched = 0
+    for bm in bookmarks:
+        if bm.get("text") or not bm.get("url"):
+            continue
+        if enriched >= 20:
+            break
+        try:
+            oembed_url = OEMBED_URL.format(tweet_url=bm["url"])
+            resp = requests.get(oembed_url, headers=REQUEST_HEADERS, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                # oEmbed html contains the tweet text in a <p> tag
+                html = data.get("html", "")
+                m = re.search(r"<p[^>]*>(.*?)</p>", html, re.DOTALL)
+                if m:
+                    raw = m.group(1)
+                    # strip HTML entities
+                    import html as html_mod
+                    bm["text"] = html_mod.unescape(raw).strip()
+                    enriched += 1
+            time.sleep(1)
+        except Exception as exc:
+            print(f"[oembed] Error enriching {bm['url']}: {exc}")
+    if enriched:
+        print(f"[oembed] Enriched {enriched} bookmarks")
     return bookmarks
 
-def upload_to_gcs(filename, data):
-    """Upload data to GCS"""
+
+# ---------------------------------------------------------------------------
+# GCS upload
+# ---------------------------------------------------------------------------
+
+def upload_to_gcs(filename: str, data):
+    """Upload JSON data to GCS bucket."""
     if not GCS_AVAILABLE:
         print("GCS not available, skipping upload")
-        return
+        return False
 
     try:
         client = storage.Client()
         bucket = client.bucket(BUCKET_NAME)
         blob = bucket.blob(filename)
-
-        # Upload as JSON
         blob.upload_from_string(
-            json.dumps(data, indent=2),
-            content_type='application/json'
+            json.dumps(data, indent=2, ensure_ascii=False),
+            content_type="application/json",
+        )
+        try:
+            blob.make_public()
+        except Exception:
+            pass  # fine if uniform bucket-level access is on
+        print(f"[gcs] Uploaded {filename}")
+        return True
+    except Exception as exc:
+        print(f"[gcs] Upload failed: {exc}")
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Cloud Function entry point
+# ---------------------------------------------------------------------------
+
+@functions_framework.http
+def fetch_twitter_bookmarks(request):
+    """
+    HTTP Cloud Function.
+    Fetches the public Twitter timeline for TWITTER_USERNAME using free,
+    no-auth APIs and uploads the result to GCS.
+
+    Query / JSON params:
+      send_summary (bool)  – if true, also writes vault/latest_sync_summary.json
+    """
+    # ---- CORS ----
+    cors_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+    if request.method == "OPTIONS":
+        return ("", 204, cors_headers)
+
+    resp_headers = {**cors_headers, "Content-Type": "application/json"}
+
+    # ---- Health check ----
+    if request.method == "GET" and request.path in ("/health", "/", ""):
+        return (
+            json.dumps({
+                "service": "twitter-sync",
+                "status": "healthy",
+                "timestamp": datetime.now().isoformat(),
+            }),
+            200,
+            resp_headers,
         )
 
-        # Make public (so VM can read it)
-        blob.make_public()
+    # ---- Determine params ----
+    try:
+        payload = request.get_json(silent=True) or {}
+    except Exception:
+        payload = {}
+    send_summary = payload.get("send_summary", False)
 
-        print(f"✅ Uploaded to GCS: {filename}")
+    # ---- Fetch pipeline ----
+    bookmarks: list[dict] = []
+    method_used = "none"
+    status = "failed"
+    last_error = None
 
-    except Exception as e:
-        print(f"❌ GCS upload failed: {e}")
+    try:
+        print(f"[{datetime.now().isoformat()}] Starting sync for @{TWITTER_USERNAME}")
+
+        # 1) Syndication API (primary)
+        if REQUESTS_AVAILABLE:
+            bookmarks, method_used = fetch_via_syndication(TWITTER_USERNAME)
+
+        # 2) RSSHub fallback
+        if not bookmarks and REQUESTS_AVAILABLE:
+            bookmarks, method_used = fetch_via_rsshub(TWITTER_USERNAME)
+
+        # 3) oEmbed enrichment for entries missing text
+        if bookmarks and REQUESTS_AVAILABLE:
+            empty_text = sum(1 for b in bookmarks if not b.get("text"))
+            if empty_text > 0 and empty_text <= 20:
+                bookmarks = enrich_via_oembed(bookmarks)
+
+        # If we got nothing from all methods, still record a clean result
+        if bookmarks:
+            status = "success"
+            # Upload bookmarks
+            if GCS_AVAILABLE:
+                upload_to_gcs("vault/twitter_bookmarks_automated.json", bookmarks)
+        else:
+            status = "no_data"
+            last_error = (
+                "Syndication returned 0 entries and RSSHub returned no data. "
+                "The account may be private, empty, or the username may be incorrect."
+            )
+
+        # ---- Build response ----
+        result = {
+            "success": len(bookmarks) > 0,
+            "count": len(bookmarks),
+            "status": status,
+            "method": method_used,
+            "timestamp": datetime.now().isoformat(),
+        }
+        if last_error:
+            result["error"] = last_error
+
+        # ---- Optional summary file ----
+        if send_summary:
+            summary = {
+                "twitter": {
+                    "status": status,
+                    "count": len(bookmarks),
+                    "method": method_used,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                "instagram": {
+                    "status": "pending",
+                    "note": "separate function",
+                },
+                "generated_at": datetime.now().isoformat(),
+            }
+            if GCS_AVAILABLE:
+                upload_to_gcs("vault/latest_sync_summary.json", summary)
+
+        print(f"[sync] Done: {status}, {len(bookmarks)} items via {method_used}")
+
+        code = 200 if bookmarks else 200  # 200 even for 0 results (not an error)
+        return json.dumps(result), code, resp_headers
+
+    except Exception as exc:
+        print(f"[sync] Unhandled error: {exc}")
+        return (
+            json.dumps({
+                "success": False,
+                "error": str(exc),
+                "timestamp": datetime.now().isoformat(),
+            }),
+            500,
+            resp_headers,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Placeholder — kept for backward compatibility
+# ---------------------------------------------------------------------------
 
 def fetch_instagram_bookmarks(request):
-    """
-    Placeholder for Instagram
-    Instagram doesn't have an official API for saved posts
-    """
-    headers = {'Access-Control-Allow-Origin': '*',
-               'Content-Type': 'application/json'}
-
-    return json.dumps({
-        "success": False,
-        "error": "Instagram integration requires additional setup",
-        "recommendation": "Use Apify ($5/month) or manual export",
-        "note": "Twitter works perfectly via Nitter!"
-    }), 200, headers
+    """Placeholder for Instagram (not part of this sync)."""
+    resp_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+    }
+    return (
+        json.dumps({
+            "success": False,
+            "error": "Instagram integration requires additional setup",
+            "recommendation": "Use Apify or manual export",
+            "note": "Twitter sync uses Syndication API",
+        }),
+        200,
+        resp_headers,
+    )

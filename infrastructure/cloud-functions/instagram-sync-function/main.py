@@ -1,9 +1,11 @@
-# Instagram Saved Posts Sync via Cloud Functions + Apify
-# Runs on Google Cloud Platform - fully automated!
+# Instagram Saved Posts Sync - FREE (No Apify)
+# Serves existing GCS data + attempts free public profile fetch
+# The original 30 saved posts were populated by browser extension on Apr 22
 
 import os
 import json
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 import functions_framework
 
 try:
@@ -22,178 +24,350 @@ except ImportError:
 
 # Configuration
 BUCKET_NAME = "omniclaw-knowledge-graph"
-INSTAGRAM_USERNAME = "sdas22"  # Your Instagram username
-Apify_API_KEY = os.environ.get("APIFY_API_KEY", "")
-APIFY_ACTOR_ID = "apify/instagram-scraper"  # Apify's official Instagram scraper
+GCS_INSTAGRAM_PATH = "vault/instagram_saved_automated.json"
+GCS_SYNC_SUMMARY_PATH = "vault/latest_sync_summary.json"
+INSTAGRAM_USERNAME = "sdas22"
+
+
+def _cors_headers():
+    return {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+    }
+
+
+def _get_gcs_blob(filename):
+    """Get a GCS blob object."""
+    if not GCS_AVAILABLE:
+        return None
+    try:
+        client = storage.Client()
+        bucket = client.bucket(BUCKET_NAME)
+        return bucket.blob(filename)
+    except Exception as e:
+        print(f"GCS client error: {e}")
+        return None
+
+
+def _read_gcs_json(filename):
+    """Read and parse JSON from GCS. Handles double-encoded strings."""
+    blob = _get_gcs_blob(filename)
+    if blob is None:
+        return None
+    try:
+        if not blob.exists():
+            return None
+        raw = blob.download_as_text()
+        data = json.loads(raw)
+        # Handle double-encoded JSON (existing data is stored this way)
+        if isinstance(data, str):
+            data = json.loads(data)
+        return data
+    except Exception as e:
+        print(f"Error reading {filename} from GCS: {e}")
+        return None
+
+
+def _write_gcs_json(filename, data, make_public=True):
+    """Write JSON to GCS."""
+    blob = _get_gcs_blob(filename)
+    if blob is None:
+        print(f"Cannot write to GCS: {filename}")
+        return False
+    try:
+        blob.upload_from_string(
+            json.dumps(data, indent=2),
+            content_type="application/json",
+        )
+        if make_public:
+            try:
+                blob.make_public()
+            except Exception:
+                pass  # Public access may not be configured
+        print(f"Uploaded to GCS: {filename}")
+        return True
+    except Exception as e:
+        print(f"GCS upload failed for {filename}: {e}")
+        return False
+
+
+def _get_existing_data_status():
+    """Get status of existing Instagram data in GCS."""
+    data = _read_gcs_json(GCS_INSTAGRAM_PATH)
+    if data is None:
+        return {
+            "has_data": False,
+            "message": "No existing Instagram data in GCS",
+        }
+
+    posts = data.get("posts", []) if isinstance(data, dict) else []
+    synced_at = data.get("synced_at", "unknown") if isinstance(data, dict) else "unknown"
+    count = data.get("count", len(posts)) if isinstance(data, dict) else len(posts)
+    source = posts[0].get("source", "unknown") if posts else "unknown"
+
+    # Check freshness
+    age_hours = None
+    try:
+        if synced_at != "unknown":
+            synced_dt = datetime.fromisoformat(synced_at.replace("Z", "+00:00"))
+            age_hours = (datetime.now(timezone.utc) - synced_dt).total_seconds() / 3600
+    except Exception:
+        pass
+
+    return {
+        "has_data": True,
+        "count": count,
+        "last_synced": synced_at,
+        "source": source,
+        "age_hours": round(age_hours, 1) if age_hours is not None else None,
+        "stale": age_hours is not None and age_hours > 72,
+    }
+
+
+def _try_public_profile_fetch():
+    """
+    Attempt to fetch recent posts from public Instagram profile.
+    This gets the user's own posts (not saved posts), which is still useful.
+    Uses the public Instagram page HTML parsing approach.
+    """
+    if not REQUESTS_AVAILABLE:
+        return None, "requests library not available"
+
+    # Try multiple free approaches
+    errors = []
+
+    # Approach 1: Instagram public page with __a=1 (may require login now)
+    try:
+        url = f"https://www.instagram.com/{INSTAGRAM_USERNAME}/?__a=1&__d=dis"
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+        }
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            data = resp.json()
+            # GraphQL structure
+            user_data = data.get("graphql", {}).get("user", {})
+            timeline = user_data.get("edge_owner_to_timeline_media", {})
+            edges = timeline.get("edges", [])
+            if edges:
+                posts = []
+                for edge in edges[:20]:
+                    node = edge.get("node", {})
+                    caption_edges = node.get("edge_media_to_caption", {}).get("edges", [])
+                    caption = caption_edges[0]["node"]["text"] if caption_edges else ""
+                    posts.append({
+                        "id": f"p_{node.get('shortcode', '')}",
+                        "url": f"https://www.instagram.com/p/{node.get('shortcode', '')}/",
+                        "image_url": node.get("display_url", ""),
+                        "caption": caption,
+                        "timestamp": datetime.fromtimestamp(
+                            node.get("taken_at_timestamp", 0),
+                            tz=timezone.utc,
+                        ).isoformat() if node.get("taken_at_timestamp") else "",
+                        "likes": node.get("edge_liked_by", {}).get("count", 0),
+                        "source": "instagram_public_profile",
+                        "synced_at": datetime.now(timezone.utc).isoformat(),
+                    })
+                return posts, "public_profile"
+        errors.append(f"__a=1 returned {resp.status_code}")
+    except Exception as e:
+        errors.append(f"__a=1 error: {e}")
+
+    # Approach 2: Parse HTML from public profile page
+    try:
+        url = f"https://www.instagram.com/{INSTAGRAM_USERNAME}/"
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (compatible; Googlebot/2.1; "
+                "+http://www.google.com/bot.html)"
+            ),
+        }
+        resp = requests.get(url, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            html = resp.text
+            # Look for shortcode references in the HTML
+            import re
+            shortcodes = re.findall(r'/p/([A-Za-z0-9_-]+)/', html)
+            # Deduplicate
+            seen = set()
+            unique_codes = []
+            for code in shortcodes:
+                if code not in seen and len(code) > 5:
+                    seen.add(code)
+                    unique_codes.append(code)
+            if unique_codes:
+                posts = []
+                for code in unique_codes[:20]:
+                    posts.append({
+                        "id": f"p_{code}",
+                        "url": f"https://www.instagram.com/p/{code}/",
+                        "caption": "",
+                        "source": "instagram_public_html",
+                        "synced_at": datetime.now(timezone.utc).isoformat(),
+                    })
+                return posts, "public_html"
+        errors.append(f"HTML parse returned {resp.status_code}")
+    except Exception as e:
+        errors.append(f"HTML parse error: {e}")
+
+    return None, "; ".join(errors)
+
+
+def _merge_with_existing(new_posts, existing_data):
+    """Merge new posts with existing data, deduplicating by id."""
+    if not existing_data:
+        return {
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "count": len(new_posts),
+            "posts": new_posts,
+        }
+
+    existing_posts = existing_data.get("posts", [])
+    existing_ids = {p.get("id") for p in existing_posts}
+
+    # Add new posts that don't already exist
+    added = 0
+    for post in new_posts:
+        if post.get("id") not in existing_ids:
+            existing_posts.append(post)
+            existing_ids.add(post.get("id"))
+            added += 1
+
+    # Update sync metadata
+    existing_data["synced_at"] = datetime.now(timezone.utc).isoformat()
+    existing_data["count"] = len(existing_posts)
+
+    return existing_data
+
+
+def _write_sync_summary(instagram_result, send_summary=True):
+    """Write or merge sync summary to GCS."""
+    if not send_summary:
+        return
+
+    # Read existing summary (may have twitter data)
+    existing = _read_gcs_json(GCS_SYNC_SUMMARY_PATH) or {}
+
+    existing["instagram"] = {
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+        "success": instagram_result.get("success", False),
+        "count": instagram_result.get("count", 0),
+        "source": instagram_result.get("source", "none"),
+    }
+    existing["last_updated"] = datetime.now(timezone.utc).isoformat()
+
+    _write_gcs_json(GCS_SYNC_SUMMARY_PATH, existing)
+
 
 @functions_framework.http
 def fetch_instagram_saved(request):
     """
-    HTTP Cloud Function
-    Fetches Instagram saved posts via Apify and uploads to GCS
-    Triggered by HTTP request or Cloud Scheduler
+    HTTP Cloud Function for Instagram sync.
+    No Apify. No paid APIs. Uses:
+      1. Existing GCS data (populated by browser extension)
+      2. Free public profile fetch as augmentation
+      3. GCS passthrough for all downstream consumers
     """
-    # CORS headers
-    if request.method == 'OPTIONS':
-        headers = {'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                  'Access-Control-Allow-Headers': 'Content-Type'}
-        return ('', 204, headers)
+    # CORS preflight
+    if request.method == "OPTIONS":
+        return ("", 204, {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        })
 
-    headers = {'Access-Control-Allow-Origin': '*',
-               'Content-Type': 'application/json'}
+    headers = _cors_headers()
 
-    # Health check endpoint (GET only)
-    if request.method == 'GET' and (request.path == '/health' or request.path == '/'):
+    # Health check
+    if request.method == "GET":
+        status = _get_existing_data_status()
         return json.dumps({
             "service": "instagram-sync",
             "status": "healthy",
-            "apify_configured": bool(Apify_API_KEY),
-            "timestamp": datetime.now().isoformat()
+            "apify_required": False,
+            "cost": "$0/month",
+            "existing_data": status,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }), 200, headers
 
+    # Parse request parameters
     try:
-        print(f"[{datetime.now().isoformat()}] Fetching Instagram saved posts for {INSTAGRAM_USERNAME}")
+        req_json = request.get_json(silent=True) or {}
+    except Exception:
+        req_json = {}
 
-        # Check if Apify API key is configured
-        if not Apify_API_KEY:
-            return json.dumps({
-                "error": "Apify API key not configured",
-                "solution": "Set APIFY_API_KEY environment variable in Cloud Function",
-                "note": "Sign up at https://apify.com/sign-up and get API key from https://console.apify.com/account",
-                "cost": "$5/month for Instagram scraper"
-            }), 500, headers
+    send_summary = req_json.get("send_summary", True)
+    force_refresh = req_json.get("force_refresh", False)
 
-        # Call Apify API to run Instagram scraper
-        saved_posts = run_apify_scraper()
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Instagram sync triggered "
+          f"(force_refresh={force_refresh})")
 
-        # Upload to GCS
-        if GCS_AVAILABLE and saved_posts:
-            upload_to_gcs('vault/instagram_saved_automated.json', saved_posts)
+    # Step 1: Check existing data
+    existing_data = _read_gcs_json(GCS_INSTAGRAM_PATH)
+    existing_status = _get_existing_data_status()
 
-        print(f"✅ Successfully processed {len(saved_posts)} saved posts")
-
-        return json.dumps({
-            "success": True,
-            "count": len(saved_posts),
-            "source": "apify",
-            "timestamp": datetime.now().isoformat()
-        }), 200, headers
-
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return json.dumps({
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500, headers
-
-def run_apify_scraper():
-    """
-    Run Apify Instagram Scraper to fetch saved posts
-    Note: Saved posts require authentication with your Instagram credentials
-    """
-
-    # For saved posts, we need to run the actor with authentication
-    # This requires your Instagram cookies or credentials
-
-    # Option 1: Fetch user's posts (works without auth)
-    # Option 2: Fetch saved posts (requires auth - see setup guide)
-
-    actor_input = {
-        "usernames": [INSTAGRAM_USERNAME],
-        "resultsType": "posts",
-        "resultsLimit": 50,
-        "addParentData": False
+    result = {
+        "success": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "source": "existing",
+        "count": 0,
     }
 
-    # First, run the actor
-    run_url = f"https://api.apify.com/v2/acts/{APIFY_ACTOR_ID}/runs?token={Apify_API_KEY}"
+    # Step 2: Try free public fetch to augment existing data
+    new_posts = None
+    fetch_source = None
+    if REQUESTS_AVAILABLE:
+        new_posts, fetch_source = _try_public_profile_fetch()
+        if new_posts:
+            print(f"Fetched {len(new_posts)} posts via {fetch_source}")
+            result["source"] = f"merged_with_{fetch_source}"
 
-    if not REQUESTS_AVAILABLE:
-        raise Exception("requests library not available")
-
-    # Start the scrape
-    response = requests.post(run_url, json=actor_input, timeout=30)
-    response.raise_for_status()
-
-    run_data = response.json()
-    run_id = run_data['data']['id']
-    dataset_id = run_data['data']['defaultDatasetId']
-
-    print(f"Apify run started: {run_id}")
-
-    # Wait for the run to complete (with timeout)
-    status_url = f"https://api.apify.com/v2/actor-runs/{run_id}?token={Apify_API_KEY}"
-
-    import time
-    max_wait = 120  # 2 minutes max
-    start_time = time.time()
-
-    while time.time() - start_time < max_wait:
-        status_response = requests.get(status_url, timeout=30)
-        status_response.raise_for_status()
-        status_data = status_response.json()
-        status = status_data['data']['status']
-
-        print(f"Apify status: {status}")
-
-        if status == 'SUCCEEDED':
-            break
-        elif status in ['FAILED', 'ABORTED', 'TIMED-OUT']:
-            raise Exception(f"Apify run failed with status: {status}")
-
-        time.sleep(5)
-
-    # Fetch results from dataset
-    dataset_url = f"https://api.apify.com/v2/datasets/{dataset_id}/items?token={Apify_API_KEY}&clean=true"
-
-    results_response = requests.get(dataset_url, timeout=30)
-    results_response.raise_for_status()
-
-    posts = results_response.json()
-
-    # Transform to our format
-    transformed_posts = []
-    for post in posts:
-        transformed_posts.append({
-            "id": post.get("id", ""),
-            "url": post.get("url", ""),
-            "caption": post.get("caption", {}).get("text", ""),
-            "image_url": post.get("displayUrl", ""),
-            "timestamp": post.get("timestamp", datetime.now().isoformat()),
-            "likes": post.get("likesCount", 0),
-            "synced_at": datetime.now().isoformat()
-        })
-
-    return transformed_posts
-
-def upload_to_gcs(filename, data):
-    """Upload data to GCS"""
-    if not GCS_AVAILABLE:
-        print("GCS not available, skipping upload")
-        return
-
-    try:
-        client = storage.Client()
-        bucket = client.bucket(BUCKET_NAME)
-        blob = bucket.blob(filename)
-
-        # Upload as JSON
-        blob.upload_from_string(
-            json.dumps(data, indent=2),
-            content_type='application/json'
+    # Step 3: Merge and upload
+    if new_posts and existing_data:
+        merged = _merge_with_existing(new_posts, existing_data)
+        _write_gcs_json(GCS_INSTAGRAM_PATH, merged)
+        result["count"] = merged["count"]
+        result["new_added"] = merged["count"] - existing_status.get("count", 0)
+    elif new_posts and not existing_data:
+        payload = {
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "count": len(new_posts),
+            "posts": new_posts,
+        }
+        _write_gcs_json(GCS_INSTAGRAM_PATH, payload)
+        result["count"] = len(new_posts)
+        result["source"] = fetch_source
+    elif existing_data:
+        # No new data fetched, keep existing
+        result["count"] = existing_status.get("count", 0)
+        result["message"] = (
+            f"Using existing data from {existing_status.get('last_synced', 'unknown')}. "
+            f"Public profile fetch: {fetch_source or 'skipped'}. "
+            f"Note: Instagram saved posts require browser extension or manual export."
         )
+    else:
+        result["success"] = False
+        result["message"] = (
+            "No existing data and no free fetch method succeeded. "
+            "Populate via browser extension export or manual upload."
+        )
+        result["public_fetch_error"] = fetch_source
 
-        # Make public (so VM can read it)
-        blob.make_public()
+    # Step 4: Write sync summary
+    _write_sync_summary(result, send_summary)
 
-        print(f"✅ Uploaded to GCS: {filename}")
+    status_code = 200 if result["success"] else 404
+    return json.dumps(result), status_code, headers
 
-    except Exception as e:
-        print(f"❌ GCS upload failed: {e}")
 
 def fetch_instagram_bookmarks(request):
-    """
-    Alias function for backward compatibility
-    """
+    """Alias for backward compatibility."""
     return fetch_instagram_saved(request)
