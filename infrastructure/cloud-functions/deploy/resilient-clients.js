@@ -121,6 +121,21 @@ const multiProviderQuery = createFallbackChain('query', [
 
 function createFallbackChain(operation, clientNames) {
   return async function(prompt) {
+    // Inject system context about OmniClaw capabilities
+    const systemContext = `You are OmniClaw, a personal AI assistant with these confirmed capabilities:
+- Web Search/Browse (DuckDuckGo): user says "browse X" or "search web for X"
+- Wikipedia: "wiki X" or "who is X"
+- News: "news about X" or "news"
+- Reddit: "reddit X" or "search reddit for X"
+- URL/Tweet Review: auto-fetches and summarizes any shared URL
+- Vault Search: "vault X" searches saved bookmarks (49+ items)
+- Story Generation: "tell me a story" generates multi-character stories
+- Hindi/Hinglish: translate to/from Hindi
+- Multi-Voice TTS: stories narrated with 5 character voices
+- Reminders: "remind me at 1 am to X" sets real timed reminders
+- Thread/Conversation context: follows reply chains with full history
+When asked about your capabilities, list ALL of these. Never say you cannot do something that is in this list.`;
+
     const clients = {
       GroqClient: () => new GroqClient(),
       CerebrasClient: () => new CerebrasClient()
@@ -132,7 +147,14 @@ function createFallbackChain(operation, clientNames) {
       
       try {
         const client = getClient();
-        const result = await client[operation](prompt);
+        // For 'query' operation, prepend system context
+        let result;
+        if (operation === 'query') {
+          const enrichedPrompt = `[System: ${systemContext}]\n\nUser: ${prompt}`;
+          result = await client.query(enrichedPrompt);
+        } else {
+          result = await client[operation](prompt);
+        }
         return result;
       } catch (e) {
         console.warn(`[${name}] failed: ${e.message}`);

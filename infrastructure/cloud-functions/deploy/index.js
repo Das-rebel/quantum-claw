@@ -907,10 +907,236 @@ exports.alexaHandler = async (req, res) => {
         }
       }
       
+      // ═════════════════════════════════════════════════════════
+      //  WIKIPEDIA - Free REST API, no key needed
+      // ═════════════════════════════════════════════════════════
+      const wikiMatch = queryLower.match(/^(?:who\s+is|tell\s+me\s+about|wiki(?:pedia)?\s*(?:search|lookup|for)?|wikipedia)\s+(.{3,})/i);
+      // "what is" excluded from wiki to avoid matching math/simple questions
+      if (wikiMatch) {
+        const topic = wikiMatch[1].replace(/[?.!]+$/, '');
+        if (topic && topic.length > 1) {
+          console.log('[Wiki] Looking up:', topic);
+          try {
+            const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
+            const wikiResp = await fetch(wikiUrl, { signal: AbortSignal.timeout(8000) });
+            if (wikiResp.ok) {
+              const data = await wikiResp.json();
+              let wikiReply = `📚 *${data.title || topic}*\n\n`;
+              if (data.extract) wikiReply += data.extract;
+              if (data.thumbnail?.source) wikiReply += `\n\n🖼️ ${data.thumbnail.source}`;
+              if (data.content_urls?.desktop?.page) wikiReply += `\n\n🔗 ${data.content_urls.desktop.page}`;
+              res.json({ version: '1.0', response: { outputSpeech: { type: 'PlainText', text: wikiReply } }, sessionAttributes: { lastQuery: body.text, handler: 'wikipedia' } });
+              return;
+            }
+          } catch (e) { console.log('[Wiki] Error:', e.message); }
+        }
+      }
+
+      // ═════════════════════════════════════════════════════════
+      //  NEWS - Google News RSS (free, no key)
+      // ═════════════════════════════════════════════════════════
+      const newsMatch = queryLower.match(/(?:news(?:\s+about)?|latest\s+news|what.*happening|headlines|current\s+events)\s*(?:about|on|for)?\s*(.*)/i);
+      if (newsMatch || /^(news|headlines|latest)\s*$/i.test(queryLower)) {
+        const newsTopic = newsMatch ? (newsMatch[2] || newsMatch[1] || '').trim() : '';
+        console.log('[News] Searching:', newsTopic || 'top');
+        try {
+          const rssUrl = newsTopic 
+            ? `https://news.google.com/rss/search?q=${encodeURIComponent(newsTopic)}&hl=en-US&gl=US&ceid=US:en`
+            : `https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`;
+          const rssResp = await fetch(rssUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+          if (rssResp.ok) {
+            const rssText = await rssResp.text();
+            const items = [];
+            const itemRegex = /<item>[\s\S]*?<\/item>/g;
+            let match;
+            while ((match = itemRegex.exec(rssText)) !== null && items.length < 8) {
+              const item = match[0];
+              const title = item.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/)?.[1] || item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '';
+              const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
+              const link = item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
+              const source = item.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1] || '';
+              if (title) items.push({ title, pubDate, link, source });
+            }
+            let newsReply = `📰 *${newsTopic ? 'News about ' + newsTopic : 'Top Headlines'}*\n`;
+            newsReply += `Found ${items.length} articles\n\n`;
+            items.forEach((item, i) => {
+              const time = item.pubDate ? new Date(item.pubDate).toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : '';
+              newsReply += `${i+1}. ${item.title}`;
+              if (item.source) newsReply += ` — ${item.source}`;
+              if (time) newsReply += ` (${time})`;
+              newsReply += '\n';
+            });
+            res.json({ version: '1.0', response: { outputSpeech: { type: 'PlainText', text: newsReply } }, sessionAttributes: { lastQuery: body.text, handler: 'news' } });
+            return;
+          }
+        } catch (e) { console.log('[News] Error:', e.message); }
+      }
+
+      // ═════════════════════════════════════════════════════════
+      //  REDDIT - Public JSON API (free, no key)
+      // ═════════════════════════════════════════════════════════
+      const redditMatch = queryLower.match(/(?:reddit|subreddit|r\/)\s+(?:search\s+)?(?:for\s+)?(?:r\/)?([\w]+(?:\s+[\w]+)?)?/i);
+      const redditSearch = queryLower.match(/(?:search\s+reddit|find\s+on\s+reddit|reddit\s+search)\s+(?:for\s+)?(.+)/i);
+      if (redditMatch || redditSearch) {
+        const subreddit = redditSearch ? 'all' : (redditMatch?.[1] || 'popular').replace(/\s+/g, '').toLowerCase();
+        const searchQ = redditSearch ? redditSearch[1] : '';
+        console.log('[Reddit]', searchQ ? `search: ${searchQ}` : `r/${subreddit}`);
+        try {
+          const redditUrl = searchQ 
+            ? `https://www.reddit.com/search.json?q=${encodeURIComponent(searchQ)}&limit=5&sort=relevance`
+            : `https://www.reddit.com/r/${subreddit}/hot.json?limit=5`;
+          const redditResp = await fetch(redditUrl, { headers: { 'User-Agent': 'OmniClaw/2.0' }, signal: AbortSignal.timeout(10000) });
+          if (redditResp.ok) {
+            const data = await redditResp.json();
+            const posts = data.data?.children || [];
+            let redditReply = `🔥 *Reddit${searchQ ? ': "' + searchQ + '"' : ' r/' + subreddit}*\n\n`;
+            posts.forEach((p, i) => {
+              const post = p.data;
+              redditReply += `${i+1}. ${post.title}\n`;
+              redditReply += `   ⬆️ ${post.score} | 💬 ${post.num_comments} | r/${post.subreddit}\n`;
+              if (post.selftext) redditReply += `   ${post.selftext.substring(0, 120)}...\n`;
+              redditReply += `   🔗 https://reddit.com${post.permalink}\n\n`;
+            });
+            if (posts.length === 0) redditReply += 'No posts found.';
+            res.json({ version: '1.0', response: { outputSpeech: { type: 'PlainText', text: redditReply } }, sessionAttributes: { lastQuery: body.text, handler: 'reddit' } });
+            return;
+          }
+        } catch (e) { console.log('[Reddit] Error:', e.message); }
+      }
+
+      // ═════════════════════════════════════════════════════════
+      //  WEB SEARCH/BROWSE - DuckDuckGo Instant Answer (free)
+      // ═════════════════════════════════════════════════════════
+      const browseMatch = queryLower.match(/(?:browse|search\s+(?:the\s+)?web|google\s+(?:search\s+)?|look\s+up|find\s+(?:info|information)\s+(?:about|on))\s+(?:for\s+)?(.+)/i);
+      if (browseMatch) {
+        const searchQuery = browseMatch[1].replace(/[?.!]+$/, '');
+        console.log('[Browse] Searching:', searchQuery);
+        try {
+          const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&format=json&no_html=1&skip_disambig=1`;
+          const ddgResp = await fetch(ddgUrl, { signal: AbortSignal.timeout(8000) });
+          if (ddgResp.ok) {
+            const data = await ddgResp.json();
+            let browseReply = `🔍 *Web Search: ${searchQuery}*\n\n`;
+            if (data.Abstract) {
+              browseReply += `${data.Abstract}\n\n`;
+              if (data.AbstractURL) browseReply += `🔗 ${data.AbstractURL}\n`;
+            } else if (data.Answer) {
+              browseReply += `${data.Answer}\n`;
+            } else if (data.RelatedTopics?.length) {
+              data.RelatedTopics.slice(0, 5).forEach(t => {
+                if (t.Text) browseReply += `• ${t.Text}\n`;
+              });
+            } else {
+              // Fallback to Wikipedia
+              const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchQuery)}`;
+              const wikiResp = await fetch(wikiUrl, { signal: AbortSignal.timeout(5000) });
+              if (wikiResp.ok) {
+                const wikiData = await wikiResp.json();
+                if (wikiData.extract) browseReply += `📚 ${wikiData.title}: ${wikiData.extract}`;
+              }
+            }
+            if (browseReply.length < 50) browseReply += '\nNo results found. Try rephrasing.';
+            res.json({ version: '1.0', response: { outputSpeech: { type: 'PlainText', text: browseReply } }, sessionAttributes: { lastQuery: body.text, handler: 'browse' } });
+            return;
+          }
+        } catch (e) { console.log('[Browse] Error:', e.message); }
+      }
+
+      // ═════════════════════════════════════════════════════════
+      //  TWITTER/X SEARCH - Nitter (free proxy)
+      // ═════════════════════════════════════════════════════════
+      const twitterSearchMatch = queryLower.match(/twitter\s+(?:search\s+)?(?:for\s+)?(.+)/i);
+      if (twitterSearchMatch && !queryLower.includes('news')) {
+        const tweetQuery = twitterSearchMatch[1].replace(/[?.!]+$/, '');
+        console.log('[Twitter] Searching:', tweetQuery);
+        try {
+          const nitterUrl = `https://nitter.privacydev.net/search?f=tweets&q=${encodeURIComponent(tweetQuery)}`;
+          const nitterResp = await fetch(nitterUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
+          if (nitterResp.ok) {
+            const html = await nitterResp.text();
+            const tweetRegex = /class="tweet-content[^"]*"[^>]*>([\s\S]*?)<\/div>/g;
+            const tweets = [];
+            let tMatch;
+            while ((tMatch = tweetRegex.exec(html)) !== null && tweets.length < 5) {
+              const text = tMatch[1].replace(/<[^>]+>/g, '').trim();
+              if (text) tweets.push(text);
+            }
+            let twitterReply = `🐦 *Twitter Search: ${tweetQuery}*\n\n`;
+            if (tweets.length > 0) {
+              tweets.forEach((t, i) => { twitterReply += `${i+1}. ${t.substring(0, 200)}\n\n`; });
+            } else {
+              twitterReply += 'No tweets found via Nitter. Using AI synthesis...\n\n';
+              const { multiProviderQuery } = require('./resilient-clients');
+              const aiResp = await multiProviderQuery(`Summarize recent Twitter discussion about: ${tweetQuery}. Be brief.`);
+              twitterReply += aiResp;
+            }
+            res.json({ version: '1.0', response: { outputSpeech: { type: 'PlainText', text: twitterReply } }, sessionAttributes: { lastQuery: body.text, handler: 'twitter' } });
+            return;
+          }
+        } catch (e) { console.log('[Twitter] Error:', e.message); }
+      }
+
       try {
-        // Call AI for non-vault queries
+        // URL Pre-processor: Extract URLs, fetch content, enrich prompt
+        let enrichedQuery = body.text;
+        const urlRegex = /https?:\/\/(?:x\.com|twitter\.com|vxtwitter\.com|fxtwitter\.com)\/[^\s]+/gi;
+        const generalUrlRegex = /https?:\/\/[^\s]+/gi;
+        const tweetUrls = body.text.match(urlRegex) || [];
+        const allUrls = body.text.match(generalUrlRegex) || [];
+        const otherUrls = allUrls.filter(u => !tweetUrls.includes(u));
+        const urlContextParts = [];
+
+        // Fetch tweet content
+        for (const tweetUrl of tweetUrls) {
+          try {
+            // Try vxtwitter/fxtwitter embed APIs
+            const embedUrl = tweetUrl.replace(/https?:\/\/(?:x\.com|twitter\.com)/, 'https://api.vxtwitter.com');
+            const resp = await fetch(embedUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) });
+            if (resp.ok) {
+              const data = await resp.json();
+              let tweetContent = '';
+              if (data.text) tweetContent += `Tweet by @${data.user_name || 'unknown'} (@${data.user_screen_name || ''}): ${data.text}`;
+              if (data.media_urls && data.media_urls.length) tweetContent += ` [${data.media_urls.length} media]`;
+              if (data.likes !== undefined) tweetContent += ` | ❤️${data.likes} 🔁${data.retweet_count || 0}`;
+              if (tweetContent) urlContextParts.push(tweetContent);
+            }
+          } catch (e) { console.log('[URL] Tweet fetch failed:', e.message); }
+        }
+
+        // Fetch general URL content
+        for (const url of otherUrls) {
+          try {
+            const resp = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' }, signal: AbortSignal.timeout(8000) });
+            if (resp.ok) {
+              const html = await resp.text();
+              // Extract text content from HTML (simple approach)
+              const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+              const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+              // Also try og tags
+              const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+              const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+              const title = ogTitle?.[1] || titleMatch?.[1] || '';
+              const desc = ogDesc?.[1] || descMatch?.[1] || '';
+              // Strip remaining HTML and get text body (first 2000 chars)
+              const bodyText = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 2000);
+              let urlContent = `URL: ${url}`;
+              if (title) urlContent += `\nTitle: ${title}`;
+              if (desc) urlContent += `\nDescription: ${desc}`;
+              if (bodyText) urlContent += `\nContent: ${bodyText}`;
+              urlContextParts.push(urlContent);
+            }
+          } catch (e) { console.log('[URL] Fetch failed for', url, ':', e.message); }
+        }
+
+        // Enrich query with fetched content
+        if (urlContextParts.length > 0) {
+          enrichedQuery = `[The user shared these links. Here is the fetched content:\n${urlContextParts.join('\n---\n')}\n]\n\nUser's question: ${body.text}`;
+          console.log('[URL] Enriched query with', urlContextParts.length, 'URL(s)');
+        }
+
+        // Call AI for non-vault queries (with enriched context if URLs found)
         const { multiProviderQuery } = require('./resilient-clients');
-        const aiResponse = await multiProviderQuery(body.text);
+        const aiResponse = await multiProviderQuery(enrichedQuery);
         
         res.json({
           version: '1.0',

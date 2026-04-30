@@ -31,14 +31,15 @@ class BrowserManager:
         self.pages = {}
         self._lock = asyncio.Lock()
         self._ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-    
+        self._console_capture_init = {}
+
     async def start(self):
         self._playwright = await async_playwright().start()
-        
+
         # Check for Chrome CDP connection
         cdp_url = os.environ.get("CHROME_CDP_URL", "")
         self._using_existing = False
-        
+
         if cdp_url:
             print(f"[sota-browser] Attempting Chrome CDP connection: {cdp_url[:50]}...", file=sys.stderr)
             try:
@@ -53,7 +54,7 @@ class BrowserManager:
                 await self._launch_browser()
         else:
             await self._launch_browser()
-    
+
     async def _launch_browser(self):
         """Launch a fresh headless browser."""
         sock_path = f"/tmp/sota-b-{os.getpid()}.sock"
@@ -77,11 +78,11 @@ class BrowserManager:
         )
         self._using_existing = False
         print(f"[sota-browser] Browser ready (fresh launch)", file=sys.stderr)
-    
+
     async def create_session(self, user_id: str, **options) -> dict:
         import uuid
         session_id = str(uuid.uuid4())
-        
+
         # If connected to existing Chrome, reuse its context
         if getattr(self, '_using_existing', False):
             existing_contexts = self._browser.contexts
@@ -96,7 +97,7 @@ class BrowserManager:
                     "existing_browser": True,
                     "note": "Using existing Chrome context"
                 }
-        
+
         # Create new context (fresh browser or CDP browser without existing context)
         context = await self._browser.new_context(
             viewport={"width": options.get("width", 1280), "height": options.get("height", 720)},
@@ -104,54 +105,54 @@ class BrowserManager:
             locale="en-US",
             timezone_id="America/New_York",
         )
-        
+
         # Apply stealth synchronously (quick)
         try:
             await context.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => false});")
         except: pass
-        
+
         self.sessions[session_id] = {"user_id": user_id, "context": context}
         self.contexts[session_id] = context
-        
+
         return {"id": session_id, "user_id": user_id, "created": True, "existing_browser": False}
-    
+
     async def create_tab(self, session_id: str, url: str = None) -> dict:
         import uuid
         if session_id not in self.contexts:
             return {"error": "Session not found"}
-        
+
         context = self.contexts[session_id]
         page = await context.new_page()
         tab_id = str(uuid.uuid4())
         self.pages[tab_id] = {"page": page, "session_id": session_id}
-        
+
         if url:
             await page.goto(url, wait_until="commit", timeout=10000)
-        
+
         return {
             "id": tab_id,
             "session_id": session_id,
             "url": page.url,
             "title": await page.title() if page.url != "about:blank" else "",
         }
-    
+
     async def navigate(self, tab_id: str, url: str) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             response = await page.goto(url, wait_until="domcontentloaded", timeout=10000)
             return {"url": page.url, "title": await page.title(), "status": response.status if response else 0}
         except Exception as e:
             return {"error": str(e), "url": url}
-    
+
     async def get_snapshot(self, tab_id: str, include_screenshot: bool = False) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
-        
+
         try:
             # Get all frames including iframes
             frames_info = await page.evaluate("""() => {
@@ -173,14 +174,14 @@ class BrowserManager:
                 walk(window, 'main');
                 return frames;
             }""")
-            
+
             # Get main frame tree
             tree_script = """
             () => {
                 const tree = [], elements = {};
                 let idx = 0;
                 const skip = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'META', 'LINK'];
-                
+
                 function walk(el, d) {
                     if (skip.includes(el.tagName)) return;
                     const tag = el.tagName.toLowerCase();
@@ -191,7 +192,7 @@ class BrowserManager:
                         else if (tag === 'p') role = 'paragraph';
                         else if (tag === 'div') role = 'generic';
                     }
-                    
+
                     let name = el.getAttribute('aria-label') || el.textContent?.trim().slice(0,80) || '';
                     if (name && role) {
                         tree.push({d, role, name});
@@ -207,31 +208,31 @@ class BrowserManager:
                 return {tree, elements};
             }
             """
-            
+
             data = await page.evaluate(tree_script)
             text = "\n".join([f"{'  '*n['d']}[{n['role']}] {n['name']}" for n in data["tree"]])
-            
+
             result = {
-                "url": page.url, 
-                "title": await page.title(), 
-                "tree": data["tree"], 
-                "text": text, 
+                "url": page.url,
+                "title": await page.title(),
+                "tree": data["tree"],
+                "text": text,
                 "elements": data["elements"],
                 "frames": frames_info
             }
-            
+
             if include_screenshot:
                 import base64
                 result["screenshot"] = base64.b64encode(await page.screenshot()).decode()
-            
+
             return result
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def click(self, tab_id: str, selector: str = None, ref: str = None, x: float = None, y: float = None) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             if x is not None and y is not None:
@@ -248,16 +249,16 @@ class BrowserManager:
                         await page.locator(f"text={name}").first.click(timeout=3000)
             else:
                 return {"error": "Must specify selector, ref, or coordinates"}
-            
+
             await page.wait_for_load_state("commit", timeout=5000)
             return {"success": True, "url": page.url}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def type_text(self, tab_id: str, text: str, selector: str = None, ref: str = None) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             if ref:
@@ -277,25 +278,25 @@ class BrowserManager:
             return {"success": True}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def scroll(self, tab_id: str, dx: float = 0, dy: float = -300) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
         await self.pages[tab_id]["page"].mouse.wheel(int(dx), int(dy))
         await asyncio.sleep(FAST_WAIT)
         return {"success": True}
-    
+
     async def screenshot(self, tab_id: str, full: bool = False) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
         import base64
         img = await self.pages[tab_id]["page"].screenshot(full_page=full)
         return {"base64": base64.b64encode(img).decode()}
-    
+
     async def evaluate(self, tab_id: str, script: str, frame_index: int = None) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             if frame_index is not None:
@@ -311,12 +312,12 @@ class BrowserManager:
             return {"success": True, "result": result}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def list_frames(self, tab_id: str) -> dict:
         """List all frames in the page with their URLs and origins"""
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             frames_list = []
@@ -333,53 +334,56 @@ class BrowserManager:
             return {"frames": frames_list, "total": len(frames_list)}
         except Exception as e:
             return {"error": str(e)}
-    
-    async def capture_console_logs(self, tab_id: str, clear: bool = False) -> dict:
-        """Capture browser console logs. Useful for debugging private outputs."""
+
+    async def get_console_logs(self, tab_id: str, clear: bool = False) -> dict:
+        """Capture browser console messages and errors. Returns list of {type, message, timestamp} objects."""
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
-            # Enable console capture
-            if not hasattr(self, '_console_logs'):
-                self._console_logs = {}
-            if clear or tab_id not in self._console_logs:
-                self._console_logs[tab_id] = []
-            
-            # Inject console interceptor
-            await page.evaluate("""() => {
-                if (!window._consoleInterceptor) {
-                    window._consoleInterceptor = true;
-                    const originalLog = console.log;
-                    const originalError = console.error;
-                    window._pi_logs = [];
-                    console.log = (...args) => {
-                        window._pi_logs.push({type: 'log', msg: args.map(a => String(a)).join(' '), ts: Date.now()});
-                        originalLog.apply(console, args);
-                    };
-                    console.error = (...args) => {
-                        window._pi_logs.push({type: 'error', msg: args.map(a => String(a)).join(' '), ts: Date.now()});
-                        originalError.apply(console, args);
-                    };
-                }
-            }""")
-            
-            # Get captured logs
+            # Initialize capture dict for this tab if not already set up
+            if tab_id not in self._console_capture_init:
+                self._console_capture_init[tab_id] = True
+                # Inject console interceptor once per tab
+                await page.evaluate("""() => {
+                    if (!window._pi_console_capture) {
+                        window._pi_console_capture = true;
+                        window._pi_logs = [];
+                        const methods = ['log', 'warn', 'error', 'info', 'debug'];
+                        methods.forEach(m => {
+                            const orig = console[m].bind(console);
+                            console[m] = (...args) => {
+                                window._pi_logs.push({
+                                    type: m,
+                                    message: args.map(a => String(a)).join(' '),
+                                    timestamp: Date.now()
+                                });
+                                orig(...args);
+                            };
+                        });
+                    }
+                }""")
+
+            # Clear logs if requested
+            if clear:
+                await page.evaluate("window._pi_logs = []")
+
+            # Return captured logs
             logs = await page.evaluate("window._pi_logs || []")
             return {"logs": logs, "count": len(logs)}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def get_frame_content(self, tab_id: str, frame_index: int = None, frame_url_contains: str = None) -> dict:
         """Get HTML content from a specific frame. Useful for scraping iframe content."""
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             target_frame = None
-            
+
             if frame_url_contains:
                 for frame in page.frames:
                     if frame_url_contains in frame.url:
@@ -391,37 +395,37 @@ class BrowserManager:
                     target_frame = frames[frame_index]
             else:
                 return {"error": "Must specify frame_index or frame_url_contains"}
-            
+
             if not target_frame:
                 return {"error": "Frame not found"}
-            
+
             content = await target_frame.content()
             return {"content": content[:50000], "url": target_frame.url, "length": len(content)}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def inject_into_all_frames(self, tab_id: str, script: str) -> dict:
         """Inject and execute JavaScript in ALL frames. Returns results from each frame."""
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         results = []
-        
+
         for i, frame in enumerate(page.frames):
             try:
                 result = await frame.evaluate(script)
                 results.append({"frame_index": i, "url": frame.url, "success": True, "result": result})
             except Exception as e:
                 results.append({"frame_index": i, "url": frame.url[:50] if frame.url else "unknown", "success": False, "error": str(e)})
-        
+
         return {"results": results, "total_frames": len(results)}
-    
+
     async def evaluate_in_frame(self, tab_id: str, script: str, frame_selector: str = None, frame_url_contains: str = None) -> dict:
         """Evaluate script in a specific frame by selector or URL contains"""
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
-        
+
         page = self.pages[tab_id]["page"]
         try:
             target_frame = None
@@ -429,15 +433,15 @@ class BrowserManager:
                 if frame_url_contains and frame_url_contains in frame.url:
                     target_frame = frame
                     break
-            
+
             if not target_frame:
                 return {"error": f"Frame with URL containing '{frame_url_contains}' not found"}
-            
+
             result = await target_frame.evaluate(script)
             return {"success": True, "result": result, "frame_url": target_frame.url}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def press_key(self, tab_id: str, key: str, modifiers: int = 0) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
@@ -446,11 +450,11 @@ class BrowserManager:
             return {"success": True, "key": key}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def wait(self, tab_id: str, seconds: float = 1.0) -> dict:
         await asyncio.sleep(seconds)
         return {"success": True, "waited": seconds}
-    
+
     async def extract_images(self, tab_id: str) -> dict:
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
@@ -464,7 +468,28 @@ class BrowserManager:
             return {"images": imgs, "count": len(imgs)}
         except Exception as e:
             return {"error": str(e)}
-    
+
+    async def get_html(self, tab_id: str, selector: str = None) -> dict:
+        """Return raw HTML of page or specific element (truncated to 100KB)."""
+        if tab_id not in self.pages:
+            return {"error": "Tab not found"}
+
+        page = self.pages[tab_id]["page"]
+        try:
+            if selector:
+                html = await page.evaluate(
+                    "(sel) => { const el = document.querySelector(sel); return el ? el.outerHTML : null; }",
+                    selector
+                )
+                if html is None:
+                    return {"error": f"Element not found: {selector}"}
+                return {"html": html[:102400], "selector": selector, "truncated": len(html) > 102400}
+            else:
+                html = await page.content()
+                return {"html": html[:102400], "selector": None, "truncated": len(html) > 102400}
+        except Exception as e:
+            return {"error": str(e)}
+
     async def http_get(self, url: str, headers: dict = None, timeout: float = 10.0) -> dict:
         try:
             import httpx
@@ -474,19 +499,19 @@ class BrowserManager:
                         "headers": dict(resp.headers), "content": resp.text[:30000]}
         except Exception as e:
             return {"error": str(e)}
-    
+
     async def list_tabs(self, session_id: str) -> list:
         if session_id not in self.contexts:
             return []
-        return [{"url": p.url, "title": await p.title() if p else "Unknown"} 
+        return [{"url": p.url, "title": await p.title() if p else "Unknown"}
                 for p in self.contexts[session_id].pages]
-    
+
     async def close_tab(self, tab_id: str) -> dict:
         if tab_id in self.pages:
             await self.pages[tab_id]["page"].close()
             del self.pages[tab_id]
         return {"success": True}
-    
+
     async def close_session(self, session_id: str) -> dict:
         for tid in list(self.pages.keys()):
             if self.pages[tid]["session_id"] == session_id:
@@ -498,7 +523,7 @@ class BrowserManager:
         if session_id in self.sessions:
             del self.sessions[session_id]
         return {"success": True}
-    
+
     async def import_cookies(self, session_id: str, cookies: list) -> dict:
         if session_id not in self.contexts:
             return {"error": "Session not found"}
@@ -507,7 +532,112 @@ class BrowserManager:
                      "secure": bool(c.get("secure", False))} for c in cookies]
         await self.contexts[session_id].add_cookies(sanitized)
         return {"success": True, "count": len(sanitized)}
-    
+
+    async def get_state(self, tab_id: str) -> dict:
+        """Return clean indexed list of clickable elements for automation."""
+        if tab_id not in self.pages:
+            return {"error": "Tab not found"}
+
+        page = self.pages[tab_id]["page"]
+        try:
+            elements = await page.evaluate("""() => {
+                const SKIP_TAGS = new Set(['SCRIPT','STYLE','NOSCRIPT','META','LINK','HEAD','HTML','BODY']);
+                const CLICKABLE_ROLES = new Set(['button','link','input','select','textarea','menuitem','tab','checkbox','radio','switch','option']);
+                const result = [];
+                let idx = 0;
+
+                function isVisible(el) {
+                    if (!el.getBoundingClientRect) return false;
+                    const r = el.getBoundingClientRect();
+                    return r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.left < window.innerWidth;
+                }
+
+                function getRole(el) {
+                    const role = el.getAttribute('role');
+                    if (role) return role.toLowerCase();
+                    const tag = el.tagName.toLowerCase();
+                    if (tag === 'a') return 'link';
+                    if (tag === 'button' || tag === 'submit' || tag === 'reset') return 'button';
+                    if (tag === 'input') {
+                        const type = (el.type || 'text').toLowerCase();
+                        if (['checkbox','radio','switch','submit','reset','button','image'].includes(type)) return type;
+                        return 'input';
+                    }
+                    if (tag === 'select' || tag === 'textarea') return tag;
+                    return null;
+                }
+
+                function getName(el) {
+                    return el.getAttribute('aria-label')
+                        || el.getAttribute('aria-labelledby')
+                        || el.getAttribute('placeholder')
+                        || el.getAttribute('name')
+                        || el.id
+                        || el.textContent?.trim().replace(/\s+/g, ' ').slice(0, 80)
+                        || '';
+                }
+
+                function walk(el) {
+                    if (SKIP_TAGS.has(el.tagName)) return;
+
+                    const role = getRole(el);
+                    const isClickable = role && (CLICKABLE_ROLES.has(role) || el.onclick || el.hasAttribute('ng-click') || el.hasAttribute('@click'));
+                    const isEditable = role === 'input' || role === 'select' || role === 'textarea';
+
+                    if ((isClickable || isEditable || role === 'tab') && isVisible(el)) {
+                        const rect = el.getBoundingClientRect();
+                        const name = getName(el);
+                        if (name || isClickable) {
+                            result.push({
+                                index: ++idx,
+                                role: role || 'unknown',
+                                name: name,
+                                tag: el.outerHTML.slice(0, 200),
+                                x: Math.round(rect.left + rect.width / 2),
+                                y: Math.round(rect.top + rect.height / 2),
+                                visible: true
+                            });
+                        }
+                    }
+
+                    for (const c of el.children) walk(c);
+                }
+
+                walk(document.body || document.documentElement);
+                return result;
+            }""")
+            return {"elements": elements, "count": len(elements), "url": page.url}
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def go_back(self, tab_id: str) -> dict:
+        """Navigate back in browser history."""
+        if tab_id not in self.pages:
+            return {"error": "Tab not found"}
+        page = self.pages[tab_id]["page"]
+        try:
+            await page.go_back(wait_until="commit", timeout=10000)
+            return {"success": True, "url": page.url, "title": await page.title()}
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def switch_tab(self, tab_id: str, tab_index: int) -> dict:
+        """Switch to a different tab by index in the context's pages list."""
+        if tab_id not in self.pages:
+            return {"error": "Tab not found"}
+        session_id = self.pages[tab_id]["session_id"]
+        context = self.contexts.get(session_id)
+        if not context:
+            return {"error": "Context not found"}
+        pages = context.pages
+        if tab_index < 0 or tab_index >= len(pages):
+            return {"error": f"Tab index {tab_index} out of range (0-{len(pages)-1})"}
+        new_page = pages[tab_index]
+        new_tab_id = str(uuid.uuid4())
+        self.pages[new_tab_id] = {"page": new_page, "session_id": session_id}
+        del self.pages[tab_id]
+        return {"success": True, "new_tab_id": new_tab_id, "url": new_page.url, "title": await new_page.title()}
+
     async def shutdown(self):
         for p in self.pages.values():
             await p["page"].close()
@@ -522,28 +652,28 @@ class MCPServer:
     def __init__(self):
         self.browser = BrowserManager()
         self._initialized = False
-    
+
     async def initialize(self):
         await self.browser.start()
         self._initialized = True
-    
+
     def _write(self, msg):
         print(json.dumps(msg), flush=True)
-    
+
     async def handle(self, req):
         method = req.get("method", "")
         req_id = req.get("id")
         params = req.get("params", {})
-        
+
         if method == "initialize":
             return {"jsonrpc": "2.0", "id": req_id, "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {"listChanged": True}},
                 "serverInfo": {"name": "sota-browser", "version": "1.1.0"}}}
-        
+
         if method == "notifications/initialized":
             return None
-        
+
         if method == "tools/list":
             return {"jsonrpc": "2.0", "id": req_id, "result": {"tools": [
                 {"name": "browser_create_session", "description": "Create isolated browser session",
@@ -568,7 +698,7 @@ class MCPServer:
                  "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}}, "required": ["tab_id"]}},
                 {"name": "browser_evaluate_in_frame", "description": "Evaluate JavaScript in a specific frame by URL contains",
                  "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}, "script": {"type": "string"}, "frame_url_contains": {"type": "string"}}, "required": ["tab_id", "script", "frame_url_contains"]}},
-                {"name": "browser_capture_console", "description": "Capture browser console logs for debugging",
+                {"name": "browser_get_console_logs", "description": "Capture browser console messages and errors",
                  "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}, "clear": {"type": "boolean"}}, "required": ["tab_id"]}},
                 {"name": "browser_get_frame_content", "description": "Get HTML content from a specific frame",
                  "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}, "frame_index": {"type": "integer"}, "frame_url_contains": {"type": "string"}}, "required": ["tab_id"]}},
@@ -591,22 +721,30 @@ class MCPServer:
                 {"name": "browser_info", "description": "Get browser info",
                  "inputSchema": {"type": "object", "properties": {}}},
                 {"name": "browser_close_session", "description": "Close session and all tabs",
-                 "inputSchema": {"type": "object", "properties": {"session_id": {"type": "string"}}, "required": ["session_id"]}}
+                 "inputSchema": {"type": "object", "properties": {"session_id": {"type": "string"}}, "required": ["session_id"]}},
+                {"name": "browser_get_state", "description": "Get indexed clickable elements for automation",
+                 "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}}, "required": ["tab_id"]}},
+                {"name": "browser_get_html", "description": "Return raw HTML of page or specific element (truncated to 100KB)",
+                 "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}, "selector": {"type": "string"}}, "required": ["tab_id"]}},
+                {"name": "browser_go_back", "description": "Navigate back in browser history",
+                 "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}}, "required": ["tab_id"]}},
+                {"name": "browser_switch_tab", "description": "Switch to a different tab by index",
+                 "inputSchema": {"type": "object", "properties": {"tab_id": {"type": "string"}, "tab_index": {"type": "integer"}}, "required": ["tab_id", "tab_index"]}}
             ]}}
-        
+
         if method == "tools/call":
             try:
                 result = await self._call(params.get("name", ""), params.get("arguments", {}))
                 return {"jsonrpc": "2.0", "id": req_id, "result": {"content": [{"type": "text", "text": json.dumps(result)}]}}
             except Exception as e:
                 return {"jsonrpc": "2.0", "id": req_id, "error": {"code": -32603, "message": str(e)}}
-        
+
         return {"jsonrpc": "2.0", "id": req_id, "error": {"code": -32601, "message": f"Unknown: {method}"}}
-    
+
     async def _call(self, name, args):
         b = self.browser
         sid, tid = args.get("session_id"), args.get("tab_id")
-        
+
         if name == "browser_create_session":
             return await b.create_session(**args)
         if name == "browser_create_tab":
@@ -623,10 +761,10 @@ class MCPServer:
             return {"sessions": len(b.sessions), "tabs": len(b.pages)}
         if name == "browser_close_tab":
             return await b.close_tab(tid)
-        
+
         if not tid:
             return {"error": "tab_id required"}
-        
+
         if name == "browser_navigate":
             return await b.navigate(tid, args["url"])
         if name == "browser_snapshot":
@@ -645,8 +783,8 @@ class MCPServer:
             return await b.list_frames(tid)
         if name == "browser_evaluate_in_frame":
             return await b.evaluate_in_frame(tid, args["script"], args.get("frame_selector"), args.get("frame_url_contains"))
-        if name == "browser_capture_console":
-            return await b.capture_console_logs(tid, args.get("clear", False))
+        if name == "browser_get_console_logs":
+            return await b.get_console_logs(tid, args.get("clear", False))
         if name == "browser_get_frame_content":
             return await b.get_frame_content(tid, args.get("frame_index"), args.get("frame_url_contains"))
         if name == "browser_inject_all_frames":
@@ -657,13 +795,21 @@ class MCPServer:
             return await b.wait(tid, args.get("seconds", 1))
         if name == "browser_extract_images":
             return await b.extract_images(tid)
-        
+        if name == "browser_get_state":
+            return await b.get_state(tid)
+        if name == "browser_get_html":
+            return await b.get_html(tid, args.get("selector"))
+        if name == "browser_go_back":
+            return await b.go_back(tid)
+        if name == "browser_switch_tab":
+            return await b.switch_tab(tid, args["tab_index"])
+
         return {"error": f"Unknown tool: {name}"}
-    
+
     async def run(self):
         await self.initialize()
         self._write({"jsonrpc": "2.0", "method": "initialized", "params": {}})
-        
+
         while True:
             try:
                 line = sys.stdin.readline()
@@ -674,7 +820,7 @@ class MCPServer:
                     self._write(resp)
             except Exception as e:
                 self._write({"jsonrpc": "2.0", "id": None, "error": {"code": -32603, "message": str(e)}})
-        
+
         await self.browser.shutdown()
 
 if __name__ == "__main__":
