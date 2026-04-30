@@ -1,0 +1,796 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "personal assistant",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": [
+                        "help",
+                        "what can you do",
+                        "tell me your capabilities",
+                        "what can I ask you",
+                        "what are your features"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": [
+                        "yes",
+                        "correct",
+                        "right",
+                        "that's right",
+                        "exactly",
+                        "that's correct"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": [
+                        "no",
+                        "incorrect",
+                        "wrong",
+                        "that's wrong",
+                        "that's not right"
+                    ]
+                },
+                {
+                    "name": "AMAZON.MoreIntent",
+                    "samples": [
+                        "tell me more",
+                        "give me more details",
+                        "expand on that",
+                        "elaborate",
+                        "tell me more about it",
+                        "can you explain further"
+                    ]
+                },
+                {
+                    "name": "AMAZON.RepeatIntent",
+                    "samples": [
+                        "repeat that",
+                        "say that again",
+                        "what did you say",
+                        "say it again"
+                    ]
+                },
+                {
+                    "name": "QueryIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "ask {Query}",
+                        "tell me about {Query}",
+                        "what is {Query}",
+                        "where is {Query}",
+                        "when is {Query}",
+                        "how do I {Query}",
+                        "how to {Query}",
+                        "explain {Query}",
+                        "describe {Query}",
+                        "define {Query}",
+                        "translate {Query}",
+                        "calculate {Query}",
+                        "search for {Query}",
+                        "find {Query}",
+                        "compare {Query}",
+                        "analyze {Query}",
+                        "give me information about {Query}",
+                        "I want to know about {Query}",
+                        "can you tell me {Query}",
+                        "what do you know about {Query}",
+                        "help me understand {Query}",
+                        "India ki rajdhani kya hai",
+                        "what is the capital of India",
+                        "how are you",
+                        "kya haal hai",
+                        "tell me a joke",
+                        "what is the weather",
+                        "latest news",
+                        "what is happening today",
+                        "calculate two plus two",
+                        "translate hello to Spanish",
+                        "namaste kya haal hai",
+                        "aaj kya news hai",
+                        "mujhe batao {Query}",
+                        "kemon ache",
+                        "aaj ki khobor ki",
+                        "amar sathe kotha bolo",
+                        "আজ কী খবর",
+                        "কেমন আছ",
+                        "weather kaisa hai",
+                        "news kemon ache",
+                        "tell me about {Query} in Hindi",
+                        "what is the news in Hindi",
+                        "summary in Bengali",
+                        "আজ কেমন আছ",
+                        "weather kemon ache"
+                    ]
+                },
+                {
+                    "name": "PodcastIntent",
+                    "slots": [
+                        {
+                            "name": "Host",
+                            "type": "AMAZON.Person"
+                        },
+                        {
+                            "name": "Guest",
+                            "type": "AMAZON.Person"
+                        }
+                    ],
+                    "samples": [
+                        "summarize the latest podcast from {Host}",
+                        "tell me about the latest {Host} podcast",
+                        "what is the new {Host} episode about",
+                        "{Host} podcast with {Guest}",
+                        "latest episode of {Host}",
+                        "summarize the latest episode by {Host}",
+                        "what did {Host} discuss with {Guest}",
+                        "podcast featuring {Guest}",
+                        "recent {Host} episode summary",
+                        "{Host} show latest episode",
+                        "tell me about the appearance by {Guest} on {Host}",
+                        "summarize podcast",
+                        "latest podcast episode",
+                        "what is the latest podcast about",
+                        "podcast summary",
+                        "{Host} podcast released yesterday",
+                        "summarize the interview with {Guest} on {Host}",
+                        "latest episode from {Host} show",
+                        "what did they discuss in the latest podcast"
+                    ]
+                },
+                {
+                    "name": "SocialMediaSummaryIntent",
+                    "slots": [
+                        {
+                            "name": "Account",
+                            "type": "AMAZON.Person"
+                        },
+                        {
+                            "name": "Topic",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what are the latest tweets from {Account}",
+                        "summarize the twitter activity of {Account}",
+                        "show me tweets from {Account}",
+                        "what is {Account} posting about",
+                        "latest from {Account} on twitter",
+                        "what is happening on twitter",
+                        "tell me about twitter trends",
+                        "summarize posts about {Topic}",
+                        "recent activity by {Account}",
+                        "what are people saying on twitter",
+                        "latest tweets about {Topic}",
+                        "trending on twitter",
+                        "what is viral on twitter",
+                        "summarize Elon Musk tweets",
+                        "what is Narendra Modi tweeting",
+                        "latest tweets from Sam Altman",
+                        "tech news from Twitter",
+                        "AI researchers on twitter",
+                        "show me twitter trends",
+                        "what is trending on twitter",
+                        "summarize twitter posts about AI",
+                        "latest posts by {Account}",
+                        "what is new on twitter"
+                    ]
+                },
+                {
+                    "name": "TwitterIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "tweet {Query}",
+                        "post on twitter {Query}",
+                        "send a tweet {Query}",
+                        "twitter update {Query}",
+                        "post this on twitter {Query}",
+                        "tweet this {Query}"
+                    ]
+                },
+                {
+                    "name": "WhatsAppIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "send whatsapp {Query}",
+                        "whatsapp {Query}",
+                        "send a whatsapp message {Query}",
+                        "message via whatsapp {Query}",
+                        "send message on whatsapp {Query}"
+                    ]
+                },
+                {
+                    "name": "NewsIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what is the news",
+                        "tell me the news",
+                        "latest news",
+                        "news about {Query}",
+                        "what is happening in {Query}",
+                        "tell me news about {Query}",
+                        "latest news on {Query}",
+                        "headlines today",
+                        "breaking news",
+                        "today headlines",
+                        "news update",
+                        "what is the latest news about {Query}",
+                        "tell me today news",
+                        "current events",
+                        "news summary"
+                    ]
+                },
+                {
+                    "name": "WeatherIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what is the weather",
+                        "tell me the weather",
+                        "weather forecast",
+                        "weather in {Query}",
+                        "what is the weather like in {Query}",
+                        "is it raining",
+                        "is it sunny",
+                        "temperature",
+                        "will it rain today",
+                        "weather report",
+                        "what is the temperature",
+                        "is it hot outside",
+                        "is it cold outside"
+                    ]
+                },
+                {
+                    "name": "NarrateURLIntent",
+                    "slots": [
+                        {
+                            "name": "Url",
+                            "type": "URLType"
+                        }
+                    ],
+                    "samples": [
+                        "narrate this {Url}",
+                        "read this link {Url}",
+                        "narrate the content at {Url}",
+                        "read out {Url}",
+                        "play this URL {Url}",
+                        "narrate website {Url}",
+                        "read this article {Url}",
+                        "narrate this webpage {Url}",
+                        "read aloud {Url}",
+                        "text to speech {Url}",
+                        "convert to audio {Url}",
+                        "make audio {Url}"
+                    ]
+                },
+                {
+                    "name": "TwitterToAudioIntent",
+                    "slots": [
+                        {
+                            "name": "TweetUrl",
+                            "type": "URLType"
+                        }
+                    ],
+                    "samples": [
+                        "narrate this twitter {TweetUrl}",
+                        "read this tweet {TweetUrl}",
+                        "narrate this tweet thread {TweetUrl}",
+                        "read this twitter thread {TweetUrl}",
+                        "narrate tweets from {TweetUrl}",
+                        "read tweets {TweetUrl}",
+                        "play twitter thread {TweetUrl}",
+                        "narrate the twitter thread {TweetUrl}",
+                        "read this X thread {TweetUrl}",
+                        "narrate this X post {TweetUrl}",
+                        "convert tweet to audio {TweetUrl}",
+                        "tweet to speech {TweetUrl}"
+                    ]
+                },
+                {
+                    "name": "NewsToAudioIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "read me the news about {Query}",
+                        "read today's news {Query}",
+                        "narrate news about {Query}",
+                        "read out news {Query}",
+                        "play news {Query}",
+                        "narrate the headlines about {Query}",
+                        "read me headlines {Query}",
+                        "convert news to audio {Query}",
+                        "news to speech {Query}",
+                        "read me latest news {Query}",
+                        "play today's news",
+                        "narrate current events {Query}",
+                        "read news aloud {Query}",
+                        "audio news {Query}"
+                    ]
+                },
+                {
+                    "name": "RedditToAudioIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "read reddit posts about {Query}",
+                        "narrate reddit {Query}",
+                        "read me reddit {Query}",
+                        "play reddit posts {Query}",
+                        "narrate top posts from reddit {Query}",
+                        "read reddit threads {Query}",
+                        "reddit to audio {Query}",
+                        "convert reddit to speech {Query}",
+                        "read out reddit {Query}",
+                        "play reddit content {Query}",
+                        "narrate reddit discussions {Query}",
+                        "read top reddit about {Query}"
+                    ]
+                },
+                {
+                    "name": "WhatsAppToAudioIntent",
+                    "slots": [
+                        {
+                            "name": "WaUrl",
+                            "type": "URLType"
+                        }
+                    ],
+                    "samples": [
+                        "narrate this whatsapp {WaUrl}",
+                        "read this whatsapp message {WaUrl}",
+                        "narrate this wa.me {WaUrl}",
+                        "read whatsapp link {WaUrl}",
+                        "play whatsapp message {WaUrl}",
+                        "narrate whatsapp audio {WaUrl}",
+                        "read this wa.me link {WaUrl}",
+                        "narrate my whatsapp {WaUrl}",
+                        "play this whatsapp chat {WaUrl}",
+                        "convert whatsapp to audio {WaUrl}"
+                    ]
+                },
+                {
+                    "name": "GenerateStoryIntent",
+                    "slots": [
+                        {
+                            "name": "Theme",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "generate a story about {Theme}",
+                        "tell me a {Theme} story",
+                        "create a story {Theme}",
+                        "make up a story about {Theme}",
+                        "generate story {Theme}",
+                        "create a tale about {Theme}",
+                        "invent a story {Theme}",
+                        "craft a narrative {Theme}",
+                        "tell a {Theme} adventure",
+                        "story about {Theme}",
+                        "make a {Theme} tale",
+                        "generate a {Theme} narrative",
+                        "create fiction about {Theme}",
+                        "invent a {Theme} story",
+                        "tell me something about {Theme}",
+                        "tell a story with {Theme}",
+                        "write a story about {Theme}",
+                        "a story where {Theme}",
+                        "narrate a {Theme} tale",
+                        "generate fiction {Theme}",
+                        "tell me an interesting story {Theme}",
+                        "tell me a story about {Theme}",
+                        "can you tell me a story about {Theme}",
+                        "story with {Theme}",
+                        "adventure story {Theme}",
+                        "tell me a magical {Theme} story",
+                        "short story {Theme}",
+                        "continue a {Theme} story",
+                        "i want to hear a story about {Theme}",
+                        "entertaining story {Theme}",
+                        "fun story {Theme}"
+                    ]
+                },
+                {
+                    "name": "StoryIntent",
+                    "slots": [
+                        {
+                            "name": "Topic",
+                            "type": "AMAZON.SearchQuery"
+                        },
+                        {
+                            "name": "Theme",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "tell me a story",
+                        "tell me a story about {Topic}",
+                        "story time",
+                        "i want a story",
+                        "make up a story",
+                        "tell me something",
+                        "entertain me with a story",
+                        "can you tell me something",
+                        "tell me an interesting story",
+                        "narrate a story",
+                        "say a story",
+                        "create a tale",
+                        "spin a tale",
+                        "tell me a fairy tale",
+                        "adventure story",
+                        "fantasy story",
+                        "science fiction story",
+                        "fun story",
+                        "scary story",
+                        "funny story",
+                        "tell me a {Topic} story",
+                        "story about a {Topic}",
+                        "tell a story about {Topic}"
+                    ]
+                },
+                {
+                    "name": "NarrateStoryIntent",
+                    "slots": [
+                        {
+                            "name": "StoryContent",
+                            "type": "AMAZON.SearchQuery"
+                        },
+                        {
+                            "name": "Url",
+                            "type": "URLType"
+                        }
+                    ],
+                    "samples": [
+                        "narrate this story {StoryContent}",
+                        "read this story {StoryContent}",
+                        "narrate {StoryContent}",
+                        "read aloud {StoryContent}",
+                        "tell this story {StoryContent}",
+                        "play this story {StoryContent}",
+                        "convert text to speech {StoryContent}",
+                        "narrate from URL {Url}",
+                        "read story from {Url}",
+                        "narrate content at {Url}",
+                        "play this article as story {StoryContent}",
+                        "story narration {StoryContent}",
+                        "text to audio {StoryContent}",
+                        "read out this text {StoryContent}"
+                    ]
+                },
+                {
+                    "name": "TranslationIntent",
+                    "slots": [
+                        {
+                            "name": "Language",
+                            "type": "LanguageType"
+                        }
+                    ],
+                    "samples": [
+                        "translate to {Language}",
+                        "translate in {Language}",
+                        "say in {Language}",
+                        "convert to {Language}",
+                        "in {Language}"
+                    ]
+                },
+                {
+                    "name": "WikipediaIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "wikipedia {Query}",
+                        "search wikipedia for {Query}",
+                        "what does wikipedia say about {Query}",
+                        "tell me from wikipedia {Query}",
+                        "lookup {Query} on wikipedia",
+                        "wikipedia lookup {Query}",
+                        "search for {Query} on wikipedia",
+                        "what is wikipedia {Query}",
+                        "from wikipedia {Query}",
+                        "who is {Query}",
+                        "who was {Query}",
+                        "tell me about {Query}",
+                        "what is {Query}",
+                        "what was {Query}",
+                        "tell me who {Query} is",
+                        "information about {Query}",
+                        "who is {Query} in history",
+                        "give me info on {Query}",
+                        "what do you know about {Query}",
+                        "tell me more about {Query}",
+                        "who is the {Query}",
+                        "what is a {Query}",
+                        "who are the {Query}",
+                        "explain {Query}",
+                        "describe {Query}",
+                        "tell me everything about {Query}",
+                        "what can you tell me about {Query}"
+                    ]
+                },
+                {
+                    "name": "ArxivIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "search arxiv for {Query}",
+                        "find research papers about {Query}",
+                        "arxiv {Query}",
+                        "search academic papers {Query}",
+                        "find papers on {Query}",
+                        "research papers about {Query}",
+                        "arxiv papers {Query}",
+                        "search for {Query} papers",
+                        "academic search {Query}",
+                        "find arxiv papers about {Query}"
+                    ]
+                },
+                {
+                    "name": "TavilySearchIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "search {Query}",
+                        "web search {Query}",
+                        "look up {Query}",
+                        "find information about {Query}",
+                        "search the web for {Query}",
+                        "google {Query}",
+                        "find {Query}",
+                        "where is {Query}",
+                        "search online {Query}",
+                        "find online {Query}"
+                    ]
+                },
+                {
+                    "name": "SpotifyPlayIntent",
+                    "slots": [
+                        {
+                            "name": "Track",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "play {Track} on spotify",
+                        "play music {Track}",
+                        "spotify play {Track}",
+                        "play song {Track}",
+                        "start spotify {Track}",
+                        "resume spotify",
+                        "play spotify"
+                    ]
+                },
+                {
+                    "name": "SpotifyPauseIntent",
+                    "slots": [],
+                    "samples": [
+                        "pause spotify",
+                        "pause music",
+                        "stop spotify",
+                        "spotify pause",
+                        "pause playback"
+                    ]
+                },
+                {
+                    "name": "SpotifyNextIntent",
+                    "slots": [],
+                    "samples": [
+                        "next track",
+                        "skip song",
+                        "next on spotify",
+                        "skip ahead",
+                        "spotify next",
+                        "next song"
+                    ]
+                },
+                {
+                    "name": "SpotifySearchIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "search spotify for {Query}",
+                        "find song {Query}",
+                        "spotify search {Query}",
+                        "look up song {Query}",
+                        "search music {Query}"
+                    ]
+                },
+                {
+                    "name": "KodiPlayIntent",
+                    "slots": [],
+                    "samples": [
+                        "play kodi",
+                        "pause kodi",
+                        "kodi play",
+                        "toggle kodi playback",
+                        "kodi pause",
+                        "kodi stop"
+                    ]
+                },
+                {
+                    "name": "KodiControlIntent",
+                    "slots": [],
+                    "samples": [
+                        "kodi up",
+                        "kodi down",
+                        "kodi left",
+                        "kodi right",
+                        "kodi select",
+                        "navigate kodi",
+                        "move up on kodi",
+                        "move down on kodi"
+                    ]
+                },
+                {
+                    "name": "KodiNavigateIntent",
+                    "slots": [],
+                    "samples": [
+                        "kodi home",
+                        "go to kodi home",
+                        "kodi back",
+                        "kodi main menu",
+                        "home on kodi"
+                    ]
+                },
+                {
+                    "name": "LightControlIntent",
+                    "slots": [],
+                    "samples": [
+                        "turn on the lights",
+                        "turn off the lights",
+                        "lights on",
+                        "lights off",
+                        "dim the lights",
+                        "brighten the lights",
+                        "light on",
+                        "light off",
+                        "switch on lights"
+                    ]
+                },
+                {
+                    "name": "ThermostatIntent",
+                    "slots": [
+                        {
+                            "name": "Temperature",
+                            "type": "TemperatureType"
+                        }
+                    ],
+                    "samples": [
+                        "set thermostat to {Temperature}",
+                        "set temperature to {Temperature}",
+                        "thermostat {Temperature} degrees",
+                        "heat to {Temperature}",
+                        "cool to {Temperature}",
+                        "change thermostat to {Temperature}"
+                    ]
+                },
+                {
+                    "name": "HomeControlIntent",
+                    "slots": [
+                        {
+                            "name": "Device",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "turn on {Device}",
+                        "turn off {Device}",
+                        "lock the {Device}",
+                        "unlock the {Device}",
+                        "{Device} on",
+                        "{Device} off",
+                        "activate {Device}",
+                        "control {Device}"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "LanguageType",
+                    "values": [
+                        {"name": {"value": "English"}},
+                        {"name": {"value": "Spanish"}},
+                        {"name": {"value": "French"}},
+                        {"name": {"value": "German"}},
+                        {"name": {"value": "Hindi"}},
+                        {"name": {"value": "Bengali"}},
+                        {"name": {"value": "Chinese"}},
+                        {"name": {"value": "Japanese"}},
+                        {"name": {"value": "Korean"}},
+                        {"name": {"value": "Arabic"}},
+                        {"name": {"value": "Portuguese"}},
+                        {"name": {"value": "Russian"}},
+                        {"name": {"value": "Italian"}},
+                        {"name": {"value": "Dutch"}},
+                        {"name": {"value": "Tamil"}},
+                        {"name": {"value": "Telugu"}},
+                        {"name": {"value": "Marathi"}},
+                        {"name": {"value": "Gujarati"}},
+                        {"name": {"value": "Punjabi"}},
+                        {"name": {"value": "Urdu"}}
+                    ]
+                },
+                {
+                    "name": "URLType",
+                    "values": [
+                        {"name": {"value": "https://example.com/article"}},
+                        {"name": {"value": "https://twitter.com/user/status/123"}},
+                        {"name": {"value": "https://reddit.com/r/funny"}},
+                        {"name": {"value": "https://wa.me/message/example"}},
+                        {"name": {"value": "https://news.site/story"}}
+                    ]
+                },
+                {
+                    "name": "TemperatureType",
+                    "values": [
+                        {"name": {"value": "68 degrees"}},
+                        {"name": {"value": "72 degrees"}},
+                        {"name": {"value": "20 degrees"}},
+                        {"name": {"value": "22 degrees"}},
+                        {"name": {"value": "25 degrees"}}
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,386 @@
+{
+  "timestamp": "2026-04-19T21:12:24.848Z",
+  "summary": {
+    "alexa": {
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "alexa - Music format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "alexa",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "alexa - Answers format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "alexa",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "alexa - TV format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "alexa",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "alexa - Messages format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "alexa",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "alexa - News format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "alexa",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "Alexa - Enforces 500 character limit",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "originalLength": 600,
+            "truncatedLength": 500
+          }
+        },
+        {
+          "name": "alexa - Error response format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasErrorContent": true
+          }
+        },
+        {
+          "name": "alexa - Confirmation request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasConfirmation": true
+          }
+        },
+        {
+          "name": "alexa - Clarification request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasClarification": true
+          }
+        }
+      ]
+    },
+    "whatsapp": {
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "whatsapp - Music format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "whatsapp",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "whatsapp - Answers format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "whatsapp",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "whatsapp - TV format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "whatsapp",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "whatsapp - Messages format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "whatsapp",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "whatsapp - News format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "whatsapp",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "WhatsApp - Supports rich formatting with emoji",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasActionEmoji": true,
+            "hasSuggestionEmoji": true,
+            "hasConfidenceEmoji": true
+          }
+        },
+        {
+          "name": "whatsapp - Error response format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasErrorContent": true
+          }
+        },
+        {
+          "name": "whatsapp - Confirmation request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasConfirmation": true
+          }
+        },
+        {
+          "name": "whatsapp - Clarification request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasClarification": true
+          }
+        }
+      ]
+    },
+    "web": {
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "web - Music format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "web",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "web - Answers format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "web",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "web - TV format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "web",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "web - Messages format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "web",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "web - News format validation",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "platform": "web",
+            "hasRequiredFields": true,
+            "formatValid": true
+          }
+        },
+        {
+          "name": "Web - Full JSON structure with all metadata",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "allFieldsPresent": true,
+            "confidenceLevel": "medium"
+          }
+        },
+        {
+          "name": "web - Error response format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasErrorContent": true
+          }
+        },
+        {
+          "name": "web - Confirmation request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasConfirmation": true
+          }
+        },
+        {
+          "name": "web - Clarification request format",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "hasClarification": true
+          }
+        }
+      ]
+    },
+    "consistency": {
+      "passed": 12,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Consistency - Core answer present on all platforms",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "allHaveCoreAnswer": true
+          }
+        },
+        {
+          "name": "Consistency - Confidence values consistent",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "whatsapp": "ok",
+            "web": "high"
+          }
+        },
+        {
+          "name": "Consistency - Suggestions available on all platforms",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "allHaveSuggestions": true
+          }
+        },
+        {
+          "name": "High confidence - Level detection",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "confidence": 0.95,
+            "detectedLevel": "high"
+          }
+        },
+        {
+          "name": "High confidence - Confirmation check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsConfirmation": false
+          }
+        },
+        {
+          "name": "High confidence - Clarification check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsClarification": false
+          }
+        },
+        {
+          "name": "Medium confidence - Level detection",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "confidence": 0.7,
+            "detectedLevel": "medium"
+          }
+        },
+        {
+          "name": "Medium confidence - Confirmation check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsConfirmation": true
+          }
+        },
+        {
+          "name": "Medium confidence - Clarification check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsClarification": false
+          }
+        },
+        {
+          "name": "Low confidence - Level detection",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "confidence": 0.3,
+            "detectedLevel": "low"
+          }
+        },
+        {
+          "name": "Low confidence - Confirmation check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsConfirmation": false
+          }
+        },
+        {
+          "name": "Low confidence - Clarification check",
+          "passed": true,
+          "duration": 0,
+          "result": {
+            "needsClarification": true
+          }
+        }
+      ]
+    }
+  },
+  "failedTests": [],
+  "recommendations": [
+    {
+      "status": "excellent",
+      "message": "All platform adaptations working correctly"
+    }
+  ]
+}

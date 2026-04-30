@@ -1,0 +1,1125 @@
+{
+  "metadata": {
+    "reportTime": "2026-02-21T11:41:11.543Z",
+    "testSuite": "Comprehensive Sarvam API Test",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "totalTests": 33,
+    "passed": 33,
+    "failed": 0,
+    "successRate": "100.0%",
+    "averageProcessingTime": "313ms",
+    "fallbackActivatedCount": 33,
+    "fallbackActivationRate": "100.0%"
+  },
+  "performanceMetrics": {
+    "languageDetectionAccuracy": "48.5%",
+    "averageTranslationQuality": "7.8/10",
+    "totalProcessingTime": "10321ms"
+  },
+  "detailedResults": [
+    {
+      "id": "B1",
+      "category": "Basic Bengali Script",
+      "query": "আজ আবহাওয়া কেমন আছে?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:44.690Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 3
+      },
+      "translation": {
+        "translated": "আজ আবহাওয়া কেমন আছে?",
+        "expected": "How is the weather today?",
+        "processingTime": 2484
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.84",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 2492
+    },
+    {
+      "id": "B2",
+      "category": "Basic Hindi Script",
+      "query": "आज मौसम कैसा है?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:47.685Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "आज मौसम कैसा है?",
+        "expected": "How is the weather today?",
+        "processingTime": 515
+      },
+      "qualityAssessment": {
+        "overallScore": 7,
+        "completeness": 8,
+        "accuracy": 6,
+        "issues": [
+          "Translation somewhat short",
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.64",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 516
+    },
+    {
+      "id": "B3",
+      "category": "Basic Benglish",
+      "query": "Weather kemon ache aaj?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:48.704Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 3
+      },
+      "translation": {
+        "translated": "Weather kemon ache aaj?",
+        "expected": "How is the weather today?",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.92",
+          "preservationRate": "50.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 3
+    },
+    {
+      "id": "B4",
+      "category": "Basic Hinglish",
+      "query": "Weather kaisa hai aaj?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:49.208Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "Weather kaisa hai aaj?",
+        "expected": "How is the weather today?",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.88",
+          "preservationRate": "50.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "B5",
+      "category": "Basic English",
+      "query": "How is the weather today?",
+      "expectedLanguage": "en",
+      "startTime": "2026-02-21T11:40:49.710Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "en",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "How is the weather today?",
+        "expected": "How is the weather today?",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 9,
+        "completeness": 10,
+        "accuracy": 7,
+        "issues": [
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "1.00",
+          "preservationRate": "100.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "I1",
+      "category": "Mixed Script Bengali",
+      "query": "আজ code explain করো please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:50.212Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "আজ code explain করো please",
+        "expected": "Explain the code today please",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 9,
+        "completeness": 10,
+        "accuracy": 7,
+        "issues": [
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.90",
+          "preservationRate": "75.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "I2",
+      "category": "Mixed Script Hindi",
+      "query": "आज कोड explain करो please",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:50.714Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "आज कोड explain करो please",
+        "expected": "Explain the code today please",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.86",
+          "preservationRate": "50.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "I3",
+      "category": "Technical Benglish",
+      "query": "Python code likho please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:51.216Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "Python code likho please",
+        "expected": "Write Python code please",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 9,
+        "completeness": 10,
+        "accuracy": 7,
+        "issues": [
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "1.00",
+          "preservationRate": "75.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "I4",
+      "category": "Technical Hinglish",
+      "query": "Python code likhiye please",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:51.717Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "Python code likhiye please",
+        "expected": "Write Python code please",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 9,
+        "completeness": 10,
+        "accuracy": 7,
+        "issues": [
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "1.08",
+          "preservationRate": "75.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "I5",
+      "category": "Conversational Bengali",
+      "query": "তুমি কেমন আছ?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:52.219Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "তুমি কেমন আছ?",
+        "expected": "How are you?",
+        "processingTime": 854
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.08",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 854
+    },
+    {
+      "id": "I6",
+      "category": "Conversational Hindi",
+      "query": "तुम कैसे हो?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:53.574Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "तुम कैसे हो?",
+        "expected": "How are you?",
+        "processingTime": 557
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.00",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 558
+    },
+    {
+      "id": "A1",
+      "category": "Complex Code-Switching Bengali",
+      "query": "আজ তোমার সাথে discuss করতে চাই about this project",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:54.633Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "আজ তোমার সাথে discuss করতে চাই about this project",
+        "expected": "I want to discuss with you today about this project",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.96",
+          "preservationRate": "57.1%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 0
+    },
+    {
+      "id": "A2",
+      "category": "Complex Code-Switching Hindi",
+      "query": "आज तुमसे discuss करना है about this project",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:55.134Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "आज तुमसे discuss करना है about this project",
+        "expected": "I want to discuss with you today about this project",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.84",
+          "preservationRate": "57.1%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "A3",
+      "category": "Multi-Sentence Bengali",
+      "query": "আমি একটি function লিখতে চাই যেটা array কে sort করবে। তুমি help করবে?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:55.635Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "আমি একটি function লিখতে চাই যেটা array কে sort করবে। তুমি help করবে?",
+        "expected": "I want to write a function that will sort an array. Will you help?",
+        "processingTime": 540
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.03",
+          "preservationRate": "22.2%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 541
+    },
+    {
+      "id": "A4",
+      "category": "Multi-Sentence Hindi",
+      "query": "मैं एक function लिखना चाहता हूं जो array को sort करेगा। तुम help करोगे?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:56.676Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "मैं एक function लिखना चाहता हूं जो array को sort करेगा। तुम help करोगे?",
+        "expected": "I want to write a function that will sort an array. Will you help?",
+        "processingTime": 475
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.08",
+          "preservationRate": "22.2%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 475
+    },
+    {
+      "id": "A5",
+      "category": "Technical Query Benglish",
+      "query": "API integration kaise korbo step by step guide dao please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:57.652Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "API integration kaise korbo step by step guide dao please",
+        "expected": "How to do API integration give me step by step guide please",
+        "processingTime": 571
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "0.97",
+          "preservationRate": "83.3%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 572
+    },
+    {
+      "id": "A6",
+      "category": "Technical Query Hinglish",
+      "query": "API integration kaise karenge step by step guide do please",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:40:58.724Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "API integration kaise karenge step by step guide do please",
+        "expected": "How to do API integration give me step by step guide please",
+        "processingTime": 524
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "0.98",
+          "preservationRate": "83.3%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 524
+    },
+    {
+      "id": "E1",
+      "category": "Very Short Bengali",
+      "query": "হ্যাঁ",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:40:59.748Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "হ্যাঁ",
+        "expected": "Yes",
+        "processingTime": 472
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "1.67",
+          "preservationRate": "100.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 473
+    },
+    {
+      "id": "E2",
+      "category": "Very Short Hindi",
+      "query": "हां",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:00.722Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "हां",
+        "expected": "Yes",
+        "processingTime": 472
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "1.00",
+          "preservationRate": "100.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 473
+    },
+    {
+      "id": "E3",
+      "category": "Very Short Benglish",
+      "query": "haan",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:01.696Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "haan",
+        "expected": "Yes",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "1.33",
+          "preservationRate": "100.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 0
+    },
+    {
+      "id": "E4",
+      "category": "Very Short Hinglish",
+      "query": "haan",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:02.197Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "haan",
+        "expected": "Yes",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 10,
+        "completeness": 10,
+        "accuracy": 10,
+        "issues": [
+          "No issues detected"
+        ],
+        "metrics": {
+          "lengthRatio": "1.33",
+          "preservationRate": "100.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 0
+    },
+    {
+      "id": "E5",
+      "category": "Special Characters Bengali",
+      "query": "প্রশ্ন: এটা কি সঠিক? উত্তর: হ্যাঁ!",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:02.699Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "প্রশ্ন: এটা কি সঠিক? উত্তর: হ্যাঁ!",
+        "expected": "Question: Is this correct? Answer: Yes!",
+        "processingTime": 471
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.87",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 471
+    },
+    {
+      "id": "E6",
+      "category": "Special Characters Hindi",
+      "query": "प्रश्न: यह सही है? उत्तर: हां!",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:03.671Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "प्रश्न: यह सही है? उत्तर: हां!",
+        "expected": "Question: Is this correct? Answer: Yes!",
+        "processingTime": 470
+      },
+      "qualityAssessment": {
+        "overallScore": 7,
+        "completeness": 8,
+        "accuracy": 6,
+        "issues": [
+          "Translation somewhat short",
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.77",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 471
+    },
+    {
+      "id": "E7",
+      "category": "Numbers and Mixed Script",
+      "query": "123 টি file delete করব",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:04.642Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "123 টি file delete করব",
+        "expected": "I will delete 123 files",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 7,
+        "completeness": 10,
+        "accuracy": 3,
+        "issues": [
+          "Many key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.96",
+          "preservationRate": "33.3%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "E8",
+      "category": "Empty String",
+      "query": "",
+      "expectedLanguage": "en",
+      "startTime": "2026-02-21T11:41:05.143Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "en",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "",
+        "expected": "",
+        "processingTime": 468
+      },
+      "qualityAssessment": {
+        "overallScore": 0,
+        "completeness": 0,
+        "accuracy": 0,
+        "issues": [
+          "Empty translation"
+        ]
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 469
+    },
+    {
+      "id": "E9",
+      "category": "Only Spaces",
+      "query": "   ",
+      "expectedLanguage": "en",
+      "startTime": "2026-02-21T11:41:06.113Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "en",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "   ",
+        "expected": "",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 0,
+        "completeness": 0,
+        "accuracy": 0,
+        "issues": [
+          "Empty translation"
+        ]
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "E10",
+      "category": "Long Bengali Text",
+      "query": "আমি একটি সফটওয়্যার ইঞ্জিনিয়ার হিসেবে কাজ করছি এবং প্রতিদিন নতুন নতুন প্রযুক্তি শিখছি। বর্তমানে আমি একটি অ্যাপ্লিকেশন তৈরি করছি যা মানুষের জীবনকে সহজ করবে। আমার কাছে অনেক আইডিয়া আছে কিন্তু সময় কম। তুমি কি আমাকে কিছু পরামর্শ দিতে পারবে?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:06.615Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "আমি একটি সফটওয়্যার ইঞ্জিনিয়ার হিসেবে কাজ করছি এবং প্রতিদিন নতুন নতুন প্রযুক্তি শিখছি। বর্তমানে আমি একটি অ্যাপ্লিকেশন তৈরি করছি যা মানুষের জীবনকে সহজ করবে। আমার কাছে অনেক আইডিয়া আছে কিন্তু সময় কম। তুমি কি আমাকে কিছু পরামর্শ দিতে পারবে?",
+        "expected": "I am working as a software engineer and learning new technologies every day. Currently I am creating an application that will make people's lives easier. I have many ideas but less time. Can you give me some advice?",
+        "processingTime": 472
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.11",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 473
+    },
+    {
+      "id": "R1",
+      "category": "Weather Query Bengali",
+      "query": "আজকের weather update দাও please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:07.589Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "আজকের weather update দাও please",
+        "expected": "Please give me today's weather update",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.84",
+          "preservationRate": "60.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "R2",
+      "category": "Weather Query Hindi",
+      "query": "आज की weather update दो please",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:08.091Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "आज की weather update दो please",
+        "expected": "Please give me today's weather update",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.81",
+          "preservationRate": "60.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 0
+    },
+    {
+      "id": "R3",
+      "category": "Time Query Benglish",
+      "query": "ekhon time koto?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:08.592Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "ekhon time koto?",
+        "expected": "What is the time now?",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 6,
+        "completeness": 8,
+        "accuracy": 3,
+        "issues": [
+          "Translation somewhat short",
+          "Many key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.76",
+          "preservationRate": "33.3%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "R4",
+      "category": "Time Query Hinglish",
+      "query": "abhi time kya hai?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:09.094Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "abhi time kya hai?",
+        "expected": "What is the time now?",
+        "processingTime": 467
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.86",
+          "preservationRate": "33.3%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 468
+    },
+    {
+      "id": "R5",
+      "category": "Help Request Bengali",
+      "query": "আমার কোড এ error আসছে, help me debug করতে",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:41:10.063Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "আমার কোড এ error আসছে, help me debug করতে",
+        "expected": "My code is giving error, help me debug it",
+        "processingTime": 476
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "1.00",
+          "preservationRate": "40.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 476
+    },
+    {
+      "id": "R6",
+      "category": "Help Request Hindi",
+      "query": "मेरे code में error आ रहा है, help me debug करना",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:41:11.040Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "मेरे code में error आ रहा है, help me debug करना",
+        "expected": "My code is giving error, help me debug it",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "1.17",
+          "preservationRate": "60.0%"
+        }
+      },
+      "fallbackActivated": true,
+      "totalProcessingTime": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "MEDIUM",
+      "issue": "High fallback activation",
+      "recommendation": "Monitor Sarvam API stability and consider upgrading API tier",
+      "details": "Fallback rate: 100.0%"
+    }
+  ]
+}

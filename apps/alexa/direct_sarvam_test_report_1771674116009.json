@@ -1,0 +1,88 @@
+{
+  "summary": {
+    "totalRequests": 10,
+    "successfulRequests": 10,
+    "failedRequests": 0,
+    "successRate": "100.0%"
+  },
+  "breakdown": {
+    "healthChecks": {
+      "total": 0,
+      "successful": 0
+    },
+    "bengaliTests": {
+      "total": 2,
+      "successful": 2
+    },
+    "hindiTests": {
+      "total": 3,
+      "successful": 3
+    }
+  },
+  "detailedResults": [
+    {
+      "query": "আজ আবহাওয়া কেমন আছে?",
+      "success": true,
+      "translation": "How is the weather today?",
+      "status": 200
+    },
+    {
+      "query": "তুমি কেমন আছ?",
+      "success": true,
+      "translation": "How are you doing?",
+      "status": 200
+    },
+    {
+      "query": "Python code লিখতে চাই",
+      "success": true,
+      "translation": "I want to write some Python code",
+      "status": 200
+    },
+    {
+      "query": "आज मौसम कैसा है?",
+      "success": true,
+      "translation": "How is the weather today?",
+      "status": 200
+    },
+    {
+      "query": "तुम कैसे हो?",
+      "success": true,
+      "translation": "How are you?",
+      "status": 200
+    },
+    {
+      "query": "Python code लिखना है",
+      "success": true,
+      "translation": "Python code to write",
+      "status": 200
+    },
+    {
+      "query": "How is the weather today?",
+      "targetLanguage": "Hindi",
+      "success": true,
+      "translation": "आज का मौसम कैसा है?",
+      "status": 200
+    },
+    {
+      "query": "How is the weather today?",
+      "targetLanguage": "Bengali",
+      "success": true,
+      "translation": "আজকের আবহাওয়া কেমন?",
+      "status": 200
+    },
+    {
+      "query": "Write a Python function",
+      "targetLanguage": "Hindi",
+      "success": true,
+      "translation": "पायथन में एक फ़ंक्शन लिखें।",
+      "status": 200
+    },
+    {
+      "query": "Write a Python function",
+      "targetLanguage": "Bengali",
+      "success": true,
+      "translation": "একটি পাইথন ফাংশন লিখুন।",
+      "status": 200
+    }
+  ]
+}

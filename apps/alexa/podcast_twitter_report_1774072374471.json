@@ -1,0 +1,88 @@
+{
+  "results": [
+    {
+      "name": "Dwarkesh Podcast Latest",
+      "query": "summarize the latest Dwarkesh podcast podcast",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 191,
+      "responsePreview": "The latest Dwarkesh Podcast episode features Dylan Patel discussing bottlenecks in AI compute scaling. The episode was released recently and focuses o...",
+      "time": 1774072366800
+    },
+    {
+      "name": "Terence Tao Podcast",
+      "query": "what is the latest Terence Tao podcast about",
+      "success": true,
+      "responseLength": 1857,
+      "responsePreview": "As of mid-2024, the most recent major podcast appearance by Terence Tao was on the **Lex Fridman Podcast** (Episode #398), released on **May 28, 2024*...",
+      "time": 1774072366897
+    },
+    {
+      "name": "Lex Fridman AI Podcast",
+      "query": "summarize Lex Fridman latest podcast episode about AI",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 240,
+      "responsePreview": "Lex Fridman's latest podcast episode discusses the future state of AI in 2026, emphasizing advancements in human-AI interaction and ethical considerat...",
+      "time": 1774072368428
+    },
+    {
+      "name": "Huberman Lab Podcast",
+      "query": "latest Huberman Lab podcast summary",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 284,
+      "responsePreview": "The latest Huberman Lab podcast focuses on neuroscience and science-based tools for brain health, released weekly on Mondays. The most recent episode ...",
+      "time": 1774072369963
+    },
+    {
+      "name": "Narendra Modi Latest Tweets",
+      "query": "what are Narendra Modi's latest tweets",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 163,
+      "responsePreview": "Narendra Modi's latest tweet is a message wishing everyone Eid-ul-Fitr, promoting brotherhood and happiness. This tweet was posted on his official Twi...",
+      "time": 1774072371397
+    },
+    {
+      "name": "Elon Musk AI Thread",
+      "query": "summarize Elon Musk's latest AI tweets",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 218,
+      "responsePreview": "Elon Musk claims AI and humanoid robots will eliminate poverty and make everyone wealthy. He also plans to use his AI, Grok, to summarize news on X. M...",
+      "time": 1774072372659
+    },
+    {
+      "name": "Sam Altman Tweets",
+      "query": "what is Sam Altman tweeting about AI",
+      "success": true,
+      "responseLength": 2245,
+      "responsePreview": "Sam Altman, the CEO of OpenAI, generally uses Twitter (X) to do three things: **tease future products**, **discuss the economics of AI**, and **engage...",
+      "time": 1774072372705
+    },
+    {
+      "name": "Tech News Twitter",
+      "query": "latest tech news from Twitter",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 139,
+      "responsePreview": "Supermicro co-founder charged in conspiracy to export Nvidia chips to China; AI travel trends emerging; AI tokens may drive the AI economy....",
+      "time": 1774072374130
+    },
+    {
+      "name": "AI Researchers Twitter",
+      "query": "what are AI researchers discussing on Twitter",
+      "success": true,
+      "provider": "tavily-fact-check",
+      "responseLength": 254,
+      "responsePreview": "AI researchers on Twitter discuss cutting-edge developments, ethical concerns, and the impact of AI on society. Key figures share insights on deep lea...",
+      "time": 1774072374471
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "total": 9,
+    "passRate": "100.0"
+  }
+}

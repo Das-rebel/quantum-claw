@@ -1,0 +1,373 @@
+{
+  "version": "1.0",
+  "description": "OmniClaw 2.0 Feature Flag Configuration",
+  "lastUpdated": "2025-04-19T00:00:00Z",
+  "flags": {
+    "OMNICLAW_2_0_ENABLED": {
+      "description": "Enable OmniClaw 2.0 natural language interface",
+      "defaultValue": false,
+      "rolloutPercentage": 0,
+      "whitelist": {
+        "enabled": true,
+        "users": [
+          "sdas22@gmail.com",
+          "beta-testers@omniclaw.ai",
+          "internal@omniclaw.ai"
+        ],
+        "domains": [
+          "omniclaw.ai"
+        ],
+        "segments": [
+          "beta_testers",
+          "internal_team",
+          "early_adopters"
+        ]
+      },
+      "conditions": {
+        "minVersion": "2.0.0",
+        "regions": ["asia-south1"],
+        "userSegments": []
+      },
+      "metadata": {
+        "owner": "backend-team",
+        "category": "feature",
+        "riskLevel": "medium",
+        "rollbackSafe": true
+      }
+    },
+    "LEGACY_INTENTS_ENABLED": {
+      "description": "Maintain legacy intent system during transition",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false,
+        "users": [],
+        "domains": [],
+        "segments": []
+      },
+      "conditions": {
+        "sunsetDate": "2025-06-01T00:00:00Z",
+        "sunsetMode": "gradual"
+      },
+      "metadata": {
+        "owner": "backend-team",
+        "category": "compatibility",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "LEGACY_INTENTS_FALLBACK": {
+      "description": "Allow fallback to legacy system if NL processing fails",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "fallbackThreshold": 3,
+        "fallbackTimeout": 5000
+      },
+      "metadata": {
+        "owner": "backend-team",
+        "category": "reliability",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "FEATURE_FLAG_DEBUG": {
+      "description": "Enable detailed feature flag logging for debugging",
+      "defaultValue": false,
+      "rolloutPercentage": 0,
+      "whitelist": {
+        "enabled": true,
+        "users": [
+          "sdas22@gmail.com",
+          "backend-lead@omniclaw.ai"
+        ]
+      },
+      "metadata": {
+        "owner": "devops-team",
+        "category": "debug",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "ENHANCED_LOGGING": {
+      "description": "Enable enhanced logging for monitoring and debugging",
+      "defaultValue": false,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "logLevel": "info",
+        "samplingRate": 0.1
+      },
+      "metadata": {
+        "owner": "devops-team",
+        "category": "monitoring",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "METRICS_COLLECTION": {
+      "description": "Enable detailed metrics collection for analytics",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "includeUserIds": false,
+        "aggregationInterval": 60
+      },
+      "metadata": {
+        "owner": "data-team",
+        "category": "analytics",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "CONTEXT_AWARENESS_ENABLED": {
+      "description": "Enable context-aware conversation understanding",
+      "defaultValue": true,
+      "rolloutPercentage": 0,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "requiresHistory": true,
+        "contextWindow": 5
+      },
+      "metadata": {
+        "owner": "ai-team",
+        "category": "feature",
+        "riskLevel": "medium",
+        "rollbackSafe": true
+      }
+    },
+    "PERSONALIZATION_ENABLED": {
+      "description": "Enable personalized responses based on user preferences",
+      "defaultValue": false,
+      "rolloutPercentage": 0,
+      "whitelist": {
+        "enabled": true,
+        "segments": ["beta_testers"]
+      },
+      "conditions": {
+        "requiresConsent": true,
+        "minDataPoints": 10
+      },
+      "metadata": {
+        "owner": "ai-team",
+        "category": "feature",
+        "riskLevel": "medium",
+        "rollbackSafe": true
+      }
+    },
+    "MULTI_MODAL_INPUT_ENABLED": {
+      "description": "Enable multi-modal input processing (text, voice, images)",
+      "defaultValue": false,
+      "rolloutPercentage": 0,
+      "whitelist": {
+        "enabled": false
+      },
+      "metadata": {
+        "owner": "ai-team",
+        "category": "experimental",
+        "riskLevel": "high",
+        "rollbackSafe": true
+      }
+    },
+    "ADVANCED_ERROR_RECOVERY": {
+      "description": "Enable advanced error recovery and self-healing",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "maxRetries": 3,
+        "retryDelay": 1000
+      },
+      "metadata": {
+        "owner": "backend-team",
+        "category": "reliability",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "A_B_TESTING_ENABLED": {
+      "description": "Enable A/B testing framework",
+      "defaultValue": false,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "experimentId": "",
+        "variant": "control"
+      },
+      "metadata": {
+        "owner": "product-team",
+        "category": "experimentation",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "CACHING_ENABLED": {
+      "description": "Enable response caching for improved performance",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "cacheTTL": 3600,
+        "cacheSize": 1000
+      },
+      "metadata": {
+        "owner": "backend-team",
+        "category": "performance",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    },
+    "RATE_LIMITING_ENABLED": {
+      "description": "Enable rate limiting for API protection",
+      "defaultValue": true,
+      "rolloutPercentage": 100,
+      "whitelist": {
+        "enabled": false
+      },
+      "conditions": {
+        "requestsPerMinute": 100,
+        "burstSize": 20
+      },
+      "metadata": {
+        "owner": "devops-team",
+        "category": "security",
+        "riskLevel": "low",
+        "rollbackSafe": true
+      }
+    }
+  },
+  "rolloutPlans": {
+    "phase_1": {
+      "name": "Beta Rollout",
+      "description": "10% rollout to beta testers",
+      "startDate": "2025-04-22T00:00:00Z",
+      "endDate": "2025-04-28T23:59:59Z",
+      "targetPercentage": 10,
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "rolloutPercentage": 10,
+          "whitelist": {
+            "enabled": true,
+            "users": [
+              "sdas22@gmail.com",
+              "beta-testers@omniclaw.ai"
+            ]
+          }
+        },
+        "ENHANCED_LOGGING": {
+          "defaultValue": true,
+          "samplingRate": 1.0
+        }
+      }
+    },
+    "phase_2": {
+      "name": "Early Adopter Expansion",
+      "description": "25% rollout to early adopters",
+      "startDate": "2025-04-29T00:00:00Z",
+      "endDate": "2025-05-05T23:59:59Z",
+      "targetPercentage": 25,
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "rolloutPercentage": 25,
+          "whitelist": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    "phase_3": {
+      "name": "Majority Rollout",
+      "description": "50% rollout to majority of users",
+      "startDate": "2025-05-06T00:00:00Z",
+      "endDate": "2025-05-12T23:59:59Z",
+      "targetPercentage": 50,
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "rolloutPercentage": 50,
+          "whitelist": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    "phase_4": {
+      "name": "Full Rollout",
+      "description": "100% rollout to all users",
+      "startDate": "2025-05-13T00:00:00Z",
+      "endDate": "2025-05-19T23:59:59Z",
+      "targetPercentage": 100,
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "rolloutPercentage": 100,
+          "defaultValue": true
+        },
+        "LEGACY_INTENTS_ENABLED": {
+          "rolloutPercentage": 50,
+          "defaultValue": true
+        }
+      }
+    }
+  },
+  "rollbackConfigurations": {
+    "level_1_feature_flags": {
+      "name": "Feature Flag Rollback",
+      "description": "Disable OmniClaw 2.0 via feature flags",
+      "estimatedTime": "30s",
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "defaultValue": false,
+          "rolloutPercentage": 0
+        },
+        "LEGACY_INTENTS_ENABLED": {
+          "defaultValue": true,
+          "rolloutPercentage": 100
+        }
+      }
+    },
+    "level_2_full_rollback": {
+      "name": "Full Code Rollback",
+      "description": "Rollback to previous stable deployment",
+      "estimatedTime": "5m",
+      "flags": {
+        "OMNICLAW_2_0_ENABLED": {
+          "defaultValue": false,
+          "rolloutPercentage": 0
+        },
+        "LEGACY_INTENTS_ENABLED": {
+          "defaultValue": true,
+          "rolloutPercentage": 100
+        },
+        "LEGACY_INTENTS_ONLY": {
+          "defaultValue": true
+        },
+        "ROLLOUT_MODE": {
+          "defaultValue": "legacy"
+        }
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-04-19T00:00:00Z",
+    "lastModified": "2025-04-19T00:00:00Z",
+    "modifiedBy": "deployment-system",
+    "environment": "production",
+    "documentation": "https://docs.omniclaw.ai/feature-flags"
+  }
+}

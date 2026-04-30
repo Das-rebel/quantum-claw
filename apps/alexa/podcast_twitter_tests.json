@@ -1,0 +1,51 @@
+{
+  "podcastTests": [
+    {
+      "name": "Dwarkesh Podcast Latest",
+      "query": "summarize the latest Dwarkesh podcast podcast",
+      "expectedTopics": ["AI", "technology", "interview"]
+    },
+    {
+      "name": "Terence Tao Podcast",
+      "query": "what is the latest Terence Tao podcast about",
+      "expectedTopics": ["mathematics", "research", "AI"]
+    },
+    {
+      "name": "Lex Fridman AI Podcast",
+      "query": "summarize Lex Fridman latest podcast episode about AI",
+      "expectedTopics": ["AI", "robotics", "research"]
+    },
+    {
+      "name": "Huberman Lab Podcast",
+      "query": "latest Huberman Lab podcast summary",
+      "expectedTopics": ["science", "health", "neuroscience"]
+    }
+  ],
+  "twitterTests": [
+    {
+      "name": "Narendra Modi Latest Tweets",
+      "query": "what are Narendra Modi's latest tweets",
+      "expectedAccount": "narendramodi"
+    },
+    {
+      "name": "Elon Musk AI Thread",
+      "query": "summarize Elon Musk's latest AI tweets",
+      "expectedAccount": "elonmusk"
+    },
+    {
+      "name": "Sam Altman Tweets",
+      "query": "what is Sam Altman tweeting about AI",
+      "expectedAccount": "sama"
+    },
+    {
+      "name": "Tech News Twitter",
+      "query": "latest tech news from Twitter",
+      "expectedTopics": ["technology", "AI", "startup"]
+    },
+    {
+      "name": "AI Researchers Twitter",
+      "query": "what are AI researchers discussing on Twitter",
+      "expectedTopics": ["AI", "research", "machine learning"]
+    }
+  ]
+}

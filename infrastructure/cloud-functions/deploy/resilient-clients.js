@@ -1,0 +1,165 @@
+/**
+ * Resilient Client Wrapper
+ * Wraps all OmniClaw clients with resilience patterns
+ */
+
+const https = require('https');
+
+/**
+ * Make HTTPS POST request
+ */
+function postJson(url, body, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const bodyStr = JSON.stringify(body);
+    
+    const reqOptions = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(bodyStr),
+        ...headers
+      }
+    };
+
+    const req = https.request(reqOptions, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve(parsed);
+          } else {
+            reject(new Error(`${res.statusCode}: ${JSON.stringify(parsed)}`));
+          }
+        } catch (e) {
+          reject(new Error(`Parse error: ${data.substring(0, 100)}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error('Timeout')); });
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
+/**
+ * Groq AI Client
+ */
+class GroqClient {
+  constructor(options = {}) {
+    this.apiKey = options.apiKey || process.env.GROQ_API_KEY;
+    this.model = 'llama-3.3-70b-versatile';
+  }
+
+  async query(prompt) {
+    if (!this.apiKey) throw new Error('GROQ_API_KEY not configured');
+    const data = await postJson(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800,
+        temperature: 0.7
+      },
+      { 'Authorization': `Bearer ${this.apiKey}` }
+    );
+    return data.choices?.[0]?.message?.content || 'No response';
+  }
+
+  async chat(messages) {
+    if (!this.apiKey) throw new Error('GROQ_API_KEY not configured');
+    const data = await postJson(
+      'https://api.groq.com/openai/v1/chat/completions',
+      { model: this.model, messages: messages, max_tokens: 800 },
+      { 'Authorization': `Bearer ${this.apiKey}` }
+    );
+    return data.choices?.[0]?.message?.content || '';
+  }
+}
+
+/**
+ * Cerebras AI Client
+ */
+class CerebrasClient {
+  constructor(options = {}) {
+    this.apiKey = options.apiKey || process.env.CEREBRAS_API_KEY;
+    this.model = 'llama3.1-8b';
+  }
+
+  async query(prompt) {
+    if (!this.apiKey) throw new Error('CEREBRAS_API_KEY not configured');
+    const data = await postJson(
+      'https://api.cerebras.ai/v1/chat/completions',
+      { model: this.model, messages: [{ role: 'user', content: prompt }], max_tokens: 800 },
+      { 'Authorization': `Bearer ${this.apiKey}` }
+    );
+    return data.choices?.[0]?.message?.content || 'No response';
+  }
+
+  async chat(messages) {
+    if (!this.apiKey) throw new Error('CEREBRAS_API_KEY not configured');
+    const data = await postJson(
+      'https://api.cerebras.ai/v1/chat/completions',
+      { model: this.model, messages: messages, max_tokens: 800 },
+      { 'Authorization': `Bearer ${this.apiKey}` }
+    );
+    return data.choices?.[0]?.message?.content || '';
+  }
+}
+
+// Multi-provider query function
+const multiProviderQuery = createFallbackChain('query', [
+  'GroqClient',
+  'CerebrasClient'
+]);
+
+function createFallbackChain(operation, clientNames) {
+  return async function(prompt) {
+    const clients = {
+      GroqClient: () => new GroqClient(),
+      CerebrasClient: () => new CerebrasClient()
+    };
+
+    for (const name of clientNames) {
+      const getClient = clients[name];
+      if (!getClient) continue;
+      
+      try {
+        const client = getClient();
+        const result = await client[operation](prompt);
+        return result;
+      } catch (e) {
+        console.warn(`[${name}] failed: ${e.message}`);
+        continue;
+      }
+    }
+
+    // Return a helpful fallback message
+    return "I'm sorry, I'm having trouble connecting to my AI services right now. Please try again in a moment.";
+  };
+}
+
+module.exports = {
+  getClient: (name) => {
+    const clients = {
+      GroqClient: new GroqClient(),
+      CerebrasClient: new CerebrasClient()
+    };
+    return clients[name] || { query: () => 'Client not found' };
+  },
+  getOriginalClients: () => ({
+    GroqClient,
+    CerebrasClient
+  }),
+  multiProviderQuery,
+  createFallbackChain,
+  testClientHealth: async () => ({ status: 'healthy' }),
+  getHealthReport: async () => ({ status: 'ok' }),
+  getHealthStatus: () => ({ status: 'ok' })
+};

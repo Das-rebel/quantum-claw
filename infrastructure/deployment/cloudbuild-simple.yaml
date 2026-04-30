@@ -1,0 +1,42 @@
+# Google Cloud Run configuration
+# https://cloud.google.com/run/docs/configuring
+
+runtime: nodejs20
+
+# Environment variables (set at deploy time)
+# These can be overridden by: gcloud run deploy --set-env-vars=...
+
+env_vars:
+  GOOGLE_TTS_ENABLED: "true"
+  GOOGLE_USE_SERVICE_ACCOUNT: "true"
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  MASK_PII: "true"
+
+# Automatic scaling
+automatic_scaling:
+  min_instances: 0  # Scale to zero when idle (save money!)
+  max_instances: 100
+
+  # CPU and memory per instance
+  cpu: 1
+  memory_gb: 0.5
+
+  # Request handling
+  concurrency: 80  # Requests per instance
+  timeout_seconds: 60
+
+# Health check configuration
+health_check:
+  enable: true
+  check_interval_sec: 30  # Check every 30 seconds
+  timeout_sec: 4
+  failure_threshold: 3  # Fail after 3 consecutive errors
+  success_threshold: 2  # Pass after 2 successes
+
+  request_path: /health
+
+# Build configuration
+build:
+  # Install dependencies
+  npm: install

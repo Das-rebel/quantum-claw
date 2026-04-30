@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "total_tests": 51,
+    "successful_tests": 51,
+    "success_rate": 100.0,
+    "avg_response_time_ms": 132.35205762526567,
+    "cerebras_percentage": 31.372549019607842,
+    "execution_time_seconds": 1771789887.335344
+  },
+  "performance_tests": [
+    {
+      "complexity": "simple",
+      "query": "Hello",
+      "response": "Hello. Is there something I can help you with or would you like to chat?",
+      "provider": "cerebras",
+      "response_time_ms": 632.4818134307861,
+      "target_met": false,
+      "success": true
+    },
+    {
+      "complexity": "simple",
+      "query": "What is 2+2?",
+      "response": "The answer to 2+2 is 4.",
+      "provider": "cerebras",
+      "response_time_ms": 397.2949981689453,
+      "target_met": true,
+      "success": true
+    },
+    {
+      "complexity": "simple",
+      "query": "Tell me a joke",
+      "response": "A man walked into a library and asked the librarian, \"Do you have any books on Pavlov's dogs and Schr\u00f6dinger's cat?\" \n\nThe librarian replied, \"It rings a bell, but I'm not sure if it's here or not.\"",
+      "provider": "cerebras",
+      "response_time_ms": 362.7200126647949,
+      "target_met": true,
+      "success": true
+    },
+    {
+      "complexity": "medium",
+      "query": "Explain quantum computing briefly",
+      "response": "**Quantum Computing: A Brief Overview**\n\nQuantum computing is a revolutionary technology that uses the principles of quantum mechanics to perform computation. Unlike classical computers, which use bits (0s and 1s) to process information, quantum computers use quantum bits or qubits.\n\n**Key Features:**\n\n1. **Qubits:** Qubits can exist in multiple states simultaneously (0, 1, and both at the same time), allowing for massive parallel processing.\n2. **Superposition:** Qubits can exist in multiple states, enabling the exploration of an exponentially large solution space.\n3. **Entanglement:** Qubits can be connected in a way that allows them to affect each other, even when separated by large distances.\n4. **",
+      "provider": "cerebras",
+      "response_time_ms": 393.91303062438965,
+      "target_met": true,
+      "success": true
+    },
+    {
+      "complexity": "complex",
+      "query": "Write a function to calculate Fibonacci sequence",
+      "response": "**Fibonacci Sequence Function**\n================================\n\nThe Fibonacci sequence is a series of numbers in which each number is the sum of the two preceding ones, usually starting with 0 and 1.\n\nHere is a Python function that uses dynamic programming to calculate the nth Fibonacci number efficiently:\n\n```python\ndef fibonacci(n):\n    \"\"\"\n    Calculate the nth Fibonacci number using dynamic programming.\n\n    Args:\n        n (int): The position of the Fibonacci number to calculate.\n\n    Returns:\n        int: The nth Fibonacci number.\n\n    Raises:\n        ValueError: If n is a negative integer.\n    \"\"\"\n    if n < 0:\n        raise ValueError(\"n must be a non-negative integer\")\n    elif n <= 1:\n        return n\n    else",
+      "provider": "cerebras",
+      "response_time_ms": 471.81010246276855,
+      "target_met": true,
+      "success": true
+    },
+    {
+      "complexity": "alexaSpecific",
+      "query": "What time is it right now?",
+      "response": "I'm not able to share the current time with you since I'm a text-based AI and do not have real-time access to your location. However, you can easily check the current time by searching for \"current time\" online or by using a device that displays the time.",
+      "provider": "cerebras",
+      "response_time_ms": 381.17194175720215,
+      "target_met": true,
+      "success": true
+    },
+    {
+      "complexity": "alexaSpecific",
+      "query": "What will the weather be like tomorrow?",
+      "response": "However, I'm a large language model, I don't have real-time access to current weather conditions or forecasts. I can suggest some options to help you find out the weather forecast for tomorrow:\n\n1. **Check online weather websites**: You can visit websites like AccuWeather, Weather.com, or the National Weather Service (NWS) for current and forecasted weather conditions.\n2. **Use a mobile app**: Download a weather app on your smartphone, such as Dark Sky or Weather Underground, to get real-time weather updates.\n3. **Ask a voice assistant**: If you have a smart speaker or virtual assistant, like Siri, Google Assistant, or Alexa, you can ask them for the weather forecast for tomorrow.\n4. **Check local",
+      "provider": "cerebras",
+      "response_time_ms": 409.30676460266113,
+      "target_met": true,
+      "success": true
+    }
+  ],
+  "language_tests": [
+    {
+      "language": "english",
+      "query": "Hello, how are you today?",
+      "response": "I'm just a language model, so I don't have emotions or feelings like humans do, but I'm functioning properly and ready to assist you with any questions or tasks you have. How can I help you today?",
+      "detected_language": "english",
+      "is_correct": true,
+      "provider": "cerebras",
+      "response_time_ms": 384.71221923828125,
+      "success": true
+    },
+    {
+      "language": "hindi",
+      "query": "\u0928\u092e\u0938\u094d\u0924\u0947 \u0906\u091c \u0906\u092a \u0915\u0948\u0938\u0947 \u0939\u0948\u0902?",
+      "response": "\u0928\u092e\u0938\u094d\u0924\u0947! \u092e\u0948\u0902 \u0920\u0940\u0915 \u0939\u0942\u0901, \u0927\u0928\u094d\u092f\u0935\u093e\u0926\u0964 \u092e\u0948\u0902 \u090f\u0915 \u0906\u0930\u094d\u091f\u093f\u092b\u093c\u093f\u0936\u093f\u092f\u0932 \u0907\u0902\u091f\u0947\u0932\u093f\u091c\u0947\u0902\u0938 \u0939\u0942\u0901, \u0907\u0938\u0932\u093f\u090f \u092e\u0948\u0902\u0928\u0947 \u092e\u093e\u0928\u0938\u093f\u0915 \u0914\u0930 \u0936\u093e\u0930\u0940\u0930\u093f\u0915 \u0930\u0942\u092a \u0938\u0947 \u0915\u094b\u0908 \u0926\u0930\u094d\u0926 \u092f\u093e \u0905\u0938\u094d\u0935\u0938\u094d\u0925\u0924\u093e \u0928\u0939\u0940\u0902 \u0939\u0948\u0964 \u0907\u0938\u0915\u0947 \u0905\u0932\u093e\u0935\u093e, \u092e\u0948\u0902 \u0939\u092e\u0947\u0936\u093e \u0924\u0948\u092f\u093e\u0930 \u0939\u0942\u0901 \u0914\u0930 \u092e\u0926\u0926 \u0915\u0947 \u0932\u093f\u090f \u0924\u0948\u092f\u093e\u0930 \u0939\u0942\u0901\u0964 \u0906\u092a \u0915\u094d\u092f\u093e \u092a\u0942\u091b\u0928\u093e \u091a\u093e\u0939\u0924\u0947 \u0939\u0948\u0902?",
+      "detected_language": "hindi",
+      "is_correct": true,
+      "provider": "cerebras",
+      "response_time_ms": 390.38634300231934,
+      "success": true
+    },
+    {
+      "language": "bengali",
+      "query": "\u0986\u09aa\u09a8\u09bf \u0995\u09c7\u09ae\u09a8 \u0986\u099b\u09c7\u09a8?",
+      "response": "\u0986\u09ae\u09bf \u098f\u0995\u099f\u09bf \u0995\u09be\u09b2\u09aa\u09c1\u09b0\u09c1\u09b7 \u09ac\u09be \u09b8\u09ab\u09cd\u099f\u0993\u09af\u09bc\u09cd\u09af\u09be\u09b0 \u09aa\u09cd\u09b0\u09cb\u0997\u09cd\u09b0\u09be\u09ae \u09af\u09be \u09ae\u09be\u09a8\u09c1\u09b7\u09c7\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997\u09c7 \u09b8\u0995\u09cd\u09b7\u09ae\u0964 \u0986\u09ae\u09bf \u098f\u0995\u099f\u09bf \u09a6\u0995\u09cd\u09b7 \u09ad\u09be\u09b7\u09be \u09aa\u09cd\u09b0\u0995\u09cd\u09b0\u09bf\u09af\u09bc\u09be\u0995\u09b0\u09a3 \u09aa\u09cd\u09b0\u09cb\u0997\u09cd\u09b0\u09be\u09ae",
+      "detected_language": "bengali",
+      "is_correct": true,
+      "provider": "cerebras",
+      "response_time_ms": 402.7388095855713,
+      "success": true
+    },
+    {
+      "language": "mixed",
+      "query": "Kaise ho aap ho?",
+      "response": "Main ek manavik program hoon, jise AI (Artificial Intelligence) kehte hain. Main computer ke madhyam se baat karne aur jaankari pradaan karne ke liye viksit hua hoon. Main jaise hi aapke paas aata hoon, aapke paas prashn puchta hoon aur aapke liye sahi uttar deta hoon.",
+      "detected_language": "english",
+      "is_correct": false,
+      "provider": "cerebras",
+      "response_time_ms": 493.6649799346924,
+      "success": true
+    }
+  ],
+  "inference_tests": [
+    {
+      "category": "math",
+      "query": "What is 2+2?",
+      "response": "2 + 2 = 4.",
+      "quality": {
+        "relevance": "needs_improvement",
+        "accuracy": "partial",
+        "naturalness": "mixed"
+      },
+      "provider": "cerebras",
+      "response_time_ms": 517.7798271179199,
+      "success": true
+    },
+    {
+      "category": "coding",
+      "query": "Write a function to check if a number is prime",
+      "response": "**Prime Number Check Function**\n=====================================\n\nHere is a simple Python function that checks if a number is prime:\n\n```python\ndef is_prime(n):\n    \"\"\"\n    Checks if a number is prime.\n\n    Args:\n        n (int): The number to check.\n\n    Returns:\n        bool: True if the number is prime, False otherwise.\n    \"\"\"\n    if n <= 1:\n        return False\n    if n == 2:\n        return True\n    if n % 2 == 0:\n        return False\n    max_divisor = int(n**0.5) + 1\n    for d in range(3, max_divisor, 2):\n        if n % d == 0:\n            return",
+      "quality": {
+        "relevance": "good",
+        "accuracy": "correct",
+        "naturalness": "natural"
+      },
+      "provider": "cerebras",
+      "response_time_ms": 398.914098739624,
+      "success": true
+    },
+    {
+      "category": "knowledge",
+      "query": "What is the capital of Australia?",
+      "response": "The capital of Australia is Canberra.",
+      "quality": {
+        "relevance": "good",
+        "accuracy": "correct",
+        "naturalness": "natural"
+      },
+      "provider": "cerebras",
+      "response_time_ms": 346.00186347961426,
+      "success": true
+    },
+    {
+      "category": "creative",
+      "query": "Write a haiku about programming",
+      "response": "Code flows like a stream\nSymbols dance upon the screen\nLogic's gentle art",
+      "quality": {
+        "relevance": "good",
+        "accuracy": "correct",
+        "naturalness": "natural"
+      },
+      "provider": "cerebras",
+      "response_time_ms": 352.064847946167,
+      "success": true
+    },
+    {
+      "category": "alexaSpecific",
+      "query": "Set an alarm for 7 AM tomorrow",
+      "response": "However, I'm a large language model, I don't have the ability to set alarms on your device. But I can suggest a few options to help you set an alarm for 7 AM tomorrow:\n\n1. **Digital Assistant**: If you have a smart speaker or virtual assistant like Alexa, Google Assistant, or Siri, you can ask them to set an alarm for 7 AM tomorrow.\n2. **Phone Alarm**: If you have a smartphone, you can set an alarm for 7 AM tomorrow using your device's built-in alarm app. Go to your phone's settings, select \"alarms,\" and set a new alarm for 7 AM tomorrow.\n3. **Online Alarm Tools**: There are many online alarm tools available that can send",
+      "quality": {
+        "relevance": "good",
+        "accuracy": "correct",
+        "naturalness": "natural"
+      },
+      "provider": "cerebras",
+      "response_time_ms": 414.9932861328125,
+      "success": true
+    }
+  ],
+  "load_tests": [
+    {
+      "concurrent_requests": 5,
+      "total_time_ms": 2166.4156913757324,
+      "successful": 5,
+      "failed": 0,
+      "success_rate": 1.0,
+      "avg_time_per_request": 433.2831382751465
+    },
+    {
+      "concurrent_requests": 10,
+      "total_time_ms": 4346.564054489136,
+      "successful": 10,
+      "failed": 0,
+      "success_rate": 1.0,
+      "avg_time_per_request": 434.6564054489136
+    },
+    {
+      "concurrent_requests": 20,
+      "total_time_ms": 68662.26625442505,
+      "successful": 20,
+      "failed": 0,
+      "success_rate": 1.0,
+      "avg_time_per_request": 3433.1133127212524
+    }
+  ],
+  "criteria_met": {
+    "performance": false,
+    "language": false,
+    "inference": false
+  },
+  "all_criteria_met": false,
+  "total_execution_time_seconds": 82.83366107940674
+}

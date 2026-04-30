@@ -1,0 +1,17 @@
+{
+  "name": "sota-browser",
+  "version": "1.0.0",
+  "description": "SOTA Browser MCP - CDP-based browser automation with anti-detection",
+  "author": "PI Browser Team",
+  "main": "mcp_client.py",
+  "dependencies": {
+    "playwright": ">=1.40.0",
+    "httpx": ">=0.25.0",
+    "scrapling": ">=0.5.0"
+  },
+  "optional-dependencies": {
+    "scrapling": ["scrapling"],
+    "uvicorn": ["uvicorn[standard]"]
+  },
+  "python_requires": ">=3.9"
+}

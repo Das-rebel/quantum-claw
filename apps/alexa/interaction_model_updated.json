@@ -1,0 +1,296 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "personal assistant",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": [
+                        "help",
+                        "what can you do",
+                        "tell me your capabilities",
+                        "what can I ask you",
+                        "what are your features"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": [
+                        "yes",
+                        "correct",
+                        "right",
+                        "that's right",
+                        "exactly",
+                        "that's correct"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": [
+                        "no",
+                        "incorrect",
+                        "wrong",
+                        "that's wrong",
+                        "that's not right"
+                    ]
+                },
+                {
+                    "name": "AMAZON.MoreIntent",
+                    "samples": [
+                        "tell me more",
+                        "give me more details",
+                        "expand on that",
+                        "elaborate",
+                        "tell me more about it",
+                        "can you explain further"
+                    ]
+                },
+                {
+                    "name": "AMAZON.RepeatIntent",
+                    "samples": [
+                        "repeat that",
+                        "say that again",
+                        "what did you say",
+                        "say it again"
+                    ]
+                },
+                {
+                    "name": "QueryIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "ask {Query}",
+                        "tell me about {Query}",
+                        "what is {Query}",
+                        "who is {Query}",
+                        "where is {Query}",
+                        "when is {Query}",
+                        "how do I {Query}",
+                        "how to {Query}",
+                        "explain {Query}",
+                        "describe {Query}",
+                        "define {Query}",
+                        "translate {Query}",
+                        "calculate {Query}",
+                        "search for {Query}",
+                        "find {Query}",
+                        "compare {Query}",
+                        "analyze {Query}",
+                        "tell me about {Query}",
+                        "give me information about {Query}",
+                        "I want to know about {Query}",
+                        "can you tell me {Query}",
+                        "what do you know about {Query}",
+                        "help me understand {Query}",
+                        "India ki rajdhani kya hai",
+                        "what is the capital of India",
+                        "how are you",
+                        "kya haal hai",
+                        "tell me a joke",
+                        "what's the weather",
+                        "latest news",
+                        "what's happening today",
+                        "calculate two plus two",
+                        "translate hello to Spanish",
+                        "namaste kya haal hai",
+                        "aaj kya news hai",
+                        "mujhe batao {Query}",
+                        "kemon ache",
+                        "aaj ki khobor ki",
+                        "amar sathe kotha bolo",
+                        "আজ কী খবর",
+                        "কেমন আছ",
+                        "weather kaisa hai",
+                        "news kemon ache",
+                        "tell me about {Query} in Hindi",
+                        "what's the news in Hindi",
+                        "summary in Bengali",
+                        "আজ কেমন আছ",
+                        "weather kemon ache"
+                    ]
+                },
+                {
+                    "name": "PodcastIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        },
+                        {
+                            "name": "Host",
+                            "type": "AMAZON.Person"
+                        },
+                        {
+                            "name": "Guest",
+                            "type": "AMAZON.Person"
+                        }
+                    ],
+                    "samples": [
+                        "summarize the latest podcast from {Host}",
+                        "tell me about the latest {Host} podcast",
+                        "what's the new {Host} episode about",
+                        "{Host} podcast with {Guest}",
+                        "latest episode of {Host}",
+                        "summarize {Host}'s latest episode",
+                        "what did {Host} discuss with {Guest}",
+                        "podcast featuring {Guest}",
+                        "recent {Host} episode summary",
+                        "{Host} show latest episode",
+                        "tell me about {Guest}'s appearance on {Host}",
+                        "summarize podcast",
+                        "latest podcast episode",
+                        "what's the latest podcast about",
+                        "podcast summary",
+                        "{Host} podcast released yesterday",
+                        "summarize {Host}'s interview with {Guest}",
+                        "latest episode from {Host} show",
+                        "what did they discuss in the latest podcast"
+                    ]
+                },
+                {
+                    "name": "SocialMediaSummaryIntent",
+                    "slots": [
+                        {
+                            "name": "Platform",
+                            "type": "AMAZON.SearchQuery"
+                        },
+                        {
+                            "name": "Account",
+                            "type": "AMAZON.Person"
+                        },
+                        {
+                            "name": "Topic",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what are {Account}'s latest tweets",
+                        "summarize {Account}'s twitter activity",
+                        "show me tweets from {Account}",
+                        "what's {Account} posting about",
+                        "latest from {Account} on twitter",
+                        "what's happening on {Platform}",
+                        "tell me about {Platform} trends",
+                        "summarize {Platform} posts about {Topic}",
+                        "{Account}'s recent {Platform} activity",
+                        "what are people saying on {Platform}",
+                        "latest tweets about {Topic}",
+                        "trending on twitter",
+                        "what's viral on twitter",
+                        "summarize Elon Musk's tweets",
+                        "what is Narendra Modi tweeting",
+                        "latest tweets from Sam Altman",
+                        "tech news from Twitter",
+                        "AI researchers on twitter",
+                        "show me twitter trends",
+                        "what's trending on twitter",
+                        "summarize twitter posts about AI",
+                        "{Account} latest posts",
+                        "what's new on {Platform}",
+                        "{Platform} summary for {Topic}"
+                    ]
+                },
+                {
+                    "name": "TwitterIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "tweet {Query}",
+                        "post on twitter {Query}",
+                        "send a tweet {Query}",
+                        "twitter update {Query}",
+                        "post this on twitter {Query}",
+                        "tweet this {Query}"
+                    ]
+                },
+                {
+                    "name": "WhatsAppIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "send whatsapp {Query}",
+                        "whatsapp {Query}",
+                        "send a whatsapp message {Query}",
+                        "message via whatsapp {Query}",
+                        "send message on whatsapp {Query}"
+                    ]
+                },
+                {
+                    "name": "NewsIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what's the news",
+                        "tell me the news",
+                        "latest news",
+                        "news about {Query}",
+                        "what's happening in {Query}",
+                        "tell me news about {Query}",
+                        "latest news on {Query}",
+                        "headlines today",
+                        "breaking news",
+                        "today's headlines",
+                        "news update",
+                        "what's the latest news about {Query}",
+                        "tell me today's news",
+                        "current events",
+                        "news summary"
+                    ]
+                },
+                {
+                    "name": "WeatherIntent",
+                    "slots": [
+                        {
+                            "name": "Query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what's the weather",
+                        "tell me the weather",
+                        "weather forecast",
+                        "weather in {Query}",
+                        "what's the weather like in {Query}",
+                        "is it raining",
+                        "is it sunny",
+                        "temperature",
+                        "will it rain today",
+                        "weather report",
+                        "what's the temperature",
+                        "is it hot outside",
+                        "is it cold outside"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}

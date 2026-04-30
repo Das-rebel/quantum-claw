@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Git
+.git
+.gitignore
+.github
+
+# Testing
+coverage
+.nyc_output
+.npm
+*.test.js
+test/
+
+# Documentation
+*.md
+!README.md
+
+# Logs and temp files
+*.log
+tmp/
+.DS_Store
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+.cache/
+
+# Misc
+*.tgz
+*.tar.gz

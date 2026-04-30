@@ -1,0 +1,50 @@
+{
+  "name": "openclaw-alexa-bridge",
+  "version": "1.1.0",
+  "description": "Quantum-Claw Multi-Provider Alexa Bridge with Enhanced News, Twitter, Arxiv, and Reddit Integration - Performance Optimized",
+  "main": "cloud_fn_handler_v2.js",
+  "scripts": {
+    "deploy": "gcloud functions deploy alexaHandler --source=. --entry-point=alexaHandler --region=us-central1 --runtime=nodejs22 --memory=256MB --timeout=60s --max-instances=10 --allow-unauthenticated --set-env-vars=ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY,GOOGLE_API_KEY=$GOOGLE_API_KEY,PERPLEXITY_API_KEY=$PERPLEXITY_API_KEY,OPENAI_API_KEY=$OPENAI_API_KEY,CEREBRAS_API_KEY=$CEREBRAS_API_KEY,SARVAM_API_KEY=$SARVAM_API_KEY,GROQ_API_KEY=$GROQ_API_KEY,TWITTER_BEARER_TOKEN=$TWITTER_BEARER_TOKEN,STORY_NARRATOR_ENDPOINT=https://omniclaw-story-narrator-338789220059.asia-south1.run.app",
+    "deploy-local": "node index.js",
+    "deploy-serverless": "npm run deploy",
+    "test-deploy": "curl -X POST https://us-central1-openclaw-alexa-bridge.cloudfunctions.net/alexaHandler/api/alexa -H 'Content-Type: application/json' -d '{\"request\":{\"type\":\"LaunchRequest\"},\"session\":{}}'",
+    "start-serverless": "node serverless_handler.js",
+    "start-local": "node index.js",
+    "start:prod": "NODE_ENV=production node index.js",
+    "start:monitor": "NODE_ENV=performance node --inspect index.js",
+    "logs": "gcloud functions logs read alexaHandler --region=us-central1 --limit=50",
+    "test": "node test/test-runner.js",
+    "test:unit": "node test/test-runner.js unit",
+    "test:integration": "node test/test-runner.js integration",
+    "test:e2e": "node test/test-runner.js e2e",
+    "test:performance": "node test/test-runner.js performance",
+    "test:watch": "node test/test-runner.js all --watch",
+    "test:coverage": "node test/test-runner.js all",
+    "test:verbose": "node test/test-runner.js all --verbose",
+    "health": "curl -s http://localhost:3000/health | jq",
+    "metrics": "curl -s http://localhost:3000/metrics | jq",
+    "cache:clear": "curl -X POST http://localhost:3000/cache/clear",
+    "cache:stats": "curl -s http://localhost:3000/cache/stats | jq",
+    "diagnostics": "node scripts/collect-diagnostics.js"
+  },
+  "dependencies": {
+    "@google-cloud/functions": "^4.2.1",
+    "ask-sdk-express-adapter": "^2.14.0",
+    "body-parser": "^1.20.4",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^7.2.0",
+    "node-fetch": "^3.3.2",
+    "redis": "^4.6.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

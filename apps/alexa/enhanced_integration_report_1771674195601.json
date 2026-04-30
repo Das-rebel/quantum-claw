@@ -1,0 +1,950 @@
+{
+  "metadata": {
+    "reportTime": "2026-02-21T11:43:15.590Z",
+    "testSuite": "Enhanced Sarvam Integration Test",
+    "version": "2.0.0",
+    "environment": "production_simulation"
+  },
+  "executiveSummary": {
+    "overallStatus": "ACCEPTABLE",
+    "readinessForProduction": {
+      "ready": false,
+      "factorsMet": 2,
+      "totalFactors": 4,
+      "percentage": "50.0%",
+      "details": {
+        "qualityScore": true,
+        "performanceScore": true,
+        "reliabilityScore": false,
+        "languageAccuracy": false
+      }
+    },
+    "totalTestsExecuted": 20,
+    "averageProcessingTime": "286ms",
+    "systemReliability": "52.8/10"
+  },
+  "performanceMetrics": {
+    "languageDetectionAccuracy": "40.0%",
+    "translationSuccessRate": "0.0%",
+    "fallbackActivationRate": "100.0%",
+    "sarvamApiUsageRate": "0.0%",
+    "averageProcessingTime": "286ms"
+  },
+  "qualityMetrics": {
+    "averageSemanticAccuracy": "6.4/10",
+    "averageGrammaticalCorrectness": "10.0/10",
+    "averageContextPreservation": "10.0/10",
+    "overallQualityScore": "8.8/10"
+  },
+  "categoryAnalysis": {
+    "alexaCommands": {
+      "testCount": 4,
+      "passedTests": 4,
+      "successRate": "100.0%",
+      "averageProcessingTime": "444ms"
+    },
+    "developerSupport": {
+      "testCount": 4,
+      "passedTests": 4,
+      "successRate": "100.0%",
+      "averageProcessingTime": "125ms"
+    },
+    "conversationalAI": {
+      "testCount": 4,
+      "passedTests": 4,
+      "successRate": "100.0%",
+      "averageProcessingTime": "246ms"
+    },
+    "codeSwitching": {
+      "testCount": 4,
+      "passedTests": 4,
+      "successRate": "100.0%",
+      "averageProcessingTime": "254ms"
+    },
+    "edgeCases": {
+      "testCount": 4,
+      "passedTests": 4,
+      "successRate": "100.0%",
+      "averageProcessingTime": "363ms"
+    }
+  },
+  "detailedResults": [
+    {
+      "id": "A1",
+      "scenario": "Alexa Weather Query - Bengali",
+      "query": "আজকের weather update দাও please",
+      "expectedLanguage": "bn",
+      "context": "voice_assistant",
+      "startTime": 1771674183842,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 3
+      },
+      "translation": {
+        "translated": "আজকের weather update দাও please",
+        "processingTime": 2
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/5",
+          "translationLength": 31,
+          "queryLength": 31,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 6
+    },
+    {
+      "id": "A2",
+      "scenario": "Alexa Weather Query - Hindi",
+      "query": "आज की weather update दो please",
+      "expectedLanguage": "hi",
+      "context": "voice_assistant",
+      "startTime": 1771674184148,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 2
+      },
+      "translation": {
+        "translated": "आज की weather update दो please",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/5",
+          "translationLength": 30,
+          "queryLength": 30,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 3
+    },
+    {
+      "id": "A3",
+      "scenario": "Alexa Time Query - Bengali",
+      "query": "ekhon time koto?",
+      "expectedLanguage": "bn",
+      "context": "voice_assistant",
+      "startTime": 1771674184452,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 8
+      },
+      "translation": {
+        "translated": "ekhon time koto?",
+        "processingTime": 0
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/5",
+          "translationLength": 16,
+          "queryLength": 16,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 8
+    },
+    {
+      "id": "A4",
+      "scenario": "Alexa Time Query - Hindi",
+      "query": "abhi time kya hai?",
+      "expectedLanguage": "hi",
+      "context": "voice_assistant",
+      "startTime": 1771674184762,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "abhi time kya hai?",
+        "processingTime": 1758
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/5",
+          "translationLength": 18,
+          "queryLength": 18,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1758
+    },
+    {
+      "id": "D1",
+      "scenario": "Bengali Debug Request",
+      "query": "আমার কোড এ error আসছে, help me debug করতে",
+      "expectedLanguage": "bn",
+      "context": "technical_support",
+      "startTime": 1771674186822,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 2
+      },
+      "translation": {
+        "translated": "আমার কোড এ error আসছে, help me debug করতে",
+        "processingTime": 494
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 8,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Some semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "3/6",
+          "translationLength": 41,
+          "queryLength": 41,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 496
+    },
+    {
+      "id": "D2",
+      "scenario": "Hindi Debug Request",
+      "query": "मेरे code में error आ रहा है, help me debug करना",
+      "expectedLanguage": "hi",
+      "context": "technical_support",
+      "startTime": 1771674187619,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "मेरे code में error आ रहा है, help me debug करना",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 8,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Some semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "4/6",
+          "translationLength": 48,
+          "queryLength": 48,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "D3",
+      "scenario": "Bengali Code Generation",
+      "query": "Python একটি sorting algorithm লিখে দাও",
+      "expectedLanguage": "bn",
+      "context": "code_assistance",
+      "startTime": 1771674187922,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "Python একটি sorting algorithm লিখে দাও",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/6",
+          "translationLength": 38,
+          "queryLength": 38,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "D4",
+      "scenario": "Hindi Code Generation",
+      "query": "Python में एक sorting algorithm लिख दो",
+      "expectedLanguage": "hi",
+      "context": "code_assistance",
+      "startTime": 1771674188224,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "Python में एक sorting algorithm लिख दो",
+        "processingTime": 0
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/6",
+          "translationLength": 38,
+          "queryLength": 38,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "C1",
+      "scenario": "Bengali Greeting and Question",
+      "query": "হ্যালো, তুমি কেমন আছ? আমাকে একটা জটিল সমস্যা solve করতে হবে",
+      "expectedLanguage": "bn",
+      "context": "conversation",
+      "startTime": 1771674188526,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "হ্যালো, তুমি কেমন আছ? আমাকে একটা জটিল সমস্যা solve করতে হবে",
+        "processingTime": 477
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "1/5",
+          "translationLength": 59,
+          "queryLength": 59,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 478
+    },
+    {
+      "id": "C2",
+      "scenario": "Hindi Greeting and Question",
+      "query": "नमस्ते, तुम कैसे हो? मुझे एक जटिल समस्या हल करनी है",
+      "expectedLanguage": "hi",
+      "context": "conversation",
+      "startTime": 1771674189305,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "नमस्ते, तुम कैसे हो? मुझे एक जटिल समस्या हल करनी है",
+        "processingTime": 505
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "0/5",
+          "translationLength": 51,
+          "queryLength": 51,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 505
+    },
+    {
+      "id": "C3",
+      "scenario": "Bengali Complex Technical Query",
+      "query": "React state management সম্পর্কে explain করো এবং example দাও",
+      "expectedLanguage": "bn",
+      "context": "technical_discussion",
+      "startTime": 1771674190112,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "React state management সম্পর্কে explain করো এবং example দাও",
+        "processingTime": 0
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "2/5",
+          "translationLength": 59,
+          "queryLength": 59,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "C4",
+      "scenario": "Hindi Complex Technical Query",
+      "query": "React state management के बारे में explain करो और example दो",
+      "expectedLanguage": "hi",
+      "context": "technical_discussion",
+      "startTime": 1771674190414,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "React state management के बारे में explain करो और example दो",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "2/5",
+          "translationLength": 60,
+          "queryLength": 60,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "CS1",
+      "scenario": "Bengali-English Code Switching",
+      "query": "আজ তোমার সাথে discuss করতে চাই about this new API integration",
+      "expectedLanguage": "bn",
+      "context": "code_switching",
+      "startTime": 1771674190716,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 2
+      },
+      "translation": {
+        "translated": "আজ তোমার সাথে discuss করতে চাই about this new API integration",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "2/5",
+          "translationLength": 61,
+          "queryLength": 61,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [
+          "May benefit from preserving original language elements"
+        ],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 3
+    },
+    {
+      "id": "CS2",
+      "scenario": "Hindi-English Code Switching",
+      "query": "आज तुमसे discuss करना है about this new API integration",
+      "expectedLanguage": "hi",
+      "context": "code_switching",
+      "startTime": 1771674191020,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "आज तुमसे discuss करना है about this new API integration",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "2/5",
+          "translationLength": 55,
+          "queryLength": 55,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [
+          "May benefit from preserving original language elements"
+        ],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "CS3",
+      "scenario": "Technical Benglish Query",
+      "query": "API integration kaise korbo step by step guide dao please",
+      "expectedLanguage": "bn",
+      "context": "code_switching",
+      "startTime": 1771674191322,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "API integration kaise korbo step by step guide dao please",
+        "processingTime": 536
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 8,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Some semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "3/6",
+          "translationLength": 57,
+          "queryLength": 57,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 537
+    },
+    {
+      "id": "CS4",
+      "scenario": "Technical Hinglish Query",
+      "query": "API integration kaise karenge step by step guide do please",
+      "expectedLanguage": "hi",
+      "context": "code_switching",
+      "startTime": 1771674192160,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "API integration kaise karenge step by step guide do please",
+        "processingTime": 472
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 8,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Some semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "4/6",
+          "translationLength": 58,
+          "queryLength": 58,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 473
+    },
+    {
+      "id": "E1",
+      "scenario": "Very Short Response",
+      "query": "হ্যাঁ",
+      "expectedLanguage": "bn",
+      "context": "minimal_input",
+      "startTime": 1771674192934,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "হ্যাঁ",
+        "processingTime": 475
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "0/5",
+          "translationLength": 5,
+          "queryLength": 5,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 475
+    },
+    {
+      "id": "E2",
+      "scenario": "Short Hindi Response",
+      "query": "हां",
+      "expectedLanguage": "hi",
+      "context": "minimal_input",
+      "startTime": 1771674193711,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "हां",
+        "processingTime": 481
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "0/5",
+          "translationLength": 3,
+          "queryLength": 3,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 481
+    },
+    {
+      "id": "E3",
+      "scenario": "Numbers and Bengali Mix",
+      "query": "123 টি file delete করব",
+      "expectedLanguage": "bn",
+      "context": "mixed_content",
+      "startTime": 1771674194493,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "123 টি file delete করব",
+        "processingTime": 1
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "2/5",
+          "translationLength": 22,
+          "queryLength": 22,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "E4",
+      "scenario": "Special Characters Bengali",
+      "query": "প্রশ্ন: এটা কি সঠিক? উত্তর: হ্যাঁ!",
+      "expectedLanguage": "bn",
+      "context": "special_characters",
+      "startTime": 1771674194795,
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "প্রশ্ন: এটা কি সঠিক? উত্তর: হ্যাঁ!",
+        "processingTime": 494
+      },
+      "fallbackActivated": true,
+      "qualityAssessment": {
+        "overallScore": 9,
+        "semanticAccuracy": 6,
+        "grammaticalCorrectness": 10,
+        "contextPreservation": 10,
+        "issues": [
+          "Key semantic elements missing"
+        ],
+        "metrics": {
+          "keyWordsPreserved": "0/5",
+          "translationLength": 34,
+          "queryLength": 34,
+          "lengthRatio": "1.00"
+        }
+      },
+      "contextAnalysis": {
+        "appropriateForContext": true,
+        "recommendedActions": [],
+        "confidenceLevel": "high"
+      },
+      "totalProcessingTime": 494
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "INFO",
+      "category": "Quality",
+      "recommendation": "System shows excellent translation quality, ready for production deployment",
+      "action": "Proceed with deployment to production environment"
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Reliability",
+      "recommendation": "High fallback rate detected, investigate Sarvam API connectivity",
+      "action": "Review API key permissions, network connectivity, and rate limits"
+    },
+    {
+      "priority": "INFO",
+      "category": "Operations",
+      "recommendation": "Implement comprehensive monitoring and logging",
+      "action": "Track performance metrics, error rates, and user satisfaction"
+    },
+    {
+      "priority": "INFO",
+      "category": "Scaling",
+      "recommendation": "Prepare for traffic scaling with load testing",
+      "action": "Conduct stress tests with realistic user load patterns"
+    }
+  ],
+  "nextSteps": [
+    {
+      "step": 1,
+      "action": "Deploy to staging environment",
+      "description": "Test system with realistic user traffic in controlled environment"
+    },
+    {
+      "step": 2,
+      "action": "Implement A/B testing",
+      "description": "Compare translation quality between Sarvam API and fallback systems"
+    },
+    {
+      "step": 3,
+      "action": "User feedback collection",
+      "description": "Gather user feedback on translation quality and responsiveness"
+    },
+    {
+      "step": 4,
+      "action": "Performance optimization",
+      "description": "Optimize based on real usage patterns and performance metrics"
+    },
+    {
+      "step": 5,
+      "action": "Production deployment",
+      "description": "Gradual rollout with monitoring and rollback capability"
+    }
+  ]
+}

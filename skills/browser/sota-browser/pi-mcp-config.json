@@ -1,0 +1,17 @@
+# PI MCP Configuration for SOTA Browser
+# Place this in your PI MCP settings
+
+{
+  "mcpServers": {
+    "sota-browser": {
+      "command": "python3",
+      "args": ["/Users/Subho/mcp-browser/mcp_server.py"],
+      "env": {
+        "BH_DEBUG_CLICKS": "false"
+      }
+    }
+  }
+}
+
+# Alternative: HTTP server mode (works with any HTTP MCP client)
+# Just run: source ~/mcp-browser/venv/bin/activate && python3 -m uvicorn src.server:app --port 9377

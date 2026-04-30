@@ -1,0 +1,13 @@
+{
+  "voice": "Matthew",
+  "availableVoices": [
+    {"name": "Joanna", "language": "en-US", "gender": "Female"},
+    {"name": "Matthew", "language": "en-US", "gender": "Male"},
+    {"name": "Kendra", "language": "en-US", "gender": "Female"},
+    {"name": "Justin", "language": "en-US", "gender": "Male"},
+    {"name": "Amy", "language": "en-GB", "gender": "Female"},
+    {"name": "Brian", "language": "en-GB", "gender": "Male"},
+    {"name": "Emma", "language": "en-AU", "gender": "Female"},
+    {"name": "Nicole", "language": "en-AU", "gender": "Female"}
+  ]
+}

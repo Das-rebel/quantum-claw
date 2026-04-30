@@ -1,0 +1,739 @@
+{
+  "timestamp": "2026-02-21T13:16:28.430Z",
+  "overallMetrics": {
+    "totalTests": 17,
+    "totalSuccessful": 16,
+    "overallSuccessRate": 94.11764705882352,
+    "overallDetectionAccuracy": 94.11764705882352,
+    "overallTranslationQuality": 0,
+    "avgDetectionTime": 79.94117647058823,
+    "avgTranslationTime": 1512.357142857143,
+    "avgTotalFlowTime": 1325.6470588235295
+  },
+  "categoryResults": {
+    "benlish": {
+      "name": "Benglish Queries (Previous Bottleneck)",
+      "description": "Bengali-English mixed language queries that were problematic before",
+      "totalQueries": 5,
+      "successfulQueries": 5,
+      "failedQueries": 0,
+      "detectionAccuracy": 100,
+      "translationQuality": 0,
+      "averageProcessingTime": 3630.2,
+      "results": [
+        {
+          "query": "Weather kemon ache aaj?",
+          "context": "Weather query in Benglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 65,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 65,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Weather kemon ache aaj?",
+            "ideal": "How is the weather today?",
+            "qualityScore": null,
+            "processingTime": 6700,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 6766
+        },
+        {
+          "query": "Kivabe code likh dao?",
+          "context": "Technical help request in Benglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 0.9510085,
+            "method": "google",
+            "processingTime": 107,
+            "details": {
+              "language": "bn",
+              "confidence": 0.9510085,
+              "googleLanguage": "bn",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 0.9510085
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 107,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Kivabe code likh dao?",
+            "ideal": "How to write code?",
+            "qualityScore": null,
+            "processingTime": 5436,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 5543
+        },
+        {
+          "query": "Tumi ki bhalo acho?",
+          "context": "Personal greeting in Benglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 112,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 112,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Tumi ki bhalo acho?",
+            "ideal": "Are you okay?",
+            "qualityScore": null,
+            "processingTime": 4851,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 4963
+        },
+        {
+          "query": "Amar dorkar ekta laptop",
+          "context": "Product request in Benglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 103,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 102,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Amar dorkar ekta laptop",
+            "ideal": "I need a laptop",
+            "qualityScore": null,
+            "processingTime": 357,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 460
+        },
+        {
+          "query": "Ajker time koto?",
+          "context": "Time query in Benglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 69,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 69,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Ajker time koto?",
+            "ideal": "What is the time today?",
+            "qualityScore": null,
+            "processingTime": 349,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 419
+        }
+      ]
+    },
+    "hinglish": {
+      "name": "Hinglish Queries",
+      "description": "Hindi-English mixed language queries",
+      "totalQueries": 5,
+      "successfulQueries": 5,
+      "failedQueries": 0,
+      "detectionAccuracy": 100,
+      "translationQuality": 0,
+      "averageProcessingTime": 463.4,
+      "results": [
+        {
+          "query": "Weather kaisa hai aaj?",
+          "context": "Weather query in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 0.9863925,
+            "method": "google",
+            "processingTime": 65,
+            "details": {
+              "language": "hi",
+              "confidence": 0.9863925,
+              "googleLanguage": "hi",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 0.9863925
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 65,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Weather kaisa hai aaj?",
+            "ideal": "How is the weather today?",
+            "qualityScore": null,
+            "processingTime": 359,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 424
+        },
+        {
+          "query": "Kaise code likhna hai?",
+          "context": "Technical help request in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 59,
+            "details": {
+              "language": "hi",
+              "confidence": 1,
+              "googleLanguage": "hi",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 59,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Kaise code likhna hai?",
+            "ideal": "How to write code?",
+            "qualityScore": null,
+            "processingTime": 458,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 517
+        },
+        {
+          "query": "Tum theek ho?",
+          "context": "Personal greeting in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 64,
+            "details": {
+              "language": "hi",
+              "confidence": 1,
+              "googleLanguage": "hi",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 64,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Tum theek ho?",
+            "ideal": "Are you okay?",
+            "qualityScore": null,
+            "processingTime": 350,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 414
+        },
+        {
+          "query": "Mujhe ek laptop chahiye",
+          "context": "Product request in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 60,
+            "details": {
+              "language": "hi",
+              "confidence": 1,
+              "googleLanguage": "hi",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 60,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Mujhe ek laptop chahiye",
+            "ideal": "I need a laptop",
+            "qualityScore": null,
+            "processingTime": 482,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 542
+        },
+        {
+          "query": "Aaj time kya hai?",
+          "context": "Time query in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 60,
+            "details": {
+              "language": "hi",
+              "confidence": 1,
+              "googleLanguage": "hi",
+              "isTransliterated": true,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 60,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Aaj time kya hai?",
+            "ideal": "What is the time today?",
+            "qualityScore": null,
+            "processingTime": 360,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 420
+        }
+      ]
+    },
+    "mixed_script": {
+      "name": "Mixed Script Queries",
+      "description": "Queries combining native scripts with English",
+      "totalQueries": 2,
+      "successfulQueries": 2,
+      "failedQueries": 0,
+      "detectionAccuracy": 100,
+      "translationQuality": 0,
+      "averageProcessingTime": 443.5,
+      "results": [
+        {
+          "query": "আজ code explain করো please",
+          "context": "Bengali script with English word",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 59,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 59,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "আজ code explain করো please",
+            "ideal": "Explain the code today please",
+            "qualityScore": null,
+            "processingTime": 395,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 455
+        },
+        {
+          "query": "आज Python code लिखना सिखाओ",
+          "context": "Hindi script with English words",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 0.95972896,
+            "method": "google",
+            "processingTime": 62,
+            "details": {
+              "language": "hi",
+              "confidence": 0.95972896,
+              "googleLanguage": "hi",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 0.95972896
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 62,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "आज Python code लिखना सिखाओ",
+            "ideal": "Teach me to write Python code today",
+            "qualityScore": null,
+            "processingTime": 370,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 432
+        }
+      ]
+    },
+    "technical": {
+      "name": "Technical Queries",
+      "description": "Programming and technical assistance queries",
+      "totalQueries": 3,
+      "successfulQueries": 2,
+      "failedQueries": 1,
+      "detectionAccuracy": 66.66666666666666,
+      "translationQuality": 0,
+      "averageProcessingTime": 108,
+      "results": [
+        {
+          "query": "Python code likho please",
+          "context": "Code generation request in Hinglish",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": false,
+          "detectionResult": {
+            "success": true,
+            "detected": "en",
+            "expected": "hi",
+            "isCorrect": false,
+            "confidence": 0.65929204,
+            "method": "google",
+            "processingTime": 60,
+            "details": {
+              "language": "en",
+              "confidence": 0.65929204,
+              "googleLanguage": "en",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "en",
+                "confidence": 0.65929204
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 60,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Python code likho please",
+            "skipped": true,
+            "reason": "Already in English",
+            "processingTime": 0
+          },
+          "totalProcessingTime": 60
+        },
+        {
+          "query": "Help me debug this program",
+          "context": "English technical query",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "en",
+            "expected": "en",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 109,
+            "details": {
+              "language": "en",
+              "confidence": 1,
+              "googleLanguage": "en",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "en",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 109,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Help me debug this program",
+            "skipped": true,
+            "reason": "Already in English",
+            "processingTime": 0
+          },
+          "totalProcessingTime": 110
+        },
+        {
+          "query": "Create a function for me",
+          "context": "English programming request",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "en",
+            "expected": "en",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 154,
+            "details": {
+              "language": "en",
+              "confidence": 1,
+              "googleLanguage": "en",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "en",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 154,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "Create a function for me",
+            "skipped": true,
+            "reason": "Already in English",
+            "processingTime": 0
+          },
+          "totalProcessingTime": 154
+        }
+      ]
+    },
+    "native_script": {
+      "name": "Native Script Queries",
+      "description": "Pure Bengali and Hindi script queries",
+      "totalQueries": 2,
+      "successfulQueries": 2,
+      "failedQueries": 0,
+      "detectionAccuracy": 100,
+      "translationQuality": 0,
+      "averageProcessingTime": 428.5,
+      "results": [
+        {
+          "query": "আজ আবহাওয়া কেমন?",
+          "context": "Pure Bengali weather query",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "bn",
+            "expected": "bn",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 66,
+            "details": {
+              "language": "bn",
+              "confidence": 1,
+              "googleLanguage": "bn",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "bn",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 66,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "আজ আবহাওয়া কেমন?",
+            "ideal": "How is the weather today?",
+            "qualityScore": null,
+            "processingTime": 350,
+            "sourceLanguage": "bn"
+          },
+          "totalProcessingTime": 416
+        },
+        {
+          "query": "आज मौसम कैसा है?",
+          "context": "Pure Hindi weather query",
+          "detectionSuccess": true,
+          "translationSuccess": true,
+          "overallSuccess": true,
+          "detectionResult": {
+            "success": true,
+            "detected": "hi",
+            "expected": "hi",
+            "isCorrect": true,
+            "confidence": 1,
+            "method": "google",
+            "processingTime": 85,
+            "details": {
+              "language": "hi",
+              "confidence": 1,
+              "googleLanguage": "hi",
+              "isTransliterated": false,
+              "originalDetection": {
+                "detectedLang": "hi",
+                "confidence": 1
+              },
+              "detectedBy": "google_translate",
+              "method": "google",
+              "processingTime": 85,
+              "fallbackUsed": false
+            }
+          },
+          "translationResult": {
+            "success": true,
+            "translated": "आज मौसम कैसा है?",
+            "ideal": "How is the weather today?",
+            "qualityScore": null,
+            "processingTime": 356,
+            "sourceLanguage": "hi"
+          },
+          "totalProcessingTime": 441
+        }
+      ]
+    }
+  },
+  "productionReady": true,
+  "recommendations": [
+    "Enhance translation quality with context-aware processing."
+  ]
+}

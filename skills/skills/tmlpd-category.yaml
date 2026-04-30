@@ -1,0 +1,67 @@
+deployment:
+  name: "TMLPD Category Parallelization"
+  description: "Split tasks by category across specialized LLM providers"
+
+  agents:
+    - id: "frontend-agent"
+      provider: "anthropic"
+      model: "claude-sonnet-4-20250514"
+      focus: "UI components, styling, animations, responsive design"
+      task_pattern: "task-frontend-*|task-ui-*|task-accessibility-*"
+      priority: "high"
+      max_concurrent: 3
+
+    - id: "backend-agent"
+      provider: "openai"
+      model: "gpt-4-turbo"
+      focus: "API endpoints, database operations, business logic"
+      task_pattern: "task-backend-*|task-api-*|task-database-*"
+      priority: "high"
+      max_concurrent: 3
+
+    - id: "testing-agent"
+      provider: "google"
+      model: "gemini-2.0-flash-exp"
+      focus: "Unit tests, integration tests, e2e tests, test coverage"
+      task_pattern: "task-testing-*|task-test-*|task-validation-*"
+      priority: "medium"
+      max_concurrent: 5
+
+    - id: "docs-agent"
+      provider: "perplexity"
+      model: "llama-3.1-sonar-large-128k-online"
+      focus: "Documentation, README files, API docs, guides"
+      task_pattern: "task-docs-*|task-documentation-*|task-readme-*"
+      priority: "low"
+      max_concurrent: 4
+
+  coordination:
+    sync_interval: 300        # 5 minutes between syncs
+    conflict_resolution: "timestamp"
+    merge_strategy: "git-merge"
+    load_balancing: "dynamic"
+    checkpoint_interval: 600  # Save progress every 10 minutes
+
+  cost_optimization:
+    enabled: true
+    budget_limit: 50.00      # USD total budget
+    prefer_cached: true
+    alert_threshold: 0.80    # Alert at 80% of budget
+
+  error_handling:
+    retry_policy: "exponential_backoff"
+    max_retries: 3
+    fallback_on_failure: true
+    timeout_per_task: 300    # 5 minutes per task
+
+  output:
+    directory: ".tmlpd-output"
+    logs: "tmlpd-logs.json"
+    metrics: "tmlpd-metrics.json"
+    checkpoints: ".tmlpd-checkpoints"
+    verbose: true
+
+  monitoring:
+    dashboard_enabled: true
+    metrics_port: 8080
+    real_time_updates: true

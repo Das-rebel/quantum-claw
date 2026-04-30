@@ -1,0 +1,38 @@
+{
+  "name": "openclaw-alexa-bridge",
+  "version": "2.0.0-minimal",
+  "description": "Quantum-Claw Multi-Provider Alexa Bridge - Minimal Production Version",
+  "main": "quantum_claw_minimal.js",
+  "scripts": {
+    "start": "node quantum_claw_minimal.js",
+    "start:enhanced": "node quantum_claw_with_rag.js",
+    "start:full": "node quantum_claw_zai_main.js",
+    "test": "node test_local_minimal.js",
+    "deploy:minimal": "gcloud run deploy openclaw-minimal --source . --set-env-vars=NODE_ENV=production,PORT=8080 --min-instances=1 --max-instances=10 --memory=512Mi --cpu=1 --timeout=120s --concurrency=80 --port=8080",
+    "deploy:enhanced": "gcloud run deploy openclaw-enhanced --source . --set-env-vars=NODE_ENV=production,PORT=8080 --min-instances=1 --max-instances=10 --memory=1024Mi --cpu=2 --timeout=180s --concurrency=80 --port=8080"
+  },
+  "keywords": [
+    "alexa",
+    "voice-assistant",
+    "multi-ai",
+    "quantum-claw",
+    "indian-languages"
+  ],
+  "author": "OpenClaw Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "body-parser": "^1.20.2",
+    "dotenv": "^17.3.1"
+  },
+  "optionalDependencies": {
+    "@huggingface/inference": "^4.13.12",
+    "transformers": "^3.1.0",
+    "ask-sdk-express-adapter": "^2.14.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

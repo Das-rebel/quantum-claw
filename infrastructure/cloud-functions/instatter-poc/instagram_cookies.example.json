@@ -1,0 +1,22 @@
+{
+  "platform": "instagram",
+  "cookies": {
+    "sessionid": "paste-sessionid",
+    "csrftoken": "paste-csrftoken",
+    "ds_user_id": "paste-ds-user-id",
+    "mid": "paste-mid",
+    "ig_did": "paste-ig-did"
+  },
+  "browserCookies": [
+    {
+      "name": "sessionid",
+      "value": "paste-sessionid",
+      "domain": ".instagram.com",
+      "path": "/",
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "timestamp": "2026-04-17T12:00:00Z"
+}

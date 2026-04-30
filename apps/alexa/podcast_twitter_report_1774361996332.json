@@ -1,0 +1,90 @@
+{
+  "results": [
+    {
+      "name": "Dwarkesh Podcast Latest",
+      "query": "summarize the latest Dwarkesh podcast podcast",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 1898,
+      "responsePreview": "Based on the latest episode of *The Dwarkesh Podcast*, which features a highly anticipated conversation with Ilya Sutskever, the former Chief Scientis...",
+      "time": 1774361938877
+    },
+    {
+      "name": "Terence Tao Podcast",
+      "query": "what is the latest Terence Tao podcast about",
+      "success": true,
+      "provider": "glm",
+      "responseLength": 2375,
+      "responsePreview": "As of mid-2024, the \"latest\" major podcast featuring Terence Tao is widely considered to be his appearance on **The Jordan Harbinger Show** (Episode #...",
+      "time": 1774361944340
+    },
+    {
+      "name": "Lex Fridman AI Podcast",
+      "query": "summarize Lex Fridman latest podcast episode about AI",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 2086,
+      "responsePreview": "Based on the details provided, Lex Fridman’s latest podcast episode offers a profound exploration of the **future of Artificial Intelligence**, with a...",
+      "time": 1774361953732
+    },
+    {
+      "name": "Huberman Lab Podcast",
+      "query": "latest Huberman Lab podcast summary",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 1758,
+      "responsePreview": "The Huberman Lab podcast continues to be a leading resource for understanding the intricate relationship between the brain and body. Hosted by Dr. And...",
+      "time": 1774361961079
+    },
+    {
+      "name": "Narendra Modi Latest Tweets",
+      "query": "what are Narendra Modi's latest tweets",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 1867,
+      "responsePreview": "Based on the most recent activity from his official Twitter account (@narendramodi), Prime Minister Narendra Modi continues to utilize the platform to...",
+      "time": 1774361967837
+    },
+    {
+      "name": "Elon Musk AI Thread",
+      "query": "summarize Elon Musk's latest AI tweets",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 2098,
+      "responsePreview": "Based on the context provided and recent developments involving Elon Musk’s social media platform, X (formerly Twitter), here is a detailed summary of...",
+      "time": 1774361975356
+    },
+    {
+      "name": "Sam Altman Tweets",
+      "query": "what is Sam Altman tweeting about AI",
+      "success": true,
+      "provider": "glm",
+      "responseLength": 2365,
+      "responsePreview": "Sam Altman is currently very active on Twitter (X), primarily discussing three main pillars: the **political philosophy of AI**, the **technical roadm...",
+      "time": 1774361980348
+    },
+    {
+      "name": "Tech News Twitter",
+      "query": "latest tech news from Twitter",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 2341,
+      "responsePreview": "Based on the latest tech news circulating on Twitter, the industry is currently navigating a complex landscape defined by rapid advancements in enterp...",
+      "time": 1774361989253
+    },
+    {
+      "name": "AI Researchers Twitter",
+      "query": "what are AI researchers discussing on Twitter",
+      "success": true,
+      "provider": "tavily-fact-check-expanded",
+      "responseLength": 2548,
+      "responsePreview": "Based on the premise that AI researchers utilize Twitter to disseminate findings, track industry shifts, and gauge public reception, the platform serv...",
+      "time": 1774361996332
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "total": 9,
+    "passRate": "100.0"
+  }
+}

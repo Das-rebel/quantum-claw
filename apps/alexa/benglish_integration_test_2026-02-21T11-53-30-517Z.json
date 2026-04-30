@@ -1,0 +1,1230 @@
+{
+  "timestamp": "2026-02-21T11:53:30.518Z",
+  "testType": "Benglish Integration Test",
+  "summary": {
+    "totalTests": 8,
+    "passedTests": 0,
+    "failedTests": 8,
+    "avgLanguageDetectionAccuracy": 0,
+    "avgTranslationQuality": 0.07217261904761904,
+    "avgTMLPDProcessingTime": 4.125,
+    "avgTotalLatency": 6.5,
+    "fallbackActivations": 0,
+    "successfulIntegrations": 0
+  },
+  "detailedResults": [
+    {
+      "testCase": {
+        "query": "Weather kemon ache aaj?",
+        "expectedLang": "bn",
+        "description": "Weather inquiry in Benglish",
+        "expectedEnglish": "How is the weather today?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.47000000000000003,
+        "isMixed": false,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 19,
+                "score": "82.61%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "en",
+            "confidence": 0.4,
+            "hinglishMatches": 0,
+            "benglishMatches": 1,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 0,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 1
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 4,
+              "englishWords": 3,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "75.0%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 4,
+              "wordLanguages": [
+                {
+                  "word": "Weather",
+                  "language": "hi"
+                },
+                {
+                  "word": "kemon",
+                  "language": "hi"
+                },
+                {
+                  "word": "ache",
+                  "language": "hi"
+                },
+                {
+                  "word": "aaj?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 4,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": false,
+            "matchCount": 0,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "2ms"
+        },
+        "time": 2
+      },
+      "translationAccuracy": {
+        "original": "Weather kemon ache aaj?",
+        "translated": "Weather kemon ache aaj?",
+        "expected": "How is the weather today?",
+        "accuracy": 0.125,
+        "method": "none_needed",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Weather kemon ache aaj?",
+        "response": {
+          "content": "The weather today is sunny with a high of 75°F. It's a great day to go outside!",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "The weather today is sunny with a high of 75°F. It's a great day to go outside!",
+        "translated": "The weather today is sunny with a high of 75°F. It's a great day to go outside!",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 3,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Kivabe code likh dao?",
+        "expectedLang": "bn",
+        "description": "Code writing request in Benglish",
+        "expectedEnglish": "How to write code?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.39,
+        "isMixed": true,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 17,
+                "score": "80.95%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "bn",
+            "confidence": 0.7666666666666666,
+            "hinglishMatches": 0,
+            "benglishMatches": 2,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 2,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 2
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 4,
+              "englishWords": 3,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "75.0%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 4,
+              "wordLanguages": [
+                {
+                  "word": "Kivabe",
+                  "language": "hi"
+                },
+                {
+                  "word": "code",
+                  "language": "hi"
+                },
+                {
+                  "word": "likh",
+                  "language": "hi"
+                },
+                {
+                  "word": "dao?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 4,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": true,
+            "matchCount": 1,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "7ms"
+        },
+        "time": 8
+      },
+      "translationAccuracy": {
+        "original": "Kivabe code likh dao?",
+        "translated": "Kivabe code likh dao?",
+        "expected": "How to write code?",
+        "accuracy": 0,
+        "method": "mixed_advanced",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Kivabe code likh dao?",
+        "response": {
+          "content": "I'll help you write that code. Let me break it down into clear steps for you.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I'll help you write that code. Let me break it down into clear steps for you.",
+        "translated": "I'll help you write that code. Let me break it down into clear steps for you.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 8,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Tumi ki bhalo acho?",
+        "expectedLang": "bn",
+        "description": "Wellness check in Benglish",
+        "expectedEnglish": "Are you okay?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.39,
+        "isMixed": true,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 15,
+                "score": "78.95%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "bn",
+            "confidence": 0.7666666666666666,
+            "hinglishMatches": 0,
+            "benglishMatches": 2,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 2,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 2
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 4,
+              "englishWords": 3,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "75.0%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 4,
+              "wordLanguages": [
+                {
+                  "word": "Tumi",
+                  "language": "hi"
+                },
+                {
+                  "word": "ki",
+                  "language": "hi"
+                },
+                {
+                  "word": "bhalo",
+                  "language": "hi"
+                },
+                {
+                  "word": "acho?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 4,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": true,
+            "matchCount": 1,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "1ms"
+        },
+        "time": 1
+      },
+      "translationAccuracy": {
+        "original": "Tumi ki bhalo acho?",
+        "translated": "Tumi ki bhalo acho?",
+        "expected": "Are you okay?",
+        "accuracy": 0,
+        "method": "mixed_advanced",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Tumi ki bhalo acho?",
+        "response": {
+          "content": "I understand your question. Let me provide you with a helpful response.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I understand your question. Let me provide you with a helpful response.",
+        "translated": "I understand your question. Let me provide you with a helpful response.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 2,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Amar dorkar ekta laptop",
+        "expectedLang": "bn",
+        "description": "Item request in Benglish",
+        "expectedEnglish": "I need a laptop"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.39,
+        "isMixed": true,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 20,
+                "score": "86.96%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "bn",
+            "confidence": 0.6666666666666666,
+            "hinglishMatches": 0,
+            "benglishMatches": 2,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 1,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 2
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 4,
+              "englishWords": 4,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "100.0%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 4,
+              "wordLanguages": [
+                {
+                  "word": "Amar",
+                  "language": "hi"
+                },
+                {
+                  "word": "dorkar",
+                  "language": "hi"
+                },
+                {
+                  "word": "ekta",
+                  "language": "hi"
+                },
+                {
+                  "word": "laptop",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 4,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": false,
+            "matchCount": 0,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "0ms"
+        },
+        "time": 0
+      },
+      "translationAccuracy": {
+        "original": "Amar dorkar ekta laptop",
+        "translated": "Amar dorkar ekta laptop",
+        "expected": "I need a laptop",
+        "accuracy": 0.14285714285714285,
+        "method": "mixed_advanced",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Amar dorkar ekta laptop",
+        "response": {
+          "content": "I understand you need a laptop. I can help you find the best options based on your requirements.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I understand you need a laptop. I can help you find the best options based on your requirements.",
+        "translated": "I understand you need a laptop. I can help you find the best options based on your requirements.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 1,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Ajker time koto?",
+        "expectedLang": "bn",
+        "description": "Time query in Benglish",
+        "expectedEnglish": "What is the time today?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.47000000000000003,
+        "isMixed": false,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 13,
+                "score": "81.25%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "en",
+            "confidence": 0.4,
+            "hinglishMatches": 0,
+            "benglishMatches": 1,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 0,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 1
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 3,
+              "englishWords": 2,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "66.7%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 3,
+              "wordLanguages": [
+                {
+                  "word": "Ajker",
+                  "language": "hi"
+                },
+                {
+                  "word": "time",
+                  "language": "hi"
+                },
+                {
+                  "word": "koto?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 3,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": false,
+            "matchCount": 0,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "1ms"
+        },
+        "time": 1
+      },
+      "translationAccuracy": {
+        "original": "Ajker time koto?",
+        "translated": "Ajker time koto?",
+        "expected": "What is the time today?",
+        "accuracy": 0.14285714285714285,
+        "method": "none_needed",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Ajker time koto?",
+        "response": {
+          "content": "The current time is 5:23:28 PM.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 33,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "The current time is 5:23:28 PM.",
+        "translated": "The current time is 5:23:28 PM.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 34,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Kono problem ache?",
+        "expectedLang": "bn",
+        "description": "Problem check in Benglish",
+        "expectedEnglish": "Is there any problem?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.47000000000000003,
+        "isMixed": false,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 15,
+                "score": "83.33%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "en",
+            "confidence": 0.4,
+            "hinglishMatches": 0,
+            "benglishMatches": 0,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 0,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 0
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 3,
+              "englishWords": 2,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "66.7%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 3,
+              "wordLanguages": [
+                {
+                  "word": "Kono",
+                  "language": "hi"
+                },
+                {
+                  "word": "problem",
+                  "language": "hi"
+                },
+                {
+                  "word": "ache?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 3,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": false,
+            "matchCount": 0,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "1ms"
+        },
+        "time": 1
+      },
+      "translationAccuracy": {
+        "original": "Kono problem ache?",
+        "translated": "Kono problem ache?",
+        "expected": "Is there any problem?",
+        "accuracy": 0,
+        "method": "none_needed",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Kono problem ache?",
+        "response": {
+          "content": "I don't detect any major problems. Everything seems to be working fine!",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I don't detect any major problems. Everything seems to be working fine!",
+        "translated": "I don't detect any major problems. Everything seems to be working fine!",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 1,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Bhalo bolo please",
+        "expectedLang": "bn",
+        "description": "Polite request in Benglish",
+        "expectedEnglish": "Please say it well"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.39,
+        "isMixed": true,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 15,
+                "score": "88.24%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "bn",
+            "confidence": 0.6666666666666666,
+            "hinglishMatches": 0,
+            "benglishMatches": 2,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 1,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 2
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 3,
+              "englishWords": 3,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "100.0%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 3,
+              "wordLanguages": [
+                {
+                  "word": "Bhalo",
+                  "language": "hi"
+                },
+                {
+                  "word": "bolo",
+                  "language": "hi"
+                },
+                {
+                  "word": "please",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 3,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": true,
+            "matchCount": 1,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "1ms"
+        },
+        "time": 1
+      },
+      "translationAccuracy": {
+        "original": "Bhalo bolo please",
+        "translated": "Bhalo bolo please",
+        "expected": "Please say it well",
+        "accuracy": 0.16666666666666666,
+        "method": "mixed_advanced",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Bhalo bolo please",
+        "response": {
+          "content": "I understand your question. Let me provide you with a helpful response.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I understand your question. Let me provide you with a helpful response.",
+        "translated": "I understand your question. Let me provide you with a helpful response.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 2,
+      "fallbackActivated": false
+    },
+    {
+      "testCase": {
+        "query": "Kivabe kaj korbe?",
+        "expectedLang": "bn",
+        "description": "Functionality inquiry in Benglish",
+        "expectedEnglish": "How will it work?"
+      },
+      "passed": false,
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "confidence": 0.39,
+        "isMixed": true,
+        "details": {
+          "scriptResult": {
+            "language": "en",
+            "dominantScript": "latin",
+            "confidence": 0.9,
+            "analysis": {
+              "hindi": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "bengali": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "arabic": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "devanagari": {
+                "matches": 0,
+                "score": "0.00%"
+              },
+              "latin": {
+                "matches": 14,
+                "score": "82.35%"
+              }
+            },
+            "isMixedScript": false,
+            "mixedScriptRatio": "0.0%",
+            "scriptComplexity": "simple",
+            "scriptTransitions": 2
+          },
+          "patternResult": {
+            "language": "bn",
+            "confidence": 0.7666666666666666,
+            "hinglishMatches": 0,
+            "benglishMatches": 2,
+            "hinglishKeyWords": 0,
+            "benglishKeyWords": 2,
+            "matchedPatterns": {
+              "hinglish": 0,
+              "benglish": 2
+            }
+          },
+          "statisticalResult": {
+            "language": "en",
+            "confidence": 0.8,
+            "statistics": {
+              "totalWords": 3,
+              "englishWords": 2,
+              "hindiLikeWords": 0,
+              "bengaliLikeWords": 0,
+              "ratios": {
+                "english": "66.7%",
+                "hindi": "0.0%",
+                "bengali": "0.0%"
+              }
+            }
+          },
+          "wordLevelResult": {
+            "language": "hi",
+            "confidence": 0.95,
+            "wordAnalysis": {
+              "totalWords": 3,
+              "wordLanguages": [
+                {
+                  "word": "Kivabe",
+                  "language": "hi"
+                },
+                {
+                  "word": "kaj",
+                  "language": "hi"
+                },
+                {
+                  "word": "korbe?",
+                  "language": "hi"
+                }
+              ],
+              "distribution": {
+                "english": 0,
+                "hindi": 3,
+                "bengali": 0
+              }
+            },
+            "codeSwitches": [],
+            "isMixedLanguage": false,
+            "dominantLanguage": "hi",
+            "mixedRatio": 0
+          },
+          "googleStyle": {
+            "hasGoogleStyle": true,
+            "matchCount": 1,
+            "context": null,
+            "assistantName": null
+          },
+          "processingTime": "1ms"
+        },
+        "time": 1
+      },
+      "translationAccuracy": {
+        "original": "Kivabe kaj korbe?",
+        "translated": "Kivabe kaj korbe?",
+        "expected": "How will it work?",
+        "accuracy": 0,
+        "method": "mixed_advanced",
+        "time": 0,
+        "fallbackUsed": false
+      },
+      "tmlpdProcessing": {
+        "query": "Kivabe kaj korbe?",
+        "response": {
+          "content": "I understand your question. Let me provide you with a helpful response.",
+          "language": "en",
+          "source": "tmlpd_mock"
+        },
+        "time": 0,
+        "success": true
+      },
+      "responseTranslation": {
+        "english": "I understand your question. Let me provide you with a helpful response.",
+        "translated": "I understand your question. Let me provide you with a helpful response.",
+        "targetLanguage": "en",
+        "time": 0
+      },
+      "overallExperience": {
+        "score": 35,
+        "factors": [
+          "Successful TMLPD processing",
+          "No fallback needed"
+        ],
+        "rating": "Very Poor"
+      },
+      "latency": 1,
+      "fallbackActivated": false
+    }
+  ],
+  "productionReadiness": {
+    "score": 31,
+    "level": "Development Required",
+    "recommendation": "Additional development and testing required before deployment."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "omniclaw-alexa-bridge",
+  "version": "1.0.0",
+  "description": "OmniClaw Personal Assistant - Alexa Bridge with Spotify Integration",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "deploy": "gcloud functions deploy omniclaw-alexa-bridge --runtime=nodejs20 --trigger-http --allow-unauthenticated"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "franc": "^6.2.0",
+    "franc-min": "^6.2.0",
+    "mediabunny": "^1.40.1",
+    "nodejs-whisper": "^0.3.0",
+    "nuid": "^2.0.1-2",
+    "whatlang": "^0.1.0-1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

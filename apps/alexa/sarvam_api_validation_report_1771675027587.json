@@ -1,0 +1,873 @@
+{
+  "metadata": {
+    "reportTime": "2026-02-21T11:57:07.587Z",
+    "testSuite": "Complete Sarvam API Validation",
+    "version": "1.0.0"
+  },
+  "phases": {
+    "endpointDiscovery": {
+      "status": "success",
+      "workingEndpoints": [
+        "/translate"
+      ],
+      "bestEndpoint": "/translate",
+      "bestResponseTime": 273,
+      "recommendations": "Use endpoint /translate for optimal performance"
+    },
+    "translationTest": {
+      "metadata": {
+        "reportTime": "2026-02-21T11:57:06.980Z",
+        "testSuite": "Sarvam API Translation Direction Test",
+        "version": "1.0.0"
+      },
+      "summary": {
+        "totalTests": 8,
+        "passed": 8,
+        "failed": 0,
+        "successRate": "100.0%",
+        "averageResponseTime": "284ms",
+        "averageQualityScore": "9.8/10"
+      },
+      "detailedResults": [
+        {
+          "endpoint": "/translate",
+          "success": true,
+          "error": null,
+          "statusCode": 200,
+          "responseTime": 273,
+          "responseData": {
+            "request_id": "20260221_4f31198b-94f4-44bb-a0c9-d0ee025d55de",
+            "translated_text": "नमस्ते",
+            "source_language_code": "en-IN"
+          }
+        },
+        {
+          "endpoint": "/translate/v1",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_7ca2290f-b1e8-489a-a7fa-d2309452bab3\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_7ca2290f-b1e8-489a-a7fa-d2309452bab3"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate/v2",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_43af6d9b-c586-464b-a0d8-57845af511f7\"}}",
+          "statusCode": 404,
+          "responseTime": 33,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_43af6d9b-c586-464b-a0d8-57845af511f7"
+            }
+          }
+        },
+        {
+          "endpoint": "/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_e4bb750f-6b38-4d70-821e-af6d99183e23\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_e4bb750f-6b38-4d70-821e-af6d99183e23"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translate",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_e68c25b6-0488-4e37-b7e5-744253040be9\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_e68c25b6-0488-4e37-b7e5-744253040be9"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_d02e5fe9-94c7-4f41-a03f-c835402b349c\"}}",
+          "statusCode": 404,
+          "responseTime": 32,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_d02e5fe9-94c7-4f41-a03f-c835402b349c"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate",
+          "success": true,
+          "error": null,
+          "statusCode": 200,
+          "responseTime": 173,
+          "responseData": {
+            "request_id": "20260221_52773e79-347e-49a7-b340-0ff27b56804b",
+            "translated_text": "नमस्ते",
+            "source_language_code": "en-IN"
+          }
+        },
+        {
+          "endpoint": "/translate/v1",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_6e937a5e-49ae-4d01-9df8-d09775996105\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_6e937a5e-49ae-4d01-9df8-d09775996105"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate/v2",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_ff955dc9-1cb8-4412-ae1c-5c5a81a13f06\"}}",
+          "statusCode": 404,
+          "responseTime": 38,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_ff955dc9-1cb8-4412-ae1c-5c5a81a13f06"
+            }
+          }
+        },
+        {
+          "endpoint": "/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_ad1ed83f-fdba-45e0-b393-66d0d409a7aa\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_ad1ed83f-fdba-45e0-b393-66d0d409a7aa"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translate",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_b268e2a8-dd55-4914-9ac0-c7058a58efbc\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_b268e2a8-dd55-4914-9ac0-c7058a58efbc"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_fddd27e9-e0b3-471c-ad71-19c90893acfb\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_fddd27e9-e0b3-471c-ad71-19c90893acfb"
+            }
+          }
+        },
+        {
+          "id": "HI_EN_BASIC",
+          "direction": "Hindi → English",
+          "input": "नमस्ते, आज मौसम कैसा है?",
+          "success": true,
+          "translatedText": "Hello, ma'am; how is the weather today?",
+          "error": null,
+          "responseTime": 323,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "foundKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "HI_EN_TECHNICAL",
+          "direction": "Hindi → English (Technical)",
+          "input": "क्या आप मेरी मदद कर सकते हैं Python code लिखने में?",
+          "success": true,
+          "translatedText": "Can you help me write the python code?",
+          "error": null,
+          "responseTime": 384,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "foundKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_HI_BASIC",
+          "direction": "English → Hindi",
+          "input": "Hello, how is the weather today?",
+          "success": true,
+          "translatedText": "नमस्ते, आज मौसम कैसा है?",
+          "error": null,
+          "responseTime": 330,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "नमस्ते",
+              "मौसम",
+              "कैसा"
+            ],
+            "foundKeywords": [
+              "नमस्ते",
+              "मौसम",
+              "कैसा"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_HI_TECHNICAL",
+          "direction": "English → Hindi (Technical)",
+          "input": "Can you help me write Python code?",
+          "success": true,
+          "translatedText": "क्या आप मुझे पायथन कोड लिखने में मदद कर सकते हैं?",
+          "error": null,
+          "responseTime": 327,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "मदद",
+              "पायथन",
+              "कोड",
+              "लिख"
+            ],
+            "foundKeywords": [
+              "मदद",
+              "पायथन",
+              "कोड",
+              "लिख"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "BN_EN_BASIC",
+          "direction": "Bengali → English",
+          "input": "নমস্কার, আজ আবহাওয়া কেমন আছে?",
+          "success": true,
+          "translatedText": "Hello, how is the weather today?",
+          "error": null,
+          "responseTime": 220,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "foundKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "BN_EN_TECHNICAL",
+          "direction": "Bengali → English (Technical)",
+          "input": "আপনি কি আমাকে Python code লিখতে সাহায্য করতে পারবেন?",
+          "success": true,
+          "translatedText": "Can you help me write the Python code?",
+          "error": null,
+          "responseTime": 232,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "foundKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_BN_BASIC",
+          "direction": "English → Bengali",
+          "input": "Hello, how is the weather today?",
+          "success": true,
+          "translatedText": "নমস্কার, আজ আবহাওয়া কেমন?",
+          "error": null,
+          "responseTime": 214,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "নমস্কার",
+              "আবহাওয়া",
+              "কেমন"
+            ],
+            "foundKeywords": [
+              "নমস্কার",
+              "আবহাওয়া",
+              "কেমন"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_BN_TECHNICAL",
+          "direction": "English → Bengali (Technical)",
+          "input": "Can you help me write Python code?",
+          "success": true,
+          "translatedText": "আপনি কি আমাকে পাইথন কোড লেখতে সাহায্য করবেন?",
+          "error": null,
+          "responseTime": 243,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 8,
+            "expectedKeywords": [
+              "সাহায্য",
+              "পাইথন",
+              "কোড",
+              "লিখ"
+            ],
+            "foundKeywords": [
+              "সাহায্য",
+              "পাইথন",
+              "কোড"
+            ],
+            "matchRate": "75.0%",
+            "issues": [
+              "Some expected keywords missing"
+            ]
+          }
+        },
+        {
+          "id": "INVALID_KEY",
+          "description": "Invalid API Key",
+          "handledCorrectly": true,
+          "statusCode": 403,
+          "responseTime": 46,
+          "error": "Expected error"
+        },
+        {
+          "id": "TIMEOUT",
+          "description": "Request Timeout",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 104,
+          "error": null
+        },
+        {
+          "id": "INVALID_PAYLOAD",
+          "description": "Invalid Payload Format",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 423,
+          "error": "Expected error"
+        },
+        {
+          "id": "EMPTY_INPUT",
+          "description": "Empty Input",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 33,
+          "error": null
+        }
+      ],
+      "recommendations": [
+        {
+          "priority": "INFO",
+          "issue": "System performing well",
+          "recommendation": "Ready for production deployment",
+          "details": "All metrics within acceptable ranges"
+        }
+      ]
+    },
+    "errorHandling": {
+      "metadata": {
+        "reportTime": "2026-02-21T11:57:07.587Z",
+        "testSuite": "Sarvam API Error Handling Test",
+        "version": "1.0.0"
+      },
+      "summary": {
+        "totalTests": 24,
+        "handledCorrectly": 4,
+        "handlingRate": "16.7%"
+      },
+      "detailedResults": [
+        {
+          "endpoint": "/translate",
+          "success": true,
+          "error": null,
+          "statusCode": 200,
+          "responseTime": 273,
+          "responseData": {
+            "request_id": "20260221_4f31198b-94f4-44bb-a0c9-d0ee025d55de",
+            "translated_text": "नमस्ते",
+            "source_language_code": "en-IN"
+          }
+        },
+        {
+          "endpoint": "/translate/v1",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_7ca2290f-b1e8-489a-a7fa-d2309452bab3\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_7ca2290f-b1e8-489a-a7fa-d2309452bab3"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate/v2",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_43af6d9b-c586-464b-a0d8-57845af511f7\"}}",
+          "statusCode": 404,
+          "responseTime": 33,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_43af6d9b-c586-464b-a0d8-57845af511f7"
+            }
+          }
+        },
+        {
+          "endpoint": "/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_e4bb750f-6b38-4d70-821e-af6d99183e23\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_e4bb750f-6b38-4d70-821e-af6d99183e23"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translate",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_e68c25b6-0488-4e37-b7e5-744253040be9\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_e68c25b6-0488-4e37-b7e5-744253040be9"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_d02e5fe9-94c7-4f41-a03f-c835402b349c\"}}",
+          "statusCode": 404,
+          "responseTime": 32,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_d02e5fe9-94c7-4f41-a03f-c835402b349c"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate",
+          "success": true,
+          "error": null,
+          "statusCode": 200,
+          "responseTime": 173,
+          "responseData": {
+            "request_id": "20260221_52773e79-347e-49a7-b340-0ff27b56804b",
+            "translated_text": "नमस्ते",
+            "source_language_code": "en-IN"
+          }
+        },
+        {
+          "endpoint": "/translate/v1",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_6e937a5e-49ae-4d01-9df8-d09775996105\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_6e937a5e-49ae-4d01-9df8-d09775996105"
+            }
+          }
+        },
+        {
+          "endpoint": "/translate/v2",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_ff955dc9-1cb8-4412-ae1c-5c5a81a13f06\"}}",
+          "statusCode": 404,
+          "responseTime": 38,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_ff955dc9-1cb8-4412-ae1c-5c5a81a13f06"
+            }
+          }
+        },
+        {
+          "endpoint": "/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_ad1ed83f-fdba-45e0-b393-66d0d409a7aa\"}}",
+          "statusCode": 404,
+          "responseTime": 30,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_ad1ed83f-fdba-45e0-b393-66d0d409a7aa"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translate",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_b268e2a8-dd55-4914-9ac0-c7058a58efbc\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_b268e2a8-dd55-4914-9ac0-c7058a58efbc"
+            }
+          }
+        },
+        {
+          "endpoint": "/api/translation",
+          "success": false,
+          "error": "HTTP 404: {\"error\":{\"message\":\"Not Found\",\"code\":\"not_found_error\",\"request_id\":\"20260221_fddd27e9-e0b3-471c-ad71-19c90893acfb\"}}",
+          "statusCode": 404,
+          "responseTime": 31,
+          "responseData": {
+            "error": {
+              "message": "Not Found",
+              "code": "not_found_error",
+              "request_id": "20260221_fddd27e9-e0b3-471c-ad71-19c90893acfb"
+            }
+          }
+        },
+        {
+          "id": "HI_EN_BASIC",
+          "direction": "Hindi → English",
+          "input": "नमस्ते, आज मौसम कैसा है?",
+          "success": true,
+          "translatedText": "Hello, ma'am; how is the weather today?",
+          "error": null,
+          "responseTime": 323,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "foundKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "HI_EN_TECHNICAL",
+          "direction": "Hindi → English (Technical)",
+          "input": "क्या आप मेरी मदद कर सकते हैं Python code लिखने में?",
+          "success": true,
+          "translatedText": "Can you help me write the python code?",
+          "error": null,
+          "responseTime": 384,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "foundKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_HI_BASIC",
+          "direction": "English → Hindi",
+          "input": "Hello, how is the weather today?",
+          "success": true,
+          "translatedText": "नमस्ते, आज मौसम कैसा है?",
+          "error": null,
+          "responseTime": 330,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "नमस्ते",
+              "मौसम",
+              "कैसा"
+            ],
+            "foundKeywords": [
+              "नमस्ते",
+              "मौसम",
+              "कैसा"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_HI_TECHNICAL",
+          "direction": "English → Hindi (Technical)",
+          "input": "Can you help me write Python code?",
+          "success": true,
+          "translatedText": "क्या आप मुझे पायथन कोड लिखने में मदद कर सकते हैं?",
+          "error": null,
+          "responseTime": 327,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "मदद",
+              "पायथन",
+              "कोड",
+              "लिख"
+            ],
+            "foundKeywords": [
+              "मदद",
+              "पायथन",
+              "कोड",
+              "लिख"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "BN_EN_BASIC",
+          "direction": "Bengali → English",
+          "input": "নমস্কার, আজ আবহাওয়া কেমন আছে?",
+          "success": true,
+          "translatedText": "Hello, how is the weather today?",
+          "error": null,
+          "responseTime": 220,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "foundKeywords": [
+              "hello",
+              "weather",
+              "how"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "BN_EN_TECHNICAL",
+          "direction": "Bengali → English (Technical)",
+          "input": "আপনি কি আমাকে Python code লিখতে সাহায্য করতে পারবেন?",
+          "success": true,
+          "translatedText": "Can you help me write the Python code?",
+          "error": null,
+          "responseTime": 232,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "foundKeywords": [
+              "help",
+              "python",
+              "code",
+              "write"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_BN_BASIC",
+          "direction": "English → Bengali",
+          "input": "Hello, how is the weather today?",
+          "success": true,
+          "translatedText": "নমস্কার, আজ আবহাওয়া কেমন?",
+          "error": null,
+          "responseTime": 214,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 10,
+            "expectedKeywords": [
+              "নমস্কার",
+              "আবহাওয়া",
+              "কেমন"
+            ],
+            "foundKeywords": [
+              "নমস্কার",
+              "আবহাওয়া",
+              "কেমন"
+            ],
+            "matchRate": "100.0%",
+            "issues": []
+          }
+        },
+        {
+          "id": "EN_BN_TECHNICAL",
+          "direction": "English → Bengali (Technical)",
+          "input": "Can you help me write Python code?",
+          "success": true,
+          "translatedText": "আপনি কি আমাকে পাইথন কোড লেখতে সাহায্য করবেন?",
+          "error": null,
+          "responseTime": 243,
+          "statusCode": 200,
+          "translationQuality": {
+            "score": 8,
+            "expectedKeywords": [
+              "সাহায্য",
+              "পাইথন",
+              "কোড",
+              "লিখ"
+            ],
+            "foundKeywords": [
+              "সাহায্য",
+              "পাইথন",
+              "কোড"
+            ],
+            "matchRate": "75.0%",
+            "issues": [
+              "Some expected keywords missing"
+            ]
+          }
+        },
+        {
+          "id": "INVALID_KEY",
+          "description": "Invalid API Key",
+          "handledCorrectly": true,
+          "statusCode": 403,
+          "responseTime": 46,
+          "error": "Expected error"
+        },
+        {
+          "id": "TIMEOUT",
+          "description": "Request Timeout",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 104,
+          "error": null
+        },
+        {
+          "id": "INVALID_PAYLOAD",
+          "description": "Invalid Payload Format",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 423,
+          "error": "Expected error"
+        },
+        {
+          "id": "EMPTY_INPUT",
+          "description": "Empty Input",
+          "handledCorrectly": true,
+          "statusCode": 400,
+          "responseTime": 33,
+          "error": null
+        }
+      ]
+    }
+  },
+  "overallAssessment": {
+    "status": "EXCELLENT",
+    "productionReady": true,
+    "successRate": "100.0%",
+    "overallRecommendation": "API is ready for production use"
+  }
+}

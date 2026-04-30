@@ -1,0 +1,83 @@
+{
+  "results": [
+    {
+      "name": "Dwarkesh Podcast Latest",
+      "query": "summarize the latest Dwarkesh podcast podcast",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072313656
+    },
+    {
+      "name": "Terence Tao Podcast",
+      "query": "what is the latest Terence Tao podcast about",
+      "success": true,
+      "provider": "glm",
+      "responseLength": 1857,
+      "responsePreview": "As of mid-2024, the most recent major podcast appearance by Terence Tao was on the **Lex Fridman Podcast** (Episode #398), released on **May 28, 2024*...",
+      "time": 1774072317702
+    },
+    {
+      "name": "Lex Fridman AI Podcast",
+      "query": "summarize Lex Fridman latest podcast episode about AI",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072319026
+    },
+    {
+      "name": "Huberman Lab Podcast",
+      "query": "latest Huberman Lab podcast summary",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072320535
+    },
+    {
+      "name": "Narendra Modi Latest Tweets",
+      "query": "what are Narendra Modi's latest tweets",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072322141
+    },
+    {
+      "name": "Elon Musk AI Thread",
+      "query": "summarize Elon Musk's latest AI tweets",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072323371
+    },
+    {
+      "name": "Sam Altman Tweets",
+      "query": "what is Sam Altman tweeting about AI",
+      "success": true,
+      "provider": "glm",
+      "responseLength": 2245,
+      "responsePreview": "Sam Altman, the CEO of OpenAI, generally uses Twitter (X) to do three things: **tease future products**, **discuss the economics of AI**, and **engage...",
+      "time": 1774072328186
+    },
+    {
+      "name": "Tech News Twitter",
+      "query": "latest tech news from Twitter",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072329575
+    },
+    {
+      "name": "AI Researchers Twitter",
+      "query": "what are AI researchers discussing on Twitter",
+      "provider": "tavily-fact-check",
+      "responseLength": 0,
+      "responsePreview": "No response",
+      "time": 1774072331158
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "total": 9,
+    "passRate": "22.2"
+  }
+}

@@ -1,0 +1,188 @@
+deployment:
+  name: "TMLPD Monitoring Configuration"
+  description: "Advanced monitoring and metrics for TreeQuest parallel deployments"
+
+  monitoring:
+    # Real-time Dashboard
+    dashboard:
+      enabled: true
+      port: 8080
+      refresh_interval: 5  # seconds
+      auto_start: true
+
+    # Metrics Collection
+    metrics:
+      enabled: true
+      collection_interval: 10  # seconds
+      retention_days: 30
+      export_formats:
+        - json
+        - prometheus
+
+    # Performance Tracking
+    performance:
+      track_latency: true
+      track_throughput: true
+      track_cost: true
+      track_errors: true
+      track_success_rate: true
+
+    # Agent Health
+    agent_health:
+      check_interval: 30  # seconds
+      timeout_threshold: 120  # seconds
+      restart_on_failure: true
+      max_restart_attempts: 3
+
+    # Alerts & Notifications
+    alerts:
+      enabled: true
+      channels:
+        - type: "console"
+          enabled: true
+        - type: "file"
+          enabled: true
+          path: ".tmlpd-alerts.log"
+        - type: "webhook"
+          enabled: false
+          url: "https://hooks.example.com/alerts"
+
+      rules:
+        - name: "high_error_rate"
+          condition: "error_rate > 0.10"
+          severity: "warning"
+          message: "Error rate exceeds 10%"
+
+        - name: "budget_exceeded"
+          condition: "cost > budget_limit * 0.90"
+          severity: "critical"
+          message: "Approaching budget limit"
+
+        - name: "agent_unresponsive"
+          condition: "last_heartbeat > 180"
+          severity: "warning"
+          message: "Agent unresponsive for 3 minutes"
+
+        - name: "task_stalled"
+          condition: "task_duration > 1800"
+          severity: "info"
+          message: "Task running for 30+ minutes"
+
+  # Logging Configuration
+  logging:
+    level: "info"  # debug, info, warn, error
+    format: "json"
+    outputs:
+      - type: "console"
+        enabled: true
+        colorize: true
+      - type: "file"
+        enabled: true
+        path: ".tmlpd-logs/deployment.log"
+        rotation:
+          enabled: true
+          max_size_mb: 100
+          max_files: 10
+
+    # Structured Logging Fields
+    fields:
+      - timestamp
+      - agent_id
+      - task_id
+      - provider
+      - model
+      - status
+      - duration_ms
+      - cost_usd
+      - error_message
+
+  # Metrics Export Configuration
+  export:
+    prometheus:
+      enabled: true
+      port: 9090
+      path: "/metrics"
+
+    json:
+      enabled: true
+      path: ".tmlpd-metrics/current-metrics.json"
+      pretty_print: true
+
+    csv:
+      enabled: false
+      path: ".tmlpd-metrics/history.csv"
+
+  # Visualization
+  visualization:
+    chart_types:
+      - "tasks_completed_over_time"
+      - "cost_accumulation"
+      - "agent_utilization"
+      - "error_rate_by_provider"
+      - "latency_distribution"
+
+    report_generation:
+      enabled: true
+      interval: 300  # every 5 minutes
+      output_dir: ".tmlpd-reports"
+
+  # Custom Metrics
+  custom_metrics:
+    - name: "tasks_per_minute"
+      type: "gauge"
+      description: "Tasks completed per minute per agent"
+
+    - name: "average_cost_per_task"
+      type: "gauge"
+      description: "Average cost per completed task"
+
+    - name: "provider_success_rate"
+      type: "gauge"
+      labels: ["provider"]
+      description: "Success rate by LLM provider"
+
+    - name: "parallel_efficiency"
+      type: "gauge"
+      description: "Ratio of parallel to sequential execution time"
+
+  # Performance Baselines
+  baselines:
+    established: false
+    calibration_runs: 5
+    auto_adjust: true
+
+    expected_metrics:
+      tasks_per_minute: 2.0
+      cost_per_task: 0.05
+      error_rate: 0.02
+      agent_utilization: 0.85
+
+  # Health Checks
+  health_checks:
+    enabled: true
+    interval: 60  # seconds
+
+    checks:
+      - name: "api_connectivity"
+        type: "external"
+        url: "https://api.anthropic.com/v1/messages"
+
+      - name: "disk_space"
+        type: "system"
+        threshold_gb: 5
+
+      - name: "memory_usage"
+        type: "system"
+        threshold_percent: 85
+
+      - name: "agent_heartbeat"
+        type: "internal"
+        timeout_seconds: 30
+
+  # Debug Mode
+  debug:
+    enabled: false
+    trace_requests: true
+    log_request_body: true
+    log_response_body: false
+    save_raw_responses: false

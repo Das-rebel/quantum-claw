@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "reportTime": "2026-02-21T11:55:45.746Z",
+    "testSuite": "Comprehensive Sarvam API Test",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "totalTests": 6,
+    "passed": 6,
+    "failed": 0,
+    "successRate": "100.0%",
+    "averageProcessingTime": "2114ms",
+    "fallbackActivatedCount": 0,
+    "fallbackActivationRate": "0.0%"
+  },
+  "performanceMetrics": {
+    "languageDetectionAccuracy": "33.3%",
+    "averageTranslationQuality": "8.0/10",
+    "totalProcessingTime": "12685ms"
+  },
+  "detailedResults": [
+    {
+      "id": "B1",
+      "category": "Basic Bengali Script",
+      "query": "আজ আবহাওয়া কেমন আছে?",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:55:30.054Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "bn",
+        "expected": "bn",
+        "correct": true,
+        "processingTime": 3
+      },
+      "translation": {
+        "translated": "আজ আবহাওয়া কেমন আছে?",
+        "expected": "How is the weather today?",
+        "processingTime": 6669
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 6,
+        "issues": [
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.84",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 6674
+    },
+    {
+      "id": "B2",
+      "category": "Basic Hindi Script",
+      "query": "आज मौसम कैसा है?",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:55:37.229Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "hi",
+        "expected": "hi",
+        "correct": true,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "आज मौसम कैसा है?",
+        "expected": "How is the weather today?",
+        "processingTime": 6002
+      },
+      "qualityAssessment": {
+        "overallScore": 7,
+        "completeness": 8,
+        "accuracy": 6,
+        "issues": [
+          "Translation somewhat short",
+          "Many key words missing"
+        ],
+        "metrics": {
+          "lengthRatio": "0.64",
+          "preservationRate": "0.0%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 6003
+    },
+    {
+      "id": "I1",
+      "category": "Mixed Script Bengali",
+      "query": "আজ code explain করো please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:55:43.733Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 2
+      },
+      "translation": {
+        "translated": "আজ code explain করো please",
+        "expected": "Explain the code today please",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 9,
+        "completeness": 10,
+        "accuracy": 7,
+        "issues": [
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.90",
+          "preservationRate": "75.0%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 3
+    },
+    {
+      "id": "I2",
+      "category": "Mixed Script Hindi",
+      "query": "आज कोड explain करो please",
+      "expectedLanguage": "hi",
+      "startTime": "2026-02-21T11:55:44.237Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "hi",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "आज कोड explain करो please",
+        "expected": "Explain the code today please",
+        "processingTime": 0
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.86",
+          "preservationRate": "50.0%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 1
+    },
+    {
+      "id": "A1",
+      "category": "Complex Code-Switching Bengali",
+      "query": "আজ তোমার সাথে discuss করতে চাই about this project",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:55:44.739Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 1
+      },
+      "translation": {
+        "translated": "আজ তোমার সাথে discuss করতে চাই about this project",
+        "expected": "I want to discuss with you today about this project",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.96",
+          "preservationRate": "57.1%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 3
+    },
+    {
+      "id": "R1",
+      "category": "Weather Query Bengali",
+      "query": "আজকের weather update দাও please",
+      "expectedLanguage": "bn",
+      "startTime": "2026-02-21T11:55:45.244Z",
+      "status": "passed",
+      "languageDetection": {
+        "detected": "en",
+        "expected": "bn",
+        "correct": false,
+        "processingTime": 0
+      },
+      "translation": {
+        "translated": "আজকের weather update দাও please",
+        "expected": "Please give me today's weather update",
+        "processingTime": 1
+      },
+      "qualityAssessment": {
+        "overallScore": 8,
+        "completeness": 10,
+        "accuracy": 5,
+        "issues": [
+          "Some key words missing",
+          "Language detection may be incorrect"
+        ],
+        "metrics": {
+          "lengthRatio": "0.84",
+          "preservationRate": "60.0%"
+        }
+      },
+      "fallbackActivated": false,
+      "totalProcessingTime": 1
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "INFO",
+      "issue": "System performing well",
+      "recommendation": "Ready for production deployment",
+      "details": "All metrics within acceptable ranges"
+    }
+  ]
+}
