@@ -1,0 +1,161 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "open claw",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": [
+                        "cancel",
+                        "stop",
+                        "never mind"
+                    ]
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": [
+                        "help",
+                        "what can you do",
+                        "tell me about yourself",
+                        "what are your capabilities"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": [
+                        "stop",
+                        "end",
+                        "that's all"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": [
+                        "go home",
+                        "reset"
+                    ]
+                },
+                {
+                    "name": "QueryIntent",
+                    "slots": [
+                        {
+                            "name": "query",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "ask {query}",
+                        "tell me {query}",
+                        "say {query}",
+                        "what is {query}",
+                        "who is {query}",
+                        "where is {query}",
+                        "when is {query}",
+                        "how do I {query}",
+                        "how to {query}",
+                        "explain {query}",
+                        "describe {query}",
+                        "define {query}",
+                        "translate {query}",
+                        "calculate {query}",
+                        "search for {query}",
+                        "find {query}",
+                        "compare {query}",
+                        "analyze {query}",
+                        "tell me about {query}"
+                    ]
+                },
+                {
+                    "name": "WhatsAppIntent",
+                    "samples": [
+                        "send message",
+                        "whatsapp",
+                        "send a whatsapp message"
+                    ]
+                },
+                {
+                    "name": "TwitterIntent",
+                    "samples": [
+                        "tweet",
+                        "post on twitter",
+                        "send a tweet"
+                    ]
+                },
+                {
+                    "name": "TranslateIntent",
+                    "slots": [
+                        {
+                            "name": "text",
+                            "type": "AMAZON.SearchQuery"
+                        },
+                        {
+                            "name": "targetLanguage",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "translate {text} to {targetLanguage}",
+                        "say {text} in {targetLanguage}"
+                    ]
+                },
+                {
+                    "name": "CalculateIntent",
+                    "slots": [
+                        {
+                            "name": "expression",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "calculate {expression}",
+                        "what is {expression}",
+                        "compute {expression}"
+                    ]
+                },
+                {
+                    "name": "DefineIntent",
+                    "slots": [
+                        {
+                            "name": "term",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "define {term}",
+                        "what does {term} mean",
+                        "explain the term {term}"
+                    ]
+                },
+                {
+                    "name": "NewsIntent",
+                    "slots": [
+                        {
+                            "name": "topic",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what's the news",
+                        "tell me news about {topic}",
+                        "latest news on {topic}"
+                    ]
+                },
+                {
+                    "name": "WeatherIntent",
+                    "slots": [
+                        {
+                            "name": "location",
+                            "type": "AMAZON.SearchQuery"
+                        }
+                    ],
+                    "samples": [
+                        "what's the weather",
+                        "weather in {location}",
+                        "is it raining"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
