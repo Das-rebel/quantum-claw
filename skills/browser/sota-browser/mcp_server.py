@@ -169,7 +169,10 @@ class BrowserManager:
                             sameOrigin: win.location.origin === window.location.origin
                         });
                     } catch(e) { /* cross-origin, skip */ }
-                    for (const f of win.frames) walk(f, path + '>' + (f.name || 'unnamed'));
+                    // win.frames is a WindowProxy, use numeric indexing
+                    for (let i = 0; i < win.frames.length; i++) {
+                        try { walk(win.frames[i], path + '>' + (win.frames[i].name || 'unnamed')); } catch(e) {}
+                    }
                 }
                 walk(window, 'main');
                 return frames;
@@ -577,8 +580,9 @@ class BrowserManager:
                         || '';
                 }
 
-                function walk(el) {
-                    if (SKIP_TAGS.has(el.tagName)) return;
+                function walk(el, skipSelf) {
+                    // Skip self only if explicitly requested (for BODY root)
+                    if (!skipSelf && SKIP_TAGS.has(el.tagName)) return;
 
                     const role = getRole(el);
                     const isClickable = role && (CLICKABLE_ROLES.has(role) || el.onclick || el.hasAttribute('ng-click') || el.hasAttribute('@click'));
@@ -600,10 +604,12 @@ class BrowserManager:
                         }
                     }
 
-                    for (const c of el.children) walk(c);
+                    for (const c of el.children) walk(c, false);
                 }
 
-                walk(document.body || document.documentElement);
+                // Start at body but skip body itself (just traverse children)
+                const root = document.body || document.documentElement;
+                for (const c of root.children) walk(c, false);
                 return result;
             }""")
             return {"elements": elements, "count": len(elements), "url": page.url}
@@ -623,6 +629,7 @@ class BrowserManager:
 
     async def switch_tab(self, tab_id: str, tab_index: int) -> dict:
         """Switch to a different tab by index in the context's pages list."""
+        import uuid
         if tab_id not in self.pages:
             return {"error": "Tab not found"}
         session_id = self.pages[tab_id]["session_id"]
@@ -636,7 +643,11 @@ class BrowserManager:
         new_tab_id = str(uuid.uuid4())
         self.pages[new_tab_id] = {"page": new_page, "session_id": session_id}
         del self.pages[tab_id]
-        return {"success": True, "new_tab_id": new_tab_id, "url": new_page.url, "title": await new_page.title()}
+        try:
+            title = await new_page.title()
+        except Exception:
+            title = ""
+        return {"success": True, "new_tab_id": new_tab_id, "url": new_page.url, "title": title}
 
     async def shutdown(self):
         for p in self.pages.values():
