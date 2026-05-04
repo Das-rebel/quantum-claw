@@ -1,25 +1,25 @@
 (function() {
   'use strict';
 
-  const API_BASE = window.location.origin;
-  let password = sessionStorage.getItem('vault_password');
-  let currentTab = 'dashboard';
-  let vaultStatus = {};
-  let browseOffset = 0;
-  let browseTotal = 0;
-  let currentBrowseFile = 'vault/twitter_bookmarks_automated.json';
+  var API_BASE = window.location.origin;
+  var password = sessionStorage.getItem('vault_password') || null;
+  var currentTab = 'dashboard';
+  var vaultStatus = {};
+  var browseOffset = 0;
+  var browseTotal = 0;
+  var currentBrowseFile = 'vault/twitter_bookmarks_automated.json';
 
   // DOM Elements
-  const loginScreen = document.getElementById('login-screen');
-  const dashboard = document.getElementById('dashboard');
-  const loginForm = document.getElementById('login-form');
-  const loginError = document.getElementById('login-error');
-  const tabs = document.querySelectorAll('.tab');
-  const tabContents = document.querySelectorAll('.tab-content');
-  const refreshBtn = document.getElementById('refresh-btn');
-  const logoutBtn = document.getElementById('logout-btn');
-  const lastUpdate = document.getElementById('last-update');
-  const toast = document.getElementById('toast');
+  var loginScreen = document.getElementById('login-screen');
+  var dashboard = document.getElementById('dashboard');
+  var loginForm = document.getElementById('login-form');
+  var loginError = document.getElementById('login-error');
+  var tabs = document.querySelectorAll('.tab');
+  var tabContents = document.querySelectorAll('.tab-content');
+  var refreshBtn = document.getElementById('refresh-btn');
+  var logoutBtn = document.getElementById('logout-btn');
+  var lastUpdate = document.getElementById('last-update');
+  var toast = document.getElementById('toast');
 
   // Init
   if (password) {
@@ -27,13 +27,15 @@
   }
 
   // Auth
-  loginForm.addEventListener('submit', async (e) => {
+  loginForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    const passInput = document.getElementById('password');
-    const pass = passInput.value;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/vault/status?password=${pass}`);
+    var passInput = document.getElementById('password');
+    var pass = passInput.value;
+    fetch(API_BASE + '/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pass })
+    }).then(function(res) {
       if (res.ok) {
         password = pass;
         sessionStorage.setItem('vault_password', pass);
@@ -41,12 +43,12 @@
       } else {
         loginError.textContent = 'Invalid password';
       }
-    } catch (e) {
+    }).catch(function(e) {
       loginError.textContent = 'Connection error: ' + e.message;
-    }
+    });
   });
 
-  logoutBtn.addEventListener('click', () => {
+  logoutBtn.addEventListener('click', function() {
     password = null;
     sessionStorage.removeItem('vault_password');
     loginScreen.classList.remove('hidden');
@@ -61,14 +63,15 @@
   }
 
   // Tab switching
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const tabId = tab.dataset.tab;
-      tabs.forEach(t => t.classList.remove('active'));
-      tabContents.forEach(c => c.classList.remove('active'));
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var tabId = tab.dataset.tab;
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tabContents.forEach(function(c) { c.classList.remove('active'); });
       tab.classList.add('active');
       document.getElementById('tab-' + tabId).classList.add('active');
       currentTab = tabId;
+      if (tabId === 'search') initSearch();
     });
   });
 
@@ -76,10 +79,10 @@
   refreshBtn.addEventListener('click', loadAllData);
 
   // Auto refresh
-  let autoRefreshInterval;
+  var autoRefreshInterval;
   function startAutoRefresh() {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-    autoRefreshInterval = setInterval(() => {
+    autoRefreshInterval = setInterval(function() {
       if (currentTab === 'dashboard' || currentTab === 'system') {
         loadAllData();
       }
@@ -87,53 +90,59 @@
   }
 
   // API helper
-  async function api(endpoint, options = {}) {
-    const res = await fetch(`${API_BASE}${endpoint}?password=${password}`, options);
-    if (res.status === 401) {
-      logoutBtn.click();
-      throw new Error('Unauthorized');
-    }
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+  function api(endpoint, options) {
+    options = options || {};
+    var url = API_BASE + endpoint + (endpoint.includes('?') ? '&' : '?') + 'password=' + encodeURIComponent(password);
+    return fetch(url, {
+      method: options.method || 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    }).then(function(res) {
+      if (res.status === 401) {
+        logoutBtn.click();
+        throw new Error('Unauthorized');
+      }
+      if (!res.ok) return res.text().then(function(t) { throw new Error(t); });
+      return res.json();
+    });
   }
 
   // Load all data
-  async function loadAllData() {
-    await Promise.all([
+  function loadAllData() {
+    return Promise.all([
       loadVaultStatus(),
       loadSyncHistory(),
       loadFunctionsStatus(),
       loadSchedulersStatus()
-    ]);
-    lastUpdate.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    ]).then(function() {
+      lastUpdate.textContent = 'Updated: ' + new Date().toLocaleTimeString();
+    });
   }
 
   // Vault Status
-  async function loadVaultStatus() {
-    try {
-      vaultStatus = await api('/api/vault/status');
+  function loadVaultStatus() {
+    return api('/api/vault/status').then(function(data) {
+      vaultStatus = data;
       renderVaultStats();
-    } catch (e) {
+    }).catch(function(e) {
       showToast('Failed to load vault status: ' + e.message, 'error');
-    }
+    });
   }
 
   function renderVaultStats() {
-    const container = document.getElementById('vault-stats');
-    const sources = [
+    var container = document.getElementById('vault-stats');
+    var sources = [
       { key: 'vault/twitter_bookmarks_automated.json', title: 'Twitter Bookmarks', icon: 'twitter' },
       { key: 'vault/instagram_saved_automated.json', title: 'Instagram Saved', icon: 'instagram' },
       { key: 'vault/bookmarks_automated.json', title: 'Browser Bookmarks', icon: 'bookmarks' },
       { key: 'unified_knowledge_graph.json', title: 'Knowledge Graph', icon: 'kg' }
     ];
 
-    container.innerHTML = sources.map(s => {
-      const data = vaultStatus[s.key];
-      const hasError = !data || data.error;
-      const count = data && data.count !== undefined ? data.count : (hasError ? 'N/A' : '...');
-      const updated = data && data.updated ? new Date(data.updated).toLocaleString() : 'N/A';
-      const size = data && data.size ? formatBytes(data.size) : 'N/A';
-
+    container.innerHTML = sources.map(function(s) {
+      var data = vaultStatus[s.key];
+      var hasError = !data || data.error;
+      var count = data && data.count !== undefined ? data.count : (hasError ? 'N/A' : '...');
+      var updated = data && data.updated ? new Date(data.updated).toLocaleString() : 'N/A';
+      var size = data && data.size ? formatBytes(data.size) : 'N/A';
       return '<div class="stat-card ' + (hasError ? 'error' : '') + '">' +
         '<div class="stat-header">' +
           '<div class="stat-icon ' + s.icon + '">' + getIcon(s.icon) + '</div>' +
@@ -145,27 +154,26 @@
       '</div>';
     }).join('');
 
-    // Sync summary
     if (vaultStatus['vault/latest_sync_summary.json']) {
-      const summary = vaultStatus['vault/latest_sync_summary.json'];
-      const syncContainer = document.getElementById('sync-history');
-      let html = '';
+      var summary = vaultStatus['vault/latest_sync_summary.json'];
+      var syncContainer = document.getElementById('sync-history');
+      var html = '';
       if (summary.twitter) html += '<div class="history-item"><span class="history-source">Twitter</span><span class="history-count">' + (summary.twitter.count || 0) + ' posts</span></div>';
       if (summary.instagram) html += '<div class="history-item"><span class="history-source">Instagram</span><span class="history-count">' + (summary.instagram.count || 0) + ' posts</span></div>';
-      if (html) document.getElementById('sync-history').innerHTML = html;
+      if (html) syncContainer.innerHTML = html;
     }
   }
 
   function formatBytes(bytes) {
     if (!bytes || bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    var k = 1024;
+    var sizes = ['B', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
   function getIcon(type) {
-    const icons = {
+    var icons = {
       twitter: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
       instagram: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg>',
       bookmarks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>',
@@ -175,12 +183,11 @@
   }
 
   // Sync History
-  async function loadSyncHistory() {
-    const container = document.getElementById('sync-history');
-    try {
-      const history = await api('/api/vault/history');
+  function loadSyncHistory() {
+    var container = document.getElementById('sync-history');
+    return api('/api/vault/history').then(function(history) {
       if (!history || history.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-muted)">No sync history available</p>';
+        container.innerHTML = '<p style="color: var(--text-muted)">No sync history</p>';
         return;
       }
       container.innerHTML = history.slice(0, 5).map(function(h) {
@@ -190,20 +197,19 @@
           '<span class="history-time">' + (h.timestamp ? new Date(h.timestamp).toLocaleString() : '') + '</span>' +
         '</div>';
       }).join('');
-    } catch (e) {
-      container.innerHTML = '<p style="color: var(--text-muted)">Failed to load history</p>';
-    }
+    }).catch(function() {
+      container.innerHTML = '<p style="color: var(--text-muted)">No sync history</p>';
+    });
   }
 
   // Sync buttons
   document.querySelectorAll('.btn-sync').forEach(function(btn) {
-    btn.addEventListener('click', async function() {
-      const syncType = btn.dataset.sync;
+    btn.addEventListener('click', function() {
+      var syncType = btn.dataset.sync;
       btn.disabled = true;
-      const statusContainer = document.getElementById('sync-status');
+      var statusContainer = document.getElementById('sync-status');
       statusContainer.innerHTML = '<div class="sync-status-item"><span class="status running">Triggering ' + syncType + '...</span></div>';
-      try {
-        const res = await api('/api/sync/' + syncType, { method: 'POST' });
+      api('/api/sync/' + syncType, { method: 'POST' }).then(function(res) {
         if (res.success) {
           statusContainer.innerHTML = '<div class="sync-status-item"><span class="status success">' + res.message + '</span></div>';
           showToast(res.message, 'success');
@@ -211,26 +217,30 @@
           statusContainer.innerHTML = '<div class="sync-status-item"><span class="status error">' + (res.error || 'Failed') + '</span></div>';
           showToast('Sync failed: ' + res.error, 'error');
         }
-      } catch (e) {
+      }).catch(function(e) {
         statusContainer.innerHTML = '<div class="sync-status-item"><span class="status error">' + e.message + '</span></div>';
         showToast('Sync error: ' + e.message, 'error');
-      }
-      btn.disabled = false;
+      }).finally(function() {
+        btn.disabled = false;
+      });
     });
   });
 
   // Browse
-  document.getElementById('browse-load').addEventListener('click', function() {
-    currentBrowseFile = document.getElementById('browse-file').value;
-    browseOffset = 0;
-    loadBrowseData();
-  });
+  var browseLoadBtn = document.getElementById('browse-load');
+  if (browseLoadBtn) {
+    browseLoadBtn.addEventListener('click', function() {
+      currentBrowseFile = document.getElementById('browse-file').value;
+      browseOffset = 0;
+      loadBrowseData();
+    });
+  }
 
-  async function loadBrowseData() {
-    const container = document.getElementById('browse-data');
-    const info = document.getElementById('browse-info');
-    try {
-      const data = await api('/api/vault/browse?file=' + encodeURIComponent(currentBrowseFile) + '&limit=5&offset=' + browseOffset);
+  function loadBrowseData() {
+    var container = document.getElementById('browse-data');
+    var info = document.getElementById('browse-info');
+    if (!container) return;
+    api('/api/vault/browse?file=' + encodeURIComponent(currentBrowseFile) + '&limit=5&offset=' + browseOffset).then(function(data) {
       browseTotal = data.total;
       info.textContent = 'Showing ' + (data.offset + 1) + '-' + Math.min(data.offset + data.limit, data.total) + ' of ' + data.total + ' items';
       if (!data.data || data.data.length === 0) {
@@ -241,19 +251,20 @@
         return '<div class="browse-item"><pre>' + JSON.stringify(item, null, 2) + '</pre></div>';
       }).join('');
       renderPagination();
-    } catch (e) {
+    }).catch(function(e) {
       container.innerHTML = '<div class="browse-item" style="color: var(--error)">Error: ' + e.message + '</div>';
-    }
+    });
   }
 
   function renderPagination() {
-    const container = document.getElementById('browse-pagination');
-    const totalPages = Math.ceil(browseTotal / 5);
-    const currentPage = Math.floor(browseOffset / 5) + 1;
+    var container = document.getElementById('browse-pagination');
+    if (!container) return;
+    var totalPages = Math.ceil(browseTotal / 5);
+    var currentPage = Math.floor(browseOffset / 5) + 1;
     container.innerHTML = '' +
-      '<button onclick="browsePrev()" ' + (currentPage <= 1 ? 'disabled' : '') + '>Previous</button>' +
+      '<button onclick="window.browsePrev()"' + (currentPage <= 1 ? ' disabled' : '') + '>Previous</button>' +
       '<span>Page ' + currentPage + ' of ' + totalPages + '</span>' +
-      '<button onclick="browseNext()" ' + (currentPage >= totalPages ? 'disabled' : '') + '>Next</button>';
+      '<button onclick="window.browseNext()"' + (currentPage >= totalPages ? ' disabled' : '') + '>Next</button>';
   }
 
   window.browsePrev = function() {
@@ -267,10 +278,10 @@
   };
 
   // Functions status
-  async function loadFunctionsStatus() {
-    const container = document.getElementById('functions-list');
-    try {
-      const functions = await api('/api/functions/status');
+  function loadFunctionsStatus() {
+    var container = document.getElementById('functions-list');
+    if (!container) return;
+    return api('/api/functions/status').then(function(functions) {
       if (!functions || functions.length === 0) {
         container.innerHTML = '<p style="color: var(--text-muted)">No functions found</p>';
         return;
@@ -285,16 +296,16 @@
           '<span class="function-state ' + (f.state === 'ACTIVE' ? 'active' : 'error') + '">' + f.state + '</span>' +
         '</div>';
       }).join('');
-    } catch (e) {
+    }).catch(function(e) {
       container.innerHTML = '<p style="color: var(--error)">Error: ' + e.message + '</p>';
-    }
+    });
   }
 
   // Schedulers status
-  async function loadSchedulersStatus() {
-    const container = document.getElementById('schedulers-list');
-    try {
-      const schedulers = await api('/api/schedulers/status');
+  function loadSchedulersStatus() {
+    var container = document.getElementById('schedulers-list');
+    if (!container) return;
+    return api('/api/schedulers/status').then(function(schedulers) {
       if (!schedulers || schedulers.length === 0) {
         container.innerHTML = '<p style="color: var(--text-muted)">No schedulers found</p>';
         return;
@@ -309,9 +320,96 @@
           '<span class="scheduler-state ' + (s.state === 'ENABLED' ? 'active' : 'error') + '">' + s.state + '</span>' +
         '</div>';
       }).join('');
-    } catch (e) {
+    }).catch(function(e) {
       container.innerHTML = '<p style="color: var(--error)">Error: ' + e.message + '</p>';
+    });
+  }
+
+  // ============ SEARCH TAB (server-side) ============
+  var searchInitialized = false;
+
+  function initSearch() {
+    if (searchInitialized) return;
+    searchInitialized = true;
+
+    var searchInput = document.getElementById('search-input');
+    var searchBtn = document.getElementById('search-btn');
+    var searchSource = document.getElementById('search-source');
+
+    // Preload index on tab open
+    document.getElementById('search-status').textContent = 'Loading search index...';
+    api('/api/vault/search/preload').then(function(preload) {
+      document.getElementById('search-status').textContent =
+        preload.count + ' items indexed' + (preload.cached ? ' (cached)' : ' (fresh)');
+      showToast('Search ready: ' + preload.count + ' items', 'success');
+    }).catch(function(e) {
+      document.getElementById('search-status').textContent = 'Index load failed: ' + e.message;
+    });
+
+    // Search on button click
+    if (searchBtn) {
+      searchBtn.addEventListener('click', doSearch);
     }
+    // And on Enter
+    if (searchInput) {
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doSearch();
+      });
+    }
+    // Source filter change
+    if (searchSource) {
+      searchSource.addEventListener('change', doSearch);
+    }
+  }
+
+  function doSearch() {
+    var query = (document.getElementById('search-input').value || '').trim();
+    var source = (document.getElementById('search-source').value) || 'all';
+    var container = document.getElementById('search-results');
+    var statusEl = document.getElementById('search-status');
+    var countEl = document.getElementById('search-count');
+
+    if (!container) return;
+    if (query.length < 2 && source === 'all') {
+      container.innerHTML = '<p style="color: var(--text-muted)">Enter at least 2 characters or select a source filter</p>';
+      return;
+    }
+
+    statusEl.textContent = 'Searching...';
+    api('/api/vault/search?q=' + encodeURIComponent(query) + '&source=' + source + '&limit=50').then(function(res) {
+      statusEl.textContent = '';
+      countEl.textContent = res.total + ' results';
+      if (res.results.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted)">No results found</p>';
+        return;
+      }
+      window.lastSearchResults = res.results;
+      container.innerHTML = res.results.map(function(r, i) {
+        var snippet = r.text.substring(0, 120).replace(/\n/g, ' ');
+        return '<div class="search-result-item" data-index="' + i + '">' +
+          '<div class="search-result-header">' +
+            '<span class="search-result-source ' + r.source + '">' + r.source + '</span>' +
+            '<span class="search-result-author">' + escapeHtml(r.author) + '</span>' +
+          '</div>' +
+          '<div class="search-result-text">' + escapeHtml(snippet) + '</div>' +
+          '<div class="search-result-url">' + escapeHtml(r.url) + '</div>' +
+          '<button class="btn-open-url" data-url="' + escapeHtml(r.url) + '">Open</button>' +
+        '</div>';
+      }).join('');
+
+      container.querySelectorAll('.btn-open-url').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          window.open(btn.dataset.url, '_blank');
+        });
+      });
+    }).catch(function(e) {
+      statusEl.textContent = 'Search failed: ' + e.message;
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // Toast
