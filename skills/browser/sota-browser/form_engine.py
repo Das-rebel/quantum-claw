@@ -453,6 +453,11 @@ class ResumeParser:
 
     async def parse(self, resume_text: str) -> Dict[str, Any]:
         """Parse *resume_text* and return a structured dict."""
+        # Size limit to prevent resource exhaustion
+        MAX_RESUME_SIZE = 500_000  # 500KB
+        if len(resume_text) > MAX_RESUME_SIZE:
+            raise ValueError(f"Resume too large: {len(resume_text)} bytes (max {MAX_RESUME_SIZE})")
+
         self.text = resume_text
         self.lines = [l for l in resume_text.splitlines() if l.strip()]
 
@@ -840,7 +845,7 @@ class ResumeParser:
         cleaned: List[str] = []
         for s in raw:
             s = s.strip().lstrip("-*•·→")
-            if s and len(s) > 1:
+            if s and len(s) >= 1:
                 cleaned.append(s)
         return cleaned
 
@@ -863,7 +868,7 @@ class ResumeParser:
             s = re.sub(r"\s*[\(\[](?:Native|Fluent|Intermediate|Beginner|"
                         r"Advanced|Conversational|Professional|Basic|"
                         r"Nativo|Fluido|Intermedio)[\)\]]", "", s, flags=re.IGNORECASE)
-            if s and len(s) > 1:
+            if s and len(s) >= 1:
                 cleaned.append(s)
         return cleaned
 
@@ -1041,10 +1046,10 @@ _ANALYZE_JS = r"""
     // ---- Detect form type ----
     const hostname = (window.location.hostname || "").toLowerCase();
     const isGoogleForms = hostname.includes("docs.google.com") &&
-        !!document.querySelector(".freebirdFormviewerView") ||
+        (!!document.querySelector(".freebirdFormviewerView") ||
         !!document.querySelector("[data-params]") ||
         !!document.querySelector(".quantumWizTextinputPaperinputInput") ||
-        !!document.querySelector(".appsMaterialWizToggleRadiogroupRadioButtonContainer");
+        !!document.querySelector(".appsMaterialWizToggleRadiogroupRadioButtonContainer"));
 
     const hasMui = !!document.querySelector(".MuiInputBase-root, .MuiFormControl-root, .MuiTextField-root");
     const hasAnt = !!document.querySelector(".ant-input, .ant-select, .ant-form-item");
@@ -1682,6 +1687,11 @@ class FormFiller:
     def __init__(self, matcher: Optional[FieldMatcher] = None) -> None:
         self._matcher = matcher or FieldMatcher()
 
+    @staticmethod
+    def _css_escape_value(val: str) -> str:
+        """Escape a value for safe embedding in CSS/Playwright selectors."""
+        return val.replace("\\", "\\\\").replace('"', '\\"').replace("'", "\\'")
+
     # -- public API ----------------------------------------------------------
 
     async def fill(
@@ -1772,7 +1782,8 @@ class FormFiller:
                 result["details"].append({
                     "field_id": fid,
                     "action": "filled",
-                    "value_used": str(value)[:200] if value else None,
+                    # NOTE: value_used may contain PII; truncated for logging
+                    "value_used": str(value)[:50] if value else None,
                     "reason": "OK",
                 })
             except Exception as exc:
@@ -1781,7 +1792,8 @@ class FormFiller:
                 result["details"].append({
                     "field_id": fid,
                     "action": "error",
-                    "value_used": str(value)[:200] if value else None,
+                    # NOTE: value_used may contain PII; truncated for logging
+                    "value_used": str(value)[:50] if value else None,
                     "reason": str(exc),
                 })
 
@@ -2137,10 +2149,11 @@ class FormFiller:
                 await page.click(selector, timeout=3000)
                 await page.wait_for_timeout(500)
                 # Look for the option in the opened dropdown
+                ev = self._css_escape_value(value)
                 option_selectors = [
-                    f'[role="option"]:has-text("{value}")',
-                    f'.quantumWizMenuPaperselectOption:has-text("{value}")',
-                    f'li:has-text("{value}")',
+                    f'[role="option"]:has-text("{ev}")',
+                    f'.quantumWizMenuPaperselectOption:has-text("{ev}")',
+                    f'li:has-text("{ev}")',
                 ]
                 for osel in option_selectors:
                     try:
@@ -2166,11 +2179,13 @@ class FormFiller:
                 break
 
         # Try clicking by label text
+        tl = self._css_escape_value(target_label)
+        vv = self._css_escape_value(value)
         radio_selectors = [
-            f'[role="radio"][aria-label="{target_label}"]',
-            f'input[type="radio"][value="{value}"]',
-            f'label:has-text("{target_label}") input[type="radio"]',
-            f'label:has-text("{target_label}")',
+            f'[role="radio"][aria-label="{tl}"]',
+            f'input[type="radio"][value="{vv}"]',
+            f'label:has-text("{tl}") input[type="radio"]',
+            f'label:has-text("{tl}")',
         ]
 
         for sel in radio_selectors:
@@ -2230,10 +2245,12 @@ class FormFiller:
                 continue
 
             # Find the checkbox element
+            el = self._css_escape_value(opt["label"])
+            ev = self._css_escape_value(opt["value"])
             cb_selectors = [
-                f'[role="checkbox"][aria-label="{opt["label"]}"]',
-                f'input[type="checkbox"][value="{opt["value"]}"]',
-                f'label:has-text("{opt["label"]}") input[type="checkbox"]',
+                f'[role="checkbox"][aria-label="{el}"]',
+                f'input[type="checkbox"][value="{ev}"]',
+                f'label:has-text("{el}") input[type="checkbox"]',
             ]
 
             for sel in cb_selectors:
@@ -2306,8 +2323,16 @@ class FormFiller:
     async def _fill_file(
         self, page: Any, selector: str, file_path: str
     ) -> None:
-        """Upload a file."""
-        await page.set_input_files(selector, file_path, timeout=10000)
+        """Upload a file with path validation."""
+        import os
+        path = os.path.abspath(os.path.expanduser(file_path))
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"File not found: {path}")
+        ext = os.path.splitext(path)[1].lower()
+        allowed = {".pdf", ".doc", ".docx", ".txt", ".rtf", ".odt", ".png", ".jpg", ".jpeg"}
+        if ext not in allowed:
+            raise ValueError(f"File type not allowed: {ext} (allowed: {', '.join(sorted(allowed))})")
+        await page.set_input_files(selector, path, timeout=10000)
 
     async def _fill_linear_scale(
         self, page: Any, field_info: Dict[str, Any], value: str
@@ -2318,7 +2343,8 @@ class FormFiller:
         target = value.strip()
         for opt in options:
             if opt["value"] == target or opt["label"] == target:
-                sel = f'[role="radio"][aria-label="{opt["label"]}"]'
+                el = self._css_escape_value(opt["label"])
+                sel = f'[role="radio"][aria-label="{el}"]'
                 try:
                     await page.click(sel, timeout=2000)
                     return
