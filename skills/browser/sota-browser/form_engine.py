@@ -488,7 +488,14 @@ class ResumeParser:
 
         name = self._extract_name()
         result["full_name"] = name
-        parts = name.split(None, 1)
+
+        # Strip common titles/prefixes before splitting
+        _TITLE_PREFIXES = re.compile(
+            r"^(?:Dr|Mr|Mrs|Ms|Miss|Prof|Prof\.|Rev|Hon|Sir|Madam|Dra|Sr|Sra|Srta|Frau|Herr)\.?\s+",
+            re.IGNORECASE,
+        )
+        clean_name = _TITLE_PREFIXES.sub("", name).strip()
+        parts = clean_name.split(None, 1)
         result["first_name"] = parts[0] if parts else ""
         result["last_name"] = parts[1] if len(parts) > 1 else ""
 
@@ -801,9 +808,20 @@ class ResumeParser:
                 continue
 
             if current is None:
+                # Try to parse "Title at Company" pattern
+                at_init = re.search(r"(.+?)\s+at\s+(.+)", line, re.IGNORECASE)
+                pipe_init = re.match(r"^(.+?)\s*[\|\u2013\u2014]\s*(.+?)$", line)
+                title_init = ""
+                company_init = _clean(line)
+                if at_init:
+                    title_init = _clean(at_init.group(1))
+                    company_init = _clean(at_init.group(2))
+                elif pipe_init:
+                    title_init = _clean(pipe_init.group(1))
+                    company_init = _clean(pipe_init.group(2))
                 current = {
-                    "company": _clean(line),
-                    "title": "",
+                    "company": company_init,
+                    "title": title_init,
                     "start": "",
                     "end": "",
                     "description": "",
