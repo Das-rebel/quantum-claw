@@ -26,8 +26,7 @@ FAST_WAIT = 0.1
 try:
     from form_engine import (
         ResumeParser,
-        FieldMatcher,
-        FormAnalyzer,
+        FormScanner,
         FormFiller,
         analyze_and_fill,
     )
@@ -686,8 +685,8 @@ class BrowserManager:
 
         page = self.pages[tab_id]["page"]
         try:
-            analyzer = FormAnalyzer()
-            analysis = await analyzer.analyze(page)
+            scanner = FormScanner()
+            analysis = await scanner.scan(page)
             return {"success": True, "analysis": analysis}
         except Exception as e:
             return {"error": str(e)}
@@ -707,8 +706,8 @@ class BrowserManager:
 
         page = self.pages[tab_id]["page"]
         try:
-            analyzer = FormAnalyzer()
-            analysis = await analyzer.analyze(page)
+            scanner = FormScanner()
+            analysis = await scanner.scan(page)
 
             filler = FormFiller()
             result = await filler.fill(
@@ -748,8 +747,8 @@ class BrowserManager:
             profile = await parser.parse(resume_text)
 
             # Analyze form
-            analyzer = FormAnalyzer()
-            analysis = await analyzer.analyze(page)
+            scanner = FormScanner()
+            analysis = await scanner.scan(page)
 
             # Fill
             filler = FormFiller()
@@ -786,8 +785,8 @@ class BrowserManager:
 
         page = self.pages[tab_id]["page"]
         try:
-            analyzer = FormAnalyzer()
-            analysis = await analyzer.analyze(page)
+            scanner = FormScanner()
+            analysis = await scanner.scan(page)
 
             filler = FormFiller()
             result = await filler.fill_and_advance(
@@ -816,8 +815,8 @@ class BrowserManager:
 
         page = self.pages[tab_id]["page"]
         try:
-            analyzer = FormAnalyzer()
-            analysis = await analyzer.analyze(page)
+            scanner = FormScanner()
+            analysis = await scanner.scan(page)
 
             submit_btn = analysis.get("submit_button")
             if not submit_btn:
