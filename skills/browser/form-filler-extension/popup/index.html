@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 380px; min-height: 500px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc; color: #1e293b;
+    }
+    .header {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; padding: 16px; text-align: center;
+    }
+    .header h1 { font-size: 18px; margin-bottom: 4px; }
+    .header p { font-size: 12px; opacity: 0.9; }
+    .tabs {
+      display: flex; background: white;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .tab {
+      flex: 1; padding: 10px; text-align: center; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #64748b;
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+    .tab:hover { color: #6366f1; }
+    .panel { display: none; padding: 16px; }
+    .panel.active { display: block; }
+    .field-group { margin-bottom: 12px; }
+    .field-group label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #475569; margin-bottom: 4px;
+    }
+    .field-group input, .field-group textarea {
+      width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1;
+      border-radius: 8px; font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .field-group input:focus, .field-group textarea:focus {
+      border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    .field-group textarea { height: 60px; resize: vertical; }
+    .row { display: flex; gap: 10px; }
+    .row > .field-group { flex: 1; }
+    .btn {
+      display: block; width: 100%; padding: 12px;
+      border: none; border-radius: 10px; font-size: 14px;
+      font-weight: 700; cursor: pointer; transition: all 0.2s;
+      margin-top: 12px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+    .btn-secondary {
+      background: #e2e8f0; color: #475569;
+    }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .status {
+      margin-top: 12px; padding: 10px; border-radius: 8px;
+      font-size: 12px; text-align: center;
+    }
+    .status-success { background: #dcfce7; color: #166534; }
+    .status-error { background: #fee2e2; color: #991b1b; }
+    .status-info { background: #e0e7ff; color: #3730a3; }
+    .scan-results { margin-top: 12px; }
+    .scan-field {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 10px; border-radius: 6px; margin-bottom: 4px;
+      font-size: 12px; background: white; border: 1px solid #e2e8f0;
+    }
+    .scan-field .label { color: #475569; }
+    .scan-field .type { color: #6366f1; font-weight: 600; }
+    .scan-field .status-icon { font-size: 14px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📋 FormFiller Pro</h1>
+    <p>Universal job application autofill</p>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="profile">👤 Profile</div>
+    <div class="tab" data-tab="scan">🔍 Scan</div>
+    <div class="tab" data-tab="fill">⚡ Autofill</div>
+  </div>
+
+  <!-- Profile Tab -->
+  <div class="panel active" id="panel-profile">
+    <div class="row">
+      <div class="field-group">
+        <label>First Name</label>
+        <input type="text" id="first_name" placeholder="John">
+      </div>
+      <div class="field-group">
+        <label>Last Name</label>
+        <input type="text" id="last_name" placeholder="Doe">
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="john@example.com">
+    </div>
+    <div class="field-group">
+      <label>Phone</label>
+      <input type="tel" id="phone" placeholder="+1-555-0123">
+    </div>
+    <div class="field-group">
+      <label>LinkedIn URL</label>
+      <input type="url" id="linkedin" placeholder="https://linkedin.com/in/...">
+    </div>
+    <div class="row">
+      <div class="field-group">
+        <label>Current Company</label>
+        <input type="text" id="current_company" placeholder="Acme Corp">
+      </div>
+      <div class="field-group">
+        <label>Current Title</label>
+        <input type="text" id="current_title" placeholder="Senior Engineer">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field-group">
+        <label>Years of Experience</label>
+        <input type="text" id="years_of_experience" placeholder="8">
+      </div>
+      <div class="field-group">
+        <label>Country</label>
+        <input type="text" id="country" placeholder="India">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field-group">
+        <label>Salary / CTC</label>
+        <input type="text" id="salary" placeholder="25 LPA">
+      </div>
+      <div class="field-group">
+        <label>Expected Salary</label>
+        <input type="text" id="salary_expectations" placeholder="35 LPA">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field-group">
+        <label>Notice Period</label>
+        <input type="text" id="notice_period" placeholder="30 days">
+      </div>
+      <div class="field-group">
+        <label>Gender</label>
+        <input type="text" id="gender" placeholder="Male">
+      </div>
+    </div>
+    <button class="btn btn-primary" id="save-profile">💾 Save Profile</button>
+    <div id="save-status" class="status hidden"></div>
+  </div>
+
+  <!-- Scan Tab -->
+  <div class="panel" id="panel-scan">
+    <button class="btn btn-secondary" id="scan-btn">🔍 Scan Current Page</button>
+    <div id="scan-status" class="status hidden"></div>
+    <div class="scan-results" id="scan-results"></div>
+  </div>
+
+  <!-- Autofill Tab -->
+  <div class="panel" id="panel-fill">
+    <button class="btn btn-primary" id="autofill-btn">⚡ Autofill Form</button>
+    <div id="fill-status" class="status hidden"></div>
+    <div class="scan-results" id="fill-results"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
