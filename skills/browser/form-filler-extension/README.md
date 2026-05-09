@@ -121,3 +121,46 @@ Tested against **live Greenhouse form** (Razorpay job application):
 
 - `../sota-browser/form_engine.py` — Python equivalent (Playwright-based)
 - `../sota-browser/mcp_server.py` — MCP tools for browser automation
+
+## Workday (Visa) — Test Results
+
+### Architecture Discovery
+
+Workday is a **6-step multi-page application** with unique patterns:
+
+| Step | Page | Fields | Status |
+|------|------|--------|--------|
+| 1 | Create Account | 4 (email, password×2, consent) | ✅ All filled |
+| 2 | My Information | ~20 (name, address, phone, etc.) | 🔒 Behind account wall |
+| 3 | My Experience | ~15 (resume, work history) | 🔒 Behind account wall |
+| 4 | Application Questions | ~10 (custom questions) | 🔒 Behind account wall |
+| 5 | Voluntary Disclosures | ~5 (EEO, gender, race) | 🔒 Behind account wall |
+| 6 | Review | 0 (summary page) | 🔒 Behind account wall |
+
+### Workday-Specific Patterns
+
+- **`data-automation-id`** attributes on all elements (e.g., `email`, `password`, `createAccountSubmitButton`)
+- **Overlay interceptor**: `<div data-automation-id="click_filter">` blocks pointer events on buttons — must use `force: true` or JS click
+- **Account creation required**: Cannot advance to Step 2 without valid email verification
+- **No CAPTCHA** on Step 1, but server-side email validation blocks automation
+- **`beecatcher` hidden input**: Anti-bot honeypot field (should remain empty)
+
+### Step 1 Results
+
+| Field | Selector | Value | Status |
+|-------|----------|-------|--------|
+| Email | `[data-automation-id="email"]` | rahul.sharma.prog@gmail.com | ✅ |
+| Password | `[data-automation-id="password"]` | RahulSharma2026!X | ✅ |
+| Verify Password | `[data-automation-id="verifyPassword"]` | RahulSharma2026!X | ✅ |
+| Consent | `[data-automation-id="createAccountCheckbox"]` | ☑ | ✅ |
+| Honeypot | `[data-automation-id="beecatcher"]` | (empty — correct) | ✅ |
+
+### Why We Can't Test Steps 2-6
+
+Workday requires:
+1. Valid email address (sends verification link)
+2. Password meeting complexity requirements (alphabetic + numeric + special + 8+ chars)
+3. Cookie consent acceptance
+4. Server-side account creation before advancing
+
+**For real-world use**, the extension would fill Step 1, user verifies email, then the extension fills Steps 2-6 automatically on subsequent page loads.
