@@ -2,114 +2,275 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FillY</title>
+  <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
-  <div class="filly-app">
-    <!-- Header -->
-    <div class="header">
-      <div class="logo">⚡</div>
-      <div class="title-group">
-        <h1>FillY</h1>
-        <p class="tagline">Smart Form Autofill</p>
+<div class="filly-shell">
+
+  <!-- HEADER -->
+  <header class="filly-header">
+    <div class="filly-logo-area">
+      <span class="logo-icon">⚡</span>
+      <div>
+        <span class="logo-text">FillY</span>
+        <div class="platform-badge" id="platform-badge">
+          <span id="platform-icon">🌐</span>
+          <span id="platform-name">Generic form</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="hdr-btn" id="btn-import-resume" title="Import Resume">📄</button>
+      <button class="hdr-btn" id="btn-settings" title="Settings">⚙️</button>
+      <button class="hdr-btn hdr-close" id="close-btn" title="Close">×</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="filly-tabs">
+    <button class="tab active" data-tab="fill">
+      <span class="tab-icon">⚡</span>
+      <span class="tab-label">Fill</span>
+    </button>
+    <button class="tab" data-tab="profile">
+      <span class="tab-icon">👤</span>
+      <span class="tab-label">Profile</span>
+    </button>
+    <button class="tab" data-tab="chat">
+      <span class="tab-icon">💬</span>
+      <span class="tab-label">Chat</span>
+    </button>
+    <button class="tab" data-tab="resume">
+      <span class="tab-icon">📄</span>
+      <span class="tab-label">Resume</span>
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════ FILL TAB ══════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-fill">
+
+    <div class="fill-status-panel">
+      <div class="status-row">
+        <div class="status-dot" id="fill-dot"></div>
+        <span class="status-text" id="fill-status-text">Ready to fill</span>
+      </div>
+      <div class="fill-counters">
+        <div class="counter">
+          <span class="counter-num" id="cnt-filled">0</span>
+          <span class="counter-label">Filled</span>
+        </div>
+        <div class="counter">
+          <span class="counter-num" id="cnt-skipped">0</span>
+          <span class="counter-label">Skipped</span>
+        </div>
+        <div class="counter">
+          <span class="counter-num" id="cnt-errors">0</span>
+          <span class="counter-label">Errors</span>
+        </div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" data-tab="fill">⚡ Fill</button>
-      <button class="tab" data-tab="profile">👤 Profile</button>
-      <button class="tab" data-tab="scan">🔍 Scan</button>
+    <button class="btn-fill-now" id="btn-fill-now">
+      <span class="btn-fill-icon">⚡</span>
+      <span>Autofill This Form</span>
+    </button>
+
+    <div class="progress-area hidden" id="fill-progress">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-label" id="progress-label">Filling...</div>
     </div>
 
-    <!-- Fill Tab -->
-    <div class="panel active" id="panel-fill">
-      <div class="detection" id="detection">
-        <span class="detect-icon">🔍</span>
-        <span class="detect-text" id="detect-text">Checking page...</span>
-      </div>
-      <button class="btn btn-primary" id="fill-btn">
-        <span class="btn-icon">⚡</span> Autofill This Form
+    <div class="fill-results" id="fill-results"></div>
+
+    <div class="quick-actions">
+      <div class="qa-title">Quick Actions</div>
+      <button class="btn-qa" id="btn-scan-fields">
+        <span>🔍</span><span>Scan All Fields</span>
       </button>
-      <div id="fill-status" class="status hidden"></div>
-      <div id="fill-results"></div>
-    </div>
-
-    <!-- Profile Tab -->
-    <div class="panel" id="panel-profile">
-      <div class="field-row">
-        <div class="field">
-          <label>First Name</label>
-          <input type="text" id="first_name" placeholder="Rahul">
-        </div>
-        <div class="field">
-          <label>Last Name</label>
-          <input type="text" id="last_name" placeholder="Sharma">
-        </div>
-      </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="rahul@example.com">
-      </div>
-      <div class="field">
-        <label>Phone</label>
-        <input type="tel" id="phone" placeholder="+91-9876543210">
-      </div>
-      <div class="field">
-        <label>LinkedIn</label>
-        <input type="url" id="linkedin" placeholder="https://linkedin.com/in/...">
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Company</label>
-          <input type="text" id="current_company" placeholder="Current company">
-        </div>
-        <div class="field">
-          <label>Title</label>
-          <input type="text" id="current_title" placeholder="Your title">
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Experience (yrs)</label>
-          <input type="text" id="years_of_experience" placeholder="8">
-        </div>
-        <div class="field">
-          <label>Country</label>
-          <input type="text" id="country" placeholder="India">
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Current CTC</label>
-          <input type="text" id="salary" placeholder="25">
-        </div>
-        <div class="field">
-          <label>Expected CTC</label>
-          <input type="text" id="salary_expectations" placeholder="35">
-        </div>
-      </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Notice Period</label>
-          <input type="text" id="notice_period" placeholder="30 days">
-        </div>
-        <div class="field">
-          <label>Gender</label>
-          <input type="text" id="gender" placeholder="Male">
-        </div>
-      </div>
-      <button class="btn btn-save" id="save-profile">💾 Save Profile</button>
-      <div id="save-status" class="status hidden"></div>
-    </div>
-
-    <!-- Scan Tab -->
-    <div class="panel" id="panel-scan">
-      <button class="btn btn-secondary" id="scan-btn">🔍 Scan Page Fields</button>
-      <div id="scan-status" class="status hidden"></div>
-      <div id="scan-results"></div>
+      <button class="btn-qa" id="btn-show-unanswered">
+        <span>❓</span><span>Show Unanswered</span>
+      </button>
+      <button class="btn-qa" id="btn-clear-form">
+        <span>🗑️</span><span>Clear All Fields</span>
+      </button>
     </div>
   </div>
-  <script src="popup.js"></script>
+
+  <!-- ══════════════════════════════════════ PROFILE TAB ══════════════════════════════════════ -->
+  <div class="tab-content" id="tab-profile">
+
+    <div class="profile-sections">
+
+      <div class="profile-section">
+        <button class="section-hdr active" data-section="contact">
+          <span class="toggle-arrow">▼</span> Contact Info
+          <span class="field-count" id="cnt-contact">0/6</span>
+        </button>
+        <div class="section-body active">
+          <div class="field-row-2">
+            <div class="f"><label>First Name</label><input type="text" id="p-first_name" placeholder="Rahul"></div>
+            <div class="f"><label>Last Name</label><input type="text" id="p-last_name" placeholder="Sharma"></div>
+          </div>
+          <div class="f"><label>Email</label><input type="email" id="p-email" placeholder="rahul@example.com"></div>
+          <div class="f"><label>Phone</label><input type="tel" id="p-phone" placeholder="+91-9876543210"></div>
+          <div class="f"><label>LinkedIn</label><input type="url" id="p-linkedin" placeholder="linkedin.com/in/..."></div>
+          <div class="f"><label>GitHub</label><input type="url" id="p-github" placeholder="github.com/..."></div>
+          <div class="field-row-2">
+            <div class="f"><label>City</label><input type="text" id="p-city" placeholder="Bangalore"></div>
+            <div class="f"><label>State/Region</label><input type="text" id="p-state" placeholder="Karnataka"></div>
+          </div>
+          <div class="f"><label>Country</label><input type="text" id="p-country" placeholder="India"></div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <button class="section-hdr" data-section="work">
+          <span class="toggle-arrow">▶</span> Work Experience
+          <span class="field-count" id="cnt-work">0</span>
+        </button>
+        <div class="section-body">
+          <div class="f"><label>Current Company</label><input type="text" id="p-current_company" placeholder="Company name"></div>
+          <div class="f"><label>Current Title</label><input type="text" id="p-current_title" placeholder="Senior Engineer"></div>
+          <div class="field-row-2">
+            <div class="f"><label>Years of Exp</label><input type="text" id="p-years_of_experience" placeholder="8"></div>
+            <div class="f"><label>Current CTC (LPA)</label><input type="text" id="p-salary" placeholder="25"></div>
+          </div>
+          <div class="f"><label>Expected CTC (LPA)</label><input type="text" id="p-salary_expectations" placeholder="35"></div>
+          <div class="f"><label>Notice Period</label><input type="text" id="p-notice_period" placeholder="30 days"></div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <button class="section-hdr" data-section="edu">
+          <span class="toggle-arrow">▶</span> Education
+          <span class="field-count" id="cnt-edu">0</span>
+        </button>
+        <div class="section-body">
+          <div class="f"><label>University/School</label><input type="text" id="p-school" placeholder="IIT Delhi"></div>
+          <div class="field-row-2">
+            <div class="f"><label>Degree</label><input type="text" id="p-degree" placeholder="B.Tech"></div>
+            <div class="f"><label>Grad Year</label><input type="text" id="p-graduation_year" placeholder="2020"></div>
+          </div>
+          <div class="f"><label>Skills (comma separated)</label><input type="text" id="p-skills" placeholder="Python, JavaScript, SQL, ML"></div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <button class="section-hdr" data-section="extra">
+          <span class="toggle-arrow">▶</span> Extra
+          <span class="field-count" id="cnt-extra">0</span>
+        </button>
+        <div class="section-body">
+          <div class="f"><label>Gender</label><input type="text" id="p-gender" placeholder="Male"></div>
+          <div class="f"><label>Work Authorization</label><input type="text" id="p-work_authorization" placeholder="Authorized to work"></div>
+          <div class="f"><label>Sponsorship Required</label><input type="text" id="p-sponsorship_required" placeholder="No"></div>
+          <div class="f"><label>LinkedIn URL</label><input type="url" id="p-linkedin_url" placeholder="linkedin.com/in/..."></div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="btn-save" id="btn-save-profile">
+      <span>💾</span><span>Save Profile</span>
+    </button>
+    <div class="save-confirmation hidden" id="save-confirm">✅ Profile saved!</div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════ CHAT TAB ══════════════════════════════════════ -->
+  <div class="tab-content" id="tab-chat">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome">
+        <div class="cw-icon">⚡</div>
+        <div class="cw-title">FillY Assistant</div>
+        <div class="cw-desc">Ask me about the form, scan fields, or fill it.</div>
+        <div class="cw-commands">
+          <button class="cmd-chip" data-cmd="scan fields">🔍 Scan fields</button>
+          <button class="cmd-chip" data-cmd="show unanswered">❓ Unanswered</button>
+          <button class="cmd-chip" data-cmd="fill form">⚡ Fill form</button>
+          <button class="cmd-chip" data-cmd="import resume">📄 Import resume</button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" placeholder="Ask me anything..." rows="1"></textarea>
+      <button class="chat-send" id="chat-send">➤</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ RESUME TAB ══════════════════════════════════════ -->
+  <div class="tab-content" id="tab-resume">
+    <div class="resume-tabs">
+      <button class="resume-tab active" data-rtab="import">📥 Import</button>
+      <button class="resume-tab" data-rtab="paste">✏️ Paste Text</button>
+      <button class="resume-tab" data-rtab="linkedin">🔗 LinkedIn</button>
+    </div>
+
+    <!-- Import tab -->
+    <div class="rtab-content active" id="rtab-import">
+      <div class="import-area" id="import-drop-zone">
+        <div class="import-icon">📄</div>
+        <div class="import-label">Drop resume file here</div>
+        <div class="import-sublabel">or paste text below</div>
+        <label class="import-browse-btn">
+          Browse Files
+          <input type="file" id="resume-file-input" accept=".txt,.pdf,.docx,.md" hidden>
+        </label>
+      </div>
+    </div>
+
+    <!-- Paste tab -->
+    <div class="rtab-content" id="rtab-paste">
+      <textarea id="resume-text-input" placeholder="Paste your resume text here...
+
+Format example:
+John Doe
+john@example.com | +91-9876543210
+linkedin.com/in/johndoe
+
+EXPERIENCE
+Senior Engineer at Acme Corp | Jan 2020 - Present
+• Led growth initiatives resulting in 300% user acquisition
+• Built ML pipelines processing 10M+ events/day
+• Managed team of 5 engineers
+
+EDUCATION
+B.Tech Computer Science | IIT Delhi | 2020
+• CGPA: 9.2/10
+
+SKILLS
+Python, JavaScript, SQL, Machine Learning, AWS
+"></textarea>
+      <button class="btn-parse-resume" id="btn-parse-resume">🔍 Parse Resume → Fill Profile</button>
+    </div>
+
+    <!-- LinkedIn tab -->
+    <div class="rtab-content" id="rtab-linkedin">
+      <div class="li-instructions">
+        <div class="li-icon">🔗</div>
+        <div class="li-title">Import from LinkedIn</div>
+        <div class="li-desc">Enter your LinkedIn profile URL to import your profile data directly.</div>
+      </div>
+      <div class="f"><label>LinkedIn Profile URL</label>
+        <input type="url" id="li-url-input" placeholder="https://linkedin.com/in/your-username">
+      </div>
+      <button class="btn-li-import" id="btn-li-import">📥 Import LinkedIn Profile</button>
+      <div class="li-note">⚠️ You must be logged into LinkedIn in this browser for import to work.</div>
+    </div>
+
+    <!-- Parsed results -->
+    <div class="parsed-results hidden" id="parsed-results">
+      <div class="pr-header">
+        <span>✅ Resume Parsed!</span>
+        <button class="btn-apply-pr" id="btn-apply-parsed">Apply to Profile →</button>
+      </div>
+      <div class="pr-preview" id="pr-preview"></div>
+    </div>
+  </div>
+
+</div>
+<script src="sidepanel.js"></script>
 </body>
 </html>

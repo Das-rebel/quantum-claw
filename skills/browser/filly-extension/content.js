@@ -903,6 +903,39 @@
           });
           return true;
         }
+        case 'FILLY_PING': {
+          sendResponse({ pong: true, version: '1.2' });
+          break;
+        }
+        case 'FILLY_RESUME_PARSE': {
+          if (!window.FillYResume) {
+            sendResponse({ success: false, error: 'Resume parser not loaded' });
+          } else {
+            const profile = window.FillYResume.parse(message.text || '');
+            sendResponse({ success: !!profile, profile });
+          }
+          break;
+        }
+        case 'FILLY_RESUME_SCRAPE': {
+          if (!window.FillYResume) {
+            sendResponse({ success: false, error: 'Resume parser not loaded' });
+          } else {
+            window.FillYResume.scrapeLinkedIn(message.url || window.location.href)
+              .then(profile => sendResponse({ success: true, profile }))
+              .catch(err => sendResponse({ success: false, error: err.message }));
+          }
+          return true;
+        }
+        case 'FILLY_RESUME_TO_FILL': {
+          if (!window.FillYResume) {
+            sendResponse({ success: false, error: 'Parser not loaded' });
+          } else {
+            const fp = window.FillYResume.resumeToFillProfile(message.profile || {});
+            const applied = Object.values(fp).filter(Boolean).length;
+            sendResponse({ success: true, fillProfile: fp, applied });
+          }
+          break;
+        }
         default:
           sendResponse({ error: 'Unknown message type' });
       }
