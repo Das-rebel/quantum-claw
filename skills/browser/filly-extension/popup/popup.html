@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="filly-app">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">⚡</div>
+      <div class="title-group">
+        <h1>FillY</h1>
+        <p class="tagline">Smart Form Autofill</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="fill">⚡ Fill</button>
+      <button class="tab" data-tab="profile">👤 Profile</button>
+      <button class="tab" data-tab="scan">🔍 Scan</button>
+    </div>
+
+    <!-- Fill Tab -->
+    <div class="panel active" id="panel-fill">
+      <div class="detection" id="detection">
+        <span class="detect-icon">🔍</span>
+        <span class="detect-text" id="detect-text">Checking page...</span>
+      </div>
+      <button class="btn btn-primary" id="fill-btn">
+        <span class="btn-icon">⚡</span> Autofill This Form
+      </button>
+      <div id="fill-status" class="status hidden"></div>
+      <div id="fill-results"></div>
+    </div>
+
+    <!-- Profile Tab -->
+    <div class="panel" id="panel-profile">
+      <div class="field-row">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="first_name" placeholder="Rahul">
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="last_name" placeholder="Sharma">
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="rahul@example.com">
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="tel" id="phone" placeholder="+91-9876543210">
+      </div>
+      <div class="field">
+        <label>LinkedIn</label>
+        <input type="url" id="linkedin" placeholder="https://linkedin.com/in/...">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Company</label>
+          <input type="text" id="current_company" placeholder="Current company">
+        </div>
+        <div class="field">
+          <label>Title</label>
+          <input type="text" id="current_title" placeholder="Your title">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Experience (yrs)</label>
+          <input type="text" id="years_of_experience" placeholder="8">
+        </div>
+        <div class="field">
+          <label>Country</label>
+          <input type="text" id="country" placeholder="India">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Current CTC</label>
+          <input type="text" id="salary" placeholder="25">
+        </div>
+        <div class="field">
+          <label>Expected CTC</label>
+          <input type="text" id="salary_expectations" placeholder="35">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Notice Period</label>
+          <input type="text" id="notice_period" placeholder="30 days">
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <input type="text" id="gender" placeholder="Male">
+        </div>
+      </div>
+      <button class="btn btn-save" id="save-profile">💾 Save Profile</button>
+      <div id="save-status" class="status hidden"></div>
+    </div>
+
+    <!-- Scan Tab -->
+    <div class="panel" id="panel-scan">
+      <button class="btn btn-secondary" id="scan-btn">🔍 Scan Page Fields</button>
+      <div id="scan-status" class="status hidden"></div>
+      <div id="scan-results"></div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

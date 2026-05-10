@@ -1,0 +1,15 @@
+/* FillY — Brand Styles */
+:root {
+  --filly-purple: #6C5CE7;
+  --filly-purple-dark: #5A4BD1;
+  --filly-purple-light: #A29BFE;
+  --filly-green: #00B894;
+  --filly-red: #FF6B6B;
+  --filly-orange: #FDCB6E;
+  --filly-bg: #F8F9FE;
+  --filly-card: #FFFFFF;
+  --filly-text: #2D3436;
+  --filly-text-muted: #636E72;
+  --filly-border: #E8E8F0;
+  --filly-radius: 12px;
+}
