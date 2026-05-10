@@ -897,10 +897,31 @@
           });
           return true; // async
         }
+        case 'CLEAR_FORM': {
+          clearForm().then(cleared => {
+            sendResponse({ success: true, cleared });
+          });
+          return true;
+        }
         default:
           sendResponse({ error: 'Unknown message type' });
       }
     });
+  }
+
+  async function clearForm() {
+    let cleared = 0;
+    document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="file"]), textarea').forEach(el => {
+      if (el.value && el.value.trim()) {
+        const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+        if (nativeSetter) nativeSetter.call(el, '');
+        else el.value = '';
+        el.dispatchEvent(new Event('input', {bubbles: true}));
+        el.dispatchEvent(new Event('change', {bubbles: true}));
+        cleared++;
+      }
+    });
+    return cleared;
   }
 
   // Expose API for standalone/testing use (window.filly)
@@ -908,6 +929,7 @@
     detectPlatform,
     scanFields,
     autofill,
+    clearForm,
     fillTextField,
     fillDropdown,
   };
