@@ -9,6 +9,8 @@ require('dotenv').config();
 const express = require('express');
 const crypto = require('crypto');
 
+const { getAgentRouter } = require('./src/agent_router');
+
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const PORT = process.env.PORT || 8080;
 const WEBHOOK_SECRET = 'oc_' + crypto.randomBytes(8).toString('hex');
@@ -166,7 +168,7 @@ async function handleStart(chatId, fromName) {
 async function handleHelp(chatId) {
   await tg('sendMessage', {
     chat_id: chatId,
-    text: '🦞 OmniClaw Bot\n\n/start - Welcome\n/help - This message\n/status - Cloud endpoints health\n/vault <query> - Search knowledge graph\n/sync - Twitter & Instagram sync status',
+    text: '🦞 OmniClaw Bot\n\n/start - Welcome\n/help - This message\n/status - Cloud endpoints health\n/vault <query> - Search knowledge graph\n/sync - Twitter & Instagram sync status\n/ask <question> - Ask the AI agent',
   });
 }
 
@@ -258,6 +260,33 @@ async function handleSync(chatId) {
     chat_id: chatId,
     text: '🔄 Sync Status\n\n🐦 Twitter: ' + (tw.ok ? '✅ healthy' : '❌ ' + tw.error) + '\n📷 Instagram: ' + (ig.ok ? '✅ healthy' : '❌ ' + ig.error),
   });
+}
+
+async function handleAgent(chatId, text) {
+  const query = text.replace(/^\/(agent|ask)\s*/i, '').trim();
+  if (!query) {
+    return tg('sendMessage', { chat_id: chatId, text: 'Usage: /ask <your question>\n
+Example: /ask What is the meaning of life?' });
+  }
+
+  console.log('🤖 Agent query from ' + chatId + ': "' + query + '"');
+  await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
+
+  try {
+    const router = getAgentRouter();
+    const context = {
+      chatId: chatId.toString(),
+      chatType: 'telegram',
+      username: '',
+      timeout: 60000,
+    };
+    const response = await router.callAgent(query, context);
+    const truncated = response && response.length > 4000 ? response.slice(0, 3950) + '\n\n_(truncated)_' : response;
+    await tg('sendMessage', { chat_id: chatId, text: truncated || 'Got no response from agent.', disable_web_page_preview: true });
+  } catch (e) {
+    console.error('Agent error: ' + e.message);
+    await tg('sendMessage', { chat_id: chatId, text: '⚠️ Agent error: ' + e.message.slice(0, 200) });
+  }
 }
 
 async function handleGrowthOS(chatId, text) {
@@ -355,8 +384,13 @@ async function handleMessage(msg) {
   if (text.startsWith('/sync') || text.startsWith('/sync@' + BOT_USERNAME)) return handleSync(chatId);
   if (text.startsWith('/growthos') || text.startsWith('/growthos@' + BOT_USERNAME)) return handleGrowthOS(chatId, text);
 
-  // Skip other /commands
-  if (text.startsWith('/')) return;
+  // Skip other /commands (but allow /agent and /ask)
+  if (text.startsWith('/') && !text.startsWith('/agent') && !text.startsWith('/ask')) return;
+
+  // /agent or /ask command
+  if (text.startsWith('/agent') || text.startsWith('/ask')) {
+    return handleAgent(chatId, text);
+  }
 
   // Group: only respond to mentions
   const chatType = msg.chat && msg.chat.type;
@@ -373,9 +407,32 @@ async function handleMessage(msg) {
     return tg('sendMessage', { chat_id: chatId, text: 'Use /status for health check 🟢' });
   }
 
-  // Everything else = vault search automatically
+  // Everything else = vault search automatically, then fall back to agent
   console.log('🔍 Auto-search: "' + text + '"');
-  return handleVault(chatId, '/vault ' + text);
+  const vaultResult = await searchVault(text);
+  const items = vaultResult && vaultResult.results ? vaultResult.results : [];
+
+  if (items.length > 0) {
+    return handleVault(chatId, '/vault ' + text);
+  }
+
+  // Auto-agent fallback: vault returned no results, try OpenClaw agent
+  console.log('🤖 Auto-agent fallback for: "' + text + '"');
+  await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
+  try {
+    const router = getAgentRouter();
+    const response = await router.callAgent(text, {
+      chatId: chatId.toString(),
+      chatType: chatType || 'private',
+      username: (msg.from && msg.from.username) || '',
+      timeout: 60000,
+    });
+    const truncated = response && response.length > 4000 ? response.slice(0, 3950) + '\n\n_(truncated)_' : response;
+    return tg('sendMessage', { chat_id: chatId, text: truncated || 'Agent returned empty response.', disable_web_page_preview: true });
+  } catch (e) {
+    console.error('Auto-agent error: ' + e.message);
+    return tg('sendMessage', { chat_id: chatId, text: '⚠️ Agent unavailable. Try /ask <question> or /help for commands.' });
+  }
 }
 
 // ─── Express Routes ───────────────────────────────────
