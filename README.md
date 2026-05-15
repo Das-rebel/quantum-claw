@@ -1,14 +1,32 @@
-# 🔮 Omniclaw
+# OmniClaw
 
-### Universal AI Orchestration Platform for Voice, Messaging & Automation
+> Built by a growth operator who needed a multi-channel AI automation layer
+> that wasn't locked to a single provider, a single channel, or a single use case.
 
-> **One codebase. Infinite possibilities.** Connect Alexa, WhatsApp, Telegram, and browser automation through a unified multi-provider AI system.
+I spent 10 years running growth at Axis Bank, Groww, and NIRO. Every time I needed
+to automate a customer communication workflow — retention nudges, embedded lending
+activation, lifecycle triggers — I was either locked into one AI provider's pricing
+and rate limits, or stitching together three separate tools that didn't talk to each other.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
-[![Python](https://img.shields.io/badge/python-3.9+-yellow)](https://python.org/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Multi-Platform](https://img.shields.io/badge/platforms-Alexa%20%7C%20WhatsApp%20%7C%20Telegram%20%7C%20Web-orange)](https://github.com/Das-rebel/omniclaw)
+OmniClaw is the orchestration layer I built to fix that.
+
+## What it does for growth operators
+
+- **Routes across 8+ LLMs** (OpenAI, Anthropic, Gemini, Groq, Cerebras, Perplexity) based
+  on cost, latency, and task type — so you're not paying GPT-4 prices for simple classification
+- **Deploys across WhatsApp, Telegram, and Alexa** in the same system — one orchestration
+  layer, multiple customer touchpoints
+- **Speaks Hindi, Bengali, and Hinglish** natively via Sarvam AI TTS/STT — built for
+  India's vernacular-first customer base, not retrofitted
+- **18 MCP browser automation tools** — navigate, click, screenshot, evaluate JS — for
+  automating growth research and competitive intelligence workflows
+- **Production-deployed on GCP** — not a demo, not a local prototype
+
+## Who this is for
+
+Growth leads and GTM operators building AI-assisted retention, lifecycle automation,
+or multi-channel customer engagement — who need provider flexibility and don't want
+to rebuild the orchestration layer from scratch.
 
 ---
 
