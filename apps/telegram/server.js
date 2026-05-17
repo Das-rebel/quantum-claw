@@ -329,42 +329,112 @@ async function handleGrowthOS(chatId, text) {
   return tg('sendMessage', { chat_id: chatId, text: '🧠 *Growth OS*\n\n🌐 ' + DASHBOARD + '\n\n/growthos digest - Daily digest', parse_mode: 'Markdown', disable_web_page_preview: true });
 }
 
+const initSqlJs = require('sql.js');
+let sqlitedb = null;  // In-memory SQLite loaded from GCS
+let sqlitedbLoaded = 0;
+
+// ─── GCS SQLite helpers for content drafts ─────────────
+const GCS_DB_URL = 'https://storage.googleapis.com/growth-os-db-338789220059/growth_os.db';
+
+async function loadSqliteFromGCS() {
+  // Cache for 5 minutes
+  if (sqlitedb && Date.now() - sqlitedbLoaded < 300000) return sqlitedb;
+  try {
+    const res = await fetch(GCS_DB_URL + '?cachebust=' + Date.now(), {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    if (!res.ok) throw new Error('GCS fetch failed: ' + res.status);
+    const buf = await res.arrayBuffer();
+    const SQL = await initSqlJs({ wasmBinary: buf });
+    sqlitedb = new SQL.Database(buf);
+    sqlitedbLoaded = Date.now();
+    console.log('📝 SQLite loaded from GCS, size: ' + Math.round(buf.byteLength / 1024) + 'KB');
+    return sqlitedb;
+  } catch(e) {
+    console.error('❌ GCS SQLite load failed: ' + e.message);
+    return null;
+  }
+}
+
+async function getDraftsFromGCS(limit = 10) {
+  const db = await loadSqliteFromGCS();
+  if (!db) return [];
+  try {
+    const results = db.exec(
+      "SELECT id, platform, draft_text, topic, signal_sources, vault_context, status, generated_at, reviewed_at, approved_at, posted_at " +
+      "FROM content_drafts ORDER BY generated_at DESC LIMIT " + limit
+    );
+    if (!results.length || !results[0].values.length) return [];
+    const cols = results[0].columns;
+    return results[0].values.map(row => {
+      const d = {};
+      cols.forEach((c, i) => d[c] = row[i]);
+      try { d.signal_sources = JSON.parse(d.signal_sources || '[]'); } catch {}
+      try { d.vault_context = JSON.parse(d.vault_context || '{}'); } catch {}
+      return d;
+    });
+  } catch(e) {
+    console.error('❌ SQLite query error: ' + e.message);
+    return [];
+  }
+}
+
+async function updateDraftStatusGCS(draftId, newStatus) {
+  const db = await loadSqliteFromGCS();
+  if (!db) return false;
+  try {
+    const now = new Date().toISOString();
+    let sql = '';
+    if (newStatus === 'approved') {
+      sql = `UPDATE content_drafts SET status='${newStatus}', approved_at='${now}', reviewed_at='${now}' WHERE id=${draftId}`;
+    } else if (newStatus === 'rejected') {
+      sql = `UPDATE content_drafts SET status='${newStatus}', reviewed_at='${now}' WHERE id=${draftId}`;
+    } else if (newStatus === 'posted') {
+      sql = `UPDATE content_drafts SET status='${newStatus}', posted_at='${now}' WHERE id=${draftId}`;
+    }
+    if (sql) db.run(sql);
+    return true;
+  } catch(e) {
+    console.error('❌ SQLite update error: ' + e.message);
+    return false;
+  }
+}
+
 // ─── /drafts - Content queue for ghost writer ──────
 async function handleDrafts(chatId) {
   await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
   
-  try {
-    // Fetch from growth-workflow-os content drafts API
-    const res = await fetch('https://fusion-dashboard-338789220059.asia-south1.run.app/api/drafts', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+  const drafts = await getDraftsFromGCS(10);
+  
+  if (!drafts || !drafts.length) {
+    return tg('sendMessage', {
+      chat_id: chatId,
+      text: '📝 *Content Queue*\n\nNo drafts yet. Run the pipeline from:\nhttps://fusion-dashboard-338789220059.asia-south1.run.app\n\nOr use the 📝 Content tab in the dashboard.',
+      parse_mode: 'Markdown'
     });
-    
-    if (!res.ok) throw new Error('Dashboard API error');
-    const drafts = await res.json();
-    
-    if (!drafts || !drafts.length) {
-      return tg('sendMessage', { chat_id: chatId, text: '📝 No content drafts yet.\nRun the pipeline to generate LinkedIn + Twitter posts.' });
-    }
-    
-    const lines = ['📝 *Content Queue*\n'];
-    for (const d of drafts.slice(0, 10)) {
-      const icon = d.platform === 'linkedin' ? '🔗' : '🐦';
-      const status = d.status === 'draft' ? '⬜' : d.status === 'reviewed' ? '👀' : d.status === 'approved' ? '✅' : d.status === 'posted' ? '📤' : '❌';
-      const topic = d.topic || 'general';
-      const preview = (d.draft_text || '').slice(0, 80).replace(/\n/g, ' ');
-      lines.push(`${icon} ${status} *${d.platform.toUpperCase()}* | ${topic}`);
-      lines.push(`   ${preview}...`);
-      lines.push(`   ID: ${d.id} · ${d.generated_at?.slice(0, 10) || 'n/a'}`);
-      lines.push('');
-    }
-    
-    lines.push('\n*Reply with:* `approve <id>` or `reject <id>`');
-    await tg('sendMessage', { chat_id: chatId, text: lines.join('\n'), parse_mode: 'Markdown', disable_web_page_preview: true });
-  } catch(e) {
-    // Fallback: try direct SQLite on growth-workflow-os
-    await tg('sendMessage', { chat_id: chatId, text: '📝 Content Queue:\n\nNo drafts found. Generate content from the dashboard:\nhttps://fusion-dashboard-338789220059.asia-south1.run.app' });
   }
+
+  const lines = ['📝 *Content Queue* (`' + drafts.length + '` drafts)\n'];
+  for (const d of drafts) {
+    const icon = d.platform === 'linkedin' ? '🔗' : '🐦';
+    const status = d.status === 'draft' ? '⬜' : d.status === 'reviewed' ? '👀' : d.status === 'approved' ? '✅' : d.status === 'posted' ? '📤' : '❌';
+    const topic = d.topic || 'general';
+    const preview = (d.draft_text || '').slice(0, 70).replace(/\n/g, ' ').replace(/[#*_]/g, '');
+    const date = d.generated_at ? d.generated_at.slice(0, 10) : 'n/a';
+    lines.push(`${icon} ${status} *${d.platform?.toUpperCase() || '?'}* | ${topic}`);
+    lines.push(`   ${preview}...`);
+    lines.push(`   ID:${d.id} · ${date}`);
+    lines.push('');
+  }
+
+  lines.push('\n*Reply with:* `approve <id>` · `reject <id>` · `posted <id>`');
+  
+  await tg('sendMessage', {
+    chat_id: chatId,
+    text: lines.join('\n'),
+    parse_mode: 'Markdown',
+    disable_web_page_preview: true
+  });
 }
 app.get('/growthos', async (_req, res) => {
   res.json({
@@ -595,6 +665,31 @@ async function handleMessage(msg) {
 //   if (text.startsWith('/ask') || text.startsWith('/ask@' + BOT_USERNAME)) return handleAgent(chatId, text);
   if (text.startsWith('/remind') || text.startsWith('/remind@' + BOT_USERNAME)) return handleRemind(chatId, text);
 
+  // ── Approve / Reject / Posted ──
+  const approveMatch = text.match(/^approve\s+(\d+)/i);
+  const rejectMatch = text.match(/^reject\s+(\d+)/i);
+  const postedMatch = text.match(/^posted\s+(\d+)/i);
+
+  if (approveMatch) {
+    const draftId = parseInt(approveMatch[1]);
+    await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
+    const ok = await updateDraftStatusGCS(draftId, 'approved');
+    await tg('sendMessage', { chat_id: chatId, text: ok ? `✅ Draft ${draftId} approved! Post it and reply \`posted ${draftId}\`` : `❌ Could not approve draft ${draftId}.` });
+    return;
+  }
+  if (rejectMatch) {
+    const draftId = parseInt(rejectMatch[1]);
+    const ok = await updateDraftStatusGCS(draftId, 'rejected');
+    await tg('sendMessage', { chat_id: chatId, text: ok ? `❌ Draft ${draftId} rejected.` : `❌ Could not reject draft ${draftId}.` });
+    return;
+  }
+  if (postedMatch) {
+    const draftId = parseInt(postedMatch[1]);
+    const ok = await updateDraftStatusGCS(draftId, 'posted');
+    await tg('sendMessage', { chat_id: chatId, text: ok ? `📤 Draft ${draftId} marked as posted! 🎉` : `❌ Could not update draft ${draftId}.` });
+    return;
+  }
+
   // Skip other /commands
   if (text.startsWith('/')) return;
 
@@ -695,6 +790,8 @@ app.post('/webhook', async (req, res) => {
   async function poll() {
     if (!pollingActive) return;
     try {
+      // DEBUG: Log offset before each poll
+      console.log('📡 Polling offset=' + offset + '...');
       const res = await fetch(TG_API + '/getUpdates?offset=' + offset + '&timeout=5', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
