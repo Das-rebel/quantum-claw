@@ -1,0 +1,8 @@
+FROM asia-south1-docker.pkg.dev/omniclaw-personal-assistant/cloud-run-source-deploy/serve-vault-search@sha256:a5dc47b45b2b4bfc79c8d63e8f336ad16482b872274aa7c793bc9e3fa1269b30
+
+WORKDIR /app
+
+# Only copy Python files (no dependencies to install - container already has everything)
+COPY serve_vault_search.py service.py requirements.txt semantic_dashboard.html ./
+
+# No learning_base copy - container already has it from the original build

@@ -1,14 +1,18 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
+# Copy entire omniclaw repo (needed for cross-app requires like ../../../clients/)
 COPY . .
 
-EXPOSE 3000
+# Install all workspace dependencies (apps/*, clients/*, skills/*, services/*)
+RUN npm install --workspaces --include-workspace-root --omit=dev
 
-CMD ["node", "index.js"]
+ENV PORT=8080
+ENV TELEGRAM_MODE=webhook
+ENV NODE_ENV=production
+ENV OPENCLAW_ENDPOINT=http://localhost:8080
+
+EXPOSE 8080
+
+CMD ["node", "apps/telegram/index.js"]

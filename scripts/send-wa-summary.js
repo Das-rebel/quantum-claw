@@ -2,7 +2,7 @@
 /**
  * One-shot WhatsApp message sender — FALLBACK ONLY
  *
- * ONLY used when the main bot (omniclaw_v3.js) is NOT running.
+ * ONLY used when the main bot (omniclaw_direct_whatsapp.js) is NOT running.
  * Connects, sends one message, disconnects immediately.
  *
  * CRITICAL SAFETY:
@@ -36,7 +36,7 @@ async function sendOneShot(targetJid, message) {
   // Safety check: refuse if main bot is running
   try {
     const { execSync } = require('child_process');
-    const pids = execSync('pgrep -f omniclaw_v3.js').toString().trim();
+    const pids = execSync('pgrep -f omniclaw_direct_whatsapp').toString().trim();
     if (pids) {
       console.error('[OneShot] ABORT: Main bot is running (PIDs: ' + pids + '). Use outbox instead.');
       console.error('[OneShot] Write to /tmp/omniclaw_baileys/outbox/<name>.msg');

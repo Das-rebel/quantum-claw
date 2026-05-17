@@ -22,6 +22,44 @@ app.use(express.json());
 
 const TG_API = 'https://api.telegram.org/bot' + TOKEN;
 
+// ─── Rate Limiting & Queue Management ─────────────────
+const chatQueues = new Map();       // chatId -> Promise chain (sequential per chat)
+const userRateLimit = new Map();    // userId -> { count, resetAt }
+const MAX_CONCURRENT_SEARCHES = 5;  // Max parallel vault searches
+const MAX_PER_MINUTE = 10;          // Max per-user requests per minute
+let activeSearches = 0;             // Current concurrent search count
+
+function checkRate(userId) {
+  const now = Date.now();
+  const entry = userRateLimit.get(userId);
+  if (!entry || now > entry.resetAt) {
+    userRateLimit.set(userId, { count: 1, resetAt: now + 60000 });
+    return true;
+  }
+  entry.count++;
+  if (entry.count > MAX_PER_MINUTE) return false;
+  return true;
+}
+
+function enqueueChat(chatId, fn) {
+  // Chain promises per chat for sequential processing
+  const prev = chatQueues.get(chatId) || Promise.resolve();
+  const next = prev.then(async () => {
+    // Wait for a concurrency slot (true loop with async/await)
+    while (activeSearches >= MAX_CONCURRENT_SEARCHES) {
+      await new Promise(r => setTimeout(r, 500));
+    }
+    activeSearches++;
+    try {
+      return await fn();
+    } finally {
+      activeSearches--;
+    }
+  }).catch(e => console.error('❌ Queue error: ' + e.message));
+  chatQueues.set(chatId, next);
+  return next;
+}
+
 // ─── Telegram API helpers ─────────────────────────────
 async function tg(method, params = {}) {
   try {
@@ -246,8 +284,31 @@ async function handleVault(chatId, text) {
   }
 
   console.log('📤 Sending vault reply to ' + chatId + ': ' + lines.join('\n').slice(0, 100) + '...');
-  await tg('sendMessage', { chat_id: chatId, text: lines.join('\n'), disable_web_page_preview: true });
-  console.log('✅ Vault reply sent');
+  
+  // Split into chunks if exceeds Telegram's 4096 char limit
+  const fullText = lines.join('\n');
+  const MAX_LEN = 4000;  // Buffer below 4096 limit
+  const chunks = [];
+  let current = '';
+  for (const line of lines) {
+    if (current.length + line.length + 1 > MAX_LEN) {
+      chunks.push(current);
+      current = line;
+    } else {
+      current += (current ? '\n' : '') + line;
+    }
+  }
+  if (current) chunks.push(current);
+  
+  for (let i = 0; i < chunks.length; i++) {
+    const r = await tg('sendMessage', { chat_id: chatId, text: chunks[i], disable_web_page_preview: true });
+    if (r.ok) {
+      console.log('✅ Vault reply part ' + (i+1) + '/' + chunks.length + ' sent');
+    } else {
+      console.error('❌ Vault reply part ' + (i+1) + ' failed: ' + JSON.stringify(r));
+    }
+  }
+  console.log('✅ Vault reply done (' + chunks.length + ' message' + (chunks.length > 1 ? 's' : '') + ')');
 }
 
 async function handleSync(chatId) {
@@ -487,24 +548,45 @@ async function handleMessage(msg) {
   // Skip other /commands
   if (text.startsWith('/')) return;
 
-  // Group: only respond to mentions
+  // Group: respond to mentions OR slash commands OR free text
   const chatType = msg.chat && msg.chat.type;
-  if (chatType === 'group' || chatType === 'supergroup') {
-    if (!text.includes('@' + BOT_USERNAME)) return;
+  const isGroup = chatType === 'group' || chatType === 'supergroup';
+  const hasMention = text.includes('@' + BOT_USERNAME);
+  const isCommand = text.startsWith('/');
+
+  // In groups: respond to mentions OR commands OR free text (if enabled)
+  if (isGroup && !hasMention && !isCommand) {
+    // Free text in group without mention - skip (don't auto-search)
+    console.log('📨 Group chat (no mention): "' + text.slice(0, 50) + '" - skipped');
+    return;
+  }
+
+  // Strip @mention from text for cleaner search queries
+  let searchText = text;
+  if (hasMention) {
+    searchText = text.replace(new RegExp('@' + BOT_USERNAME + '\\s*', 'gi'), '').trim();
+    console.log('📨 Mention detected: "' + searchText.slice(0, 50) + '"');
   }
 
   // Auto-search: any non-command text = vault search
-  const lower = text.toLowerCase();
-  if (/\b(hello|hi|hey)\b/.test(lower)) {
-    return tg('sendMessage', { chat_id: chatId, text: '👋 Hey! Just type anything to search your vault, or /help for commands.' });
+  const lower = searchText.toLowerCase();
+  if (!searchText || /\b(hello|hi|hey|thanks|thank you|good morning|good night)\b/.test(lower)) {
+    return tg('sendMessage', { chat_id: chatId, text: '👋 Hey! Try sending a keyword to search your vault, or /help for commands.' });
   }
   if (/\b(status|health)\b/.test(lower)) {
     return tg('sendMessage', { chat_id: chatId, text: 'Use /status for health check 🟢' });
   }
 
-  // Everything else = vault search automatically
-  console.log('🔍 Auto-search: "' + text + '"');
-  return handleVault(chatId, '/vault ' + text);
+  // Rate limit check
+  const userId = msg.from && msg.from.id;
+  if (userId && !checkRate(userId)) {
+    console.log('⏱ Rate limited user ' + userId);
+    return tg('sendMessage', { chat_id: chatId, text: '⏱ Please slow down! Max ' + MAX_PER_MINUTE + ' searches per minute.' });
+  }
+
+  // Already inside chat queue from webhook - just execute directly
+  console.log('🔍 Auto-search executing: "' + searchText + '" (active searches: ' + activeSearches + ')');
+  return handleVault(chatId, '/vault ' + searchText);
 }
 
 // ─── Express Routes ───────────────────────────────────
@@ -516,13 +598,22 @@ app.post('/webhook', async (req, res) => {
   const updateId = update ? update.update_id : 0;
   const text = update && update.message && update.message.text || '';
 
-  console.log('📨 #' + updateId + ' text="' + text + '"');
+  console.log('📨 #' + updateId + ' text="' + text.slice(0, 80) + '"');
+
+  // Always respond immediately to Telegram (200 within 1s)
+  res.json({ ok: true });
 
   if (update && update.message) {
-    handleMessage(update.message).catch(e => console.error('❌ Handle error: ' + e.message));
+    // Route through queue per chat for sequential processing
+    const chatId = update.message.chat && update.message.chat.id;
+    if (chatId) {
+      enqueueChat(chatId, () => handleMessage(update.message)).catch(e =>
+        console.error('❌ Queue handle error: ' + e.message)
+      );
+    } else {
+      handleMessage(update.message).catch(e => console.error('❌ Handle error: ' + e.message));
+    }
   }
-
-  res.json({ ok: true });
 });
 
 // ─── Start ────────────────────────────────────────────
@@ -564,14 +655,28 @@ app.post('/webhook', async (req, res) => {
         for (const update of data.result) {
           offset = update.update_id + 1;
           if (update.message) {
-            handleMessage(update.message).catch(e =>
-              console.error('❌ Handle error: ' + e.message)
-            );
+            const chatId = update.message.chat && update.message.chat.id;
+            if (chatId) {
+              enqueueChat(chatId, () => handleMessage(update.message)).catch(e =>
+                console.error('❌ Poll handle error: ' + e.message)
+              );
+            } else {
+              handleMessage(update.message).catch(e =>
+                console.error('❌ Poll handle error: ' + e.message)
+              );
+            }
           }
           if (update.edited_message) {
-            handleMessage(update.edited_message).catch(e =>
-              console.error('❌ Edited msg error: ' + e.message)
-            );
+            const chatId = update.edited_message.chat && update.edited_message.chat.id;
+            if (chatId) {
+              enqueueChat(chatId, () => handleMessage(update.edited_message)).catch(e =>
+                console.error('❌ Edited msg error: ' + e.message)
+              );
+            } else {
+              handleMessage(update.edited_message).catch(e =>
+                console.error('❌ Edited msg error: ' + e.message)
+              );
+            }
           }
         }
       }

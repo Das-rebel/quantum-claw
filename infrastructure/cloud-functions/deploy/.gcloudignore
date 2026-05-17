@@ -1,13 +1,5 @@
-learning_base/
-*.faiss
-*.db
-unified_knowledge_graph.json
-__pycache__/
+.git
+.gitignore
+node_modules/
 *.pyc
-*.md
-extract_clip_local.py
-semantic_search.py
-serve_semantic.py
-main_serve.py
-Dockerfile.bak
-Dockerfile.fix
+__pycache__/

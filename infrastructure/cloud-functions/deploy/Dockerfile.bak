@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies first (better caching)
+RUN pip install --no-cache-dir \
+    flask==3.1.0 gunicorn==24.0.0 \
+    transformers==4.51.3 torch==2.5.1 faiss-cpu==1.9.0 \
+    numpy==1.26.4 Pillow==10.4.0
+
+# Pre-download CLIP model (cached layer)
+RUN python -c "from transformers import CLIPProcessor, CLIPModel; \
+CLIPProcessor.from_pretrained('openai/clip-vit-large-patch14', use_fast=False); \
+CLIPModel.from_pretrained('openai/clip-vit-large-patch14')"
+
+# Copy application files
+COPY service.py serve_vault_search.py semantic_dashboard.html ./
+COPY learning_base/ ./learning_base/
+
+ENV PORT=8080
+EXPOSE 8080
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--threads", "4", "service:application"]

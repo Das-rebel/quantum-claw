@@ -2,7 +2,7 @@
 # Start OmniClaw WhatsApp Auto-Reply with Outbox Support
 
 SCRIPT_DIR="/tmp/omniclaw_baileys"
-BOT_SCRIPT="omniclaw_v3.js"
+BOT_SCRIPT="omniclaw_direct_whatsapp.js"
 LOG_FILE="/tmp/omniclaw_baileys/bot.log"
 
 # Ensure outbox dirs exist

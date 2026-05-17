@@ -17,7 +17,7 @@ echo " Bookmark Vault Scheduler Deployment"
 echo " Twitter + Instagram Daily Scraping"
 echo "=============================================="
 
-cd /Users/Subho/omniclaw-personal-assistant/infrastructure/cloud-functions/bookmark-vault-scheduler
+cd /Users/Subho/omniclaw/infrastructure/cloud-functions/bookmark-vault-scheduler
 
 # Step 1: Install dependencies
 echo ""
@@ -55,7 +55,7 @@ gcloud functions deploy ${INSTAGRAM_FUNCTION} \
   --runtime python311 \
   --region ${REGION} \
   --source . \
-  --entry-point instagram_scrape \
+  --entry-point scheduler \
   --trigger-http \
   --allow-unauthenticated \
   --timeout 300s \

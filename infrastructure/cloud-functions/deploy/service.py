@@ -1,2 +1,1 @@
-from serve_vault_search import app
-application = app
+from serve_vault_search import app as application

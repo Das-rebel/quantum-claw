@@ -1,0 +1,4 @@
+flask>=3.0
+twscrape>=0.12
+instagrapi>=2.0
+google-cloud-storage>=2.14

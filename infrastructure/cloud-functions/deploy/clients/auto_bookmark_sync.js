@@ -10,7 +10,7 @@
 
 class AutoBookmarkSync {
   constructor(options = {}) {
-    this.syncInterval = options.syncInterval || 3600000; // 1 hour
+    this.syncInterval = options.syncInterval || 86400000; // 24 hours (daily)
     this.enabled = options.enabled !== false;
     this.lastSync = null;
     this.syncStatus = 'idle';

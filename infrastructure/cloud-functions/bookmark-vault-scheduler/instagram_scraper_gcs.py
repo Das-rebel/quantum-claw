@@ -114,9 +114,9 @@ async def scrape_instagram_bookmarks_async():
                 "cookies": gcs_cookies,
                 "username": INSTAGRAM_USERNAME
             })
-            # Verify by trying to fetch collections (works without full user context)
-            test = cl.collections()
-            log(f"GCS cookies are valid (found {len(test)} collections)")
+            # Verify by trying direct saved posts endpoint
+            test = cl.collection_medias_v1("saved", amount=1)
+            log(f"GCS cookies are valid (direct saved posts works)")
             use_cookies = True
         except Exception as e:
             log(f"GCS cookies invalid ({e}), trying alternatives...")
@@ -131,9 +131,9 @@ async def scrape_instagram_bookmarks_async():
                     "cookies": cookies,
                     "username": INSTAGRAM_USERNAME
                 })
-                # Verify by trying to fetch collections
-                test = cl.collections()
-                log(f"Env cookies are valid (found {len(test)} collections)")
+                # Verify by trying direct saved posts endpoint
+                test = cl.collection_medias_v1("saved", amount=1)
+                log(f"Env cookies are valid (direct saved posts works)")
                 use_cookies = True
             except Exception as e:
                 log(f"Env cookies expired ({e}), trying password login...")
@@ -153,52 +153,88 @@ async def scrape_instagram_bookmarks_async():
         return {"success": False, "error": "No valid credentials"}
 
     try:
-        # Get all collections (saved posts)
-        log("Fetching collections (saved posts)...")
-        collections = cl.collections()
-
-        if not collections:
-            log("No collections found")
-            return {"success": False, "error": "No collections"}
-
-        log(f"Found {len(collections)} collection(s)")
-
-        # Fetch all saved posts from all collections
+        # Strategy 1: Direct saved posts endpoint (bypasses collections enumeration)
+        # This hits /api/v1/feed/saved/posts/ directly without needing collections()
+        log("Fetching saved posts directly via feed/saved/posts/...")
         all_posts = []
-        for collection in collections:
-            log(f"Fetching collection: {collection.name}")
-            try:
-                collection_items = cl.collection_medias(collection.id, amount=200)
-                for item in collection_items:
-                    post_data = {
-                        "pk": str(item.pk),
-                        "id": str(item.pk),
-                        "caption": item.caption_text if hasattr(item, 'caption_text') and item.caption_text else "",
-                        "media_type": item.media_type if hasattr(item, 'media_type') else 0,
-                        "thumbnail_url": item.thumbnail_url if hasattr(item, 'thumbnail_url') else "",
-                        "url": f"https://www.instagram.com/p/{item.code}/" if hasattr(item, 'code') and item.code else "",
-                        "timestamp": datetime.now().isoformat(),
-                        "like_count": item.like_count if hasattr(item, 'like_count') else 0,
-                        "comment_count": item.comment_count if hasattr(item, 'comment_count') else 0
-                    }
-                    all_posts.append(post_data)
+        try:
+            all_posts = cl.collection_medias_v1("saved", amount=200)
+            log(f"Direct saved posts returned {len(all_posts)} posts")
+        except Exception as e:
+            log(f"Direct saved posts failed: {e}")
 
+        # Strategy 2: If direct failed, try collections() then fetch each
+        if not all_posts:
+            log("Trying collections approach...")
+            collections = cl.collections()
+            if not collections:
+                log("No collections found via /api/v1/collections/list/")
+                # Try one more approach: collection_medias_v1 with empty string (generic saved)
+                try:
+                    all_posts = cl.collection_medias_v1("", amount=200)
+                    log(f"Empty string collection returned {len(all_posts)} posts")
+                except Exception as e2:
+                    log(f"Empty string collection also failed: {e2}")
+
+        # Strategy 3: Try "all" as collection name
+        if not all_posts:
+            try:
+                all_posts = cl.collection_medias_v1("all", amount=200)
+                log(f"'all' collection returned {len(all_posts)} posts")
             except Exception as e:
-                log(f"Error fetching collection {collection.name}: {e}")
-                continue
+                log(f"'all' collection also failed: {e}")
+
+        if not all_posts:
+            log("ERROR: Could not fetch saved posts via any approach")
+            return {"success": False, "error": "No saved posts found via any endpoint"}
 
         log(f"Total posts fetched: {len(all_posts)}")
+
+        # Normalize to dict format
+        posts_data = []
+        def safe_str(val):
+            if val is None:
+                return ""
+            if hasattr(val, '__str__'):
+                return str(val)
+            return str(val) if val else ""
+
+        for item in all_posts:
+            post_data = {
+                "pk": str(item.pk),
+                "id": str(item.pk),
+                "caption": item.caption_text if hasattr(item, 'caption_text') and item.caption_text else "",
+                "media_type": item.media_type if hasattr(item, 'media_type') else 0,
+                "thumbnail_url": safe_str(getattr(item, 'thumbnail_url', None)),
+                "url": f"https://www.instagram.com/p/{item.code}/" if hasattr(item, 'code') and item.code else "",
+                "timestamp": datetime.now().isoformat(),
+                "like_count": item.like_count if hasattr(item, 'like_count') else 0,
+                "comment_count": item.comment_count if hasattr(item, 'comment_count') else 0
+            }
+            posts_data.append(post_data)
 
         # Save to file
         os.makedirs(VAULT_DIR, exist_ok=True)
 
         with open(INSTAGRAM_OUTPUT, 'w') as f:
-            json.dump(all_posts, f, indent=2)
+            json.dump(posts_data, f, indent=2)
+
+        # Upload to GCS
+        if GCS_AVAILABLE:
+            try:
+                gcs_client = storage.Client()
+                gcs_bucket = gcs_client.bucket(BUCKET_NAME)
+                gcs_blob = gcs_bucket.blob('vault/instagram_scrape.json')
+                with open(INSTAGRAM_OUTPUT, 'rb') as f:
+                    gcs_blob.upload_from_file(f, content_type='application/json')
+                log(f"✅ Uploaded to GCS: vault/instagram_scrape.json ({len(posts_data)} posts)")
+            except Exception as e:
+                log(f"⚠️ GCS upload failed: {e}")
 
         # Save last run info
         last_run = {
             "timestamp": datetime.now().isoformat(),
-            "count": len(all_posts),
+            "count": len(posts_data),
             "source": "instagram",
             "status": "success"
         }
@@ -206,10 +242,10 @@ async def scrape_instagram_bookmarks_async():
         with open(LAST_RUN_FILE, 'w') as f:
             json.dump(last_run, f, indent=2)
 
-        log(f"✅ Saved {len(all_posts)} posts to {INSTAGRAM_OUTPUT}")
+        log(f"✅ Saved {len(posts_data)} posts to {INSTAGRAM_OUTPUT}")
         return {
             "success": True,
-            "count": len(all_posts),
+            "count": len(posts_data),
             "file": INSTAGRAM_OUTPUT,
             "timestamp": datetime.now().isoformat()
         }

@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+const OUTBOX_DIR = '/tmp/omniclaw_baileys/outbox';
 const SESSION_DIR = '/Users/Subho/.openclaw/credentials/whatsapp/default';
 const MY_NUMBER = '+919003349852';
 const LOG_FILE = '/tmp/omniclaw-baileys.log';
@@ -72,17 +73,87 @@ async function sendWhatsAppMessage(sock, jid, text) {
     }
 }
 
+async function flushOutbox(sock) {
+    if (!fs.existsSync(OUTBOX_DIR)) {
+        fs.mkdirSync(OUTBOX_DIR, { recursive: true });
+        return;
+    }
+
+    const sentDir = path.join(OUTBOX_DIR, 'sent');
+    if (!fs.existsSync(sentDir)) {
+        fs.mkdirSync(sentDir, { recursive: true });
+    }
+
+    const msgFiles = fs.readdirSync(OUTBOX_DIR).filter(f => f.endsWith('.msg'));
+    if (msgFiles.length === 0) {
+        log('📭 Outbox empty, nothing to flush');
+        return;
+    }
+
+    log(`📬 Flushing ${msgFiles.length} queued outbox message(s)`);
+
+    for (const file of msgFiles) {
+        const filePath = path.join(OUTBOX_DIR, file);
+        try {
+            const raw = fs.readFileSync(filePath, 'utf8').trim();
+            if (!raw) {
+                log(`⚠️ Skipping empty file: ${file}`);
+                fs.unlinkSync(filePath);
+                continue;
+            }
+
+            let jid, message;
+
+            // Try JSON format: {"jid": "...", "message": "..."}
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed.jid && parsed.message) {
+                    jid = parsed.jid;
+                    message = parsed.message;
+                }
+            } catch (_) {
+                // Not JSON — fall through to plain-text format
+            }
+
+            // Plain-text format: first line = JID, rest = message body
+            if (!jid) {
+                const lines = raw.split('\n');
+                if (lines.length >= 2) {
+                    jid = lines[0].trim();
+                    message = lines.slice(1).join('\n').trim();
+                }
+            }
+
+            if (!jid || !message) {
+                log(`⚠️ Skipping malformed outbox file: ${file}`);
+                // Move to sent dir to avoid reprocessing
+                fs.renameSync(filePath, path.join(sentDir, file + '.malformed'));
+                continue;
+            }
+
+            await sock.sendMessage(jid, { text: message });
+            log(`📬 Flushed outbox: ${file} -> ${jid}`);
+
+            // Move to sent/ instead of deleting (audit trail)
+            fs.renameSync(filePath, path.join(sentDir, file));
+        } catch (err) {
+            log(`❌ Outbox flush failed for ${file}: ${err.message}`);
+            // Leave file in outbox for next flush attempt
+        }
+    }
+}
+
 async function main() {
     log('🚀 OmniClaw Direct WhatsApp Bridge Starting');
     
-    const { state, saveState, clearState } = await useMultiFileAuthState(SESSION_DIR);
+    const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR);
     
     const sock = makeWASocket({
         auth: state,
         browser: ['OmniClaw', 'Desktop', '1.0.0']
     });
 
-    sock.ev.on('creds.update', saveState);
+    sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
@@ -97,6 +168,7 @@ async function main() {
             if (shouldReconnect) main();
         } else if (connection === 'open') {
             log('✅ WhatsApp Web connected!');
+            flushOutbox(sock);
         }
     });
 

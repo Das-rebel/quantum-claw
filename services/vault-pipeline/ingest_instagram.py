@@ -4,7 +4,7 @@ Instagram Bookmark Ingestion.
 
 Sources (in priority order):
 1. instagrapi (live scrape) - if cookies available
-2. GCS file: gs://omniclaw-knowledge-graph/vault/instagram_saved_automated.json
+2. GCS file: gs://omniclaw-knowledge-graph/vault/instagram_scrape.json
 3. Local JSON file fallback
 
 Deduplicates by URL. Preserves all metadata (imageUrl, vlTags, vlStyle, etc.).
@@ -22,8 +22,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from unified_schema import get_db, log_sync, get_meta, set_meta
 
 GCS_BUCKET = "gs://omniclaw-knowledge-graph"
-GCS_INSTAGRAM_PATH = "vault/instagram_saved_automated.json"
-LOCAL_FALLBACK = Path.home() / "omniclaw" / "infrastructure" / "cloud-functions" / "deploy" / "learning_base" / "instagram_saved_automated.json"
+GCS_INSTAGRAM_PATH = "vault/instagram_scrape.json"
+LOCAL_FALLBACK = Path.home() / "omniclaw" / "infrastructure" / "cloud-functions" / "deploy" / "learning_base" / "instagram_scrape.json"
 
 
 def log(msg: str):

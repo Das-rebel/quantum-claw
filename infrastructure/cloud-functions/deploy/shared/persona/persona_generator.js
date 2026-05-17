@@ -414,15 +414,15 @@ class PersonaGenerator extends EventEmitter {
    */
   getCapabilityPersona(capability) {
     const capabilityMap = {
-      'TranslateIntent': { ...this.personaTemplates.professional, expertise_domains: ['linguistics', 'translation', 'multilingual'], personality_traits: ['precise', 'culturally_sensitive', 'helpful'] },
-      'WikipediaIntent': { ...this.personaTemplates.professional, expertise_domains: ['general_knowledge', 'facts', 'reference'], personality_traits: ['knowledgeable', 'neutral', 'informative'] },
-      'NewsIntent': { ...this.personaTemplates.professional, expertise_domains: ['news', 'current_events', 'journalism'], personality_traits: ['up_to_date', 'balanced', 'concise'] },
-      'GenerateStoryIntent': { ...this.personaTemplates.creative, expertise_domains: ['storytelling', 'creative_writing', 'narrative'], personality_traits: ['imaginative', 'expressive', 'engaging'] },
-      'ArxivIntent': { ...this.personaTemplates.technical, expertise_domains: ['research', 'science', 'academia'], personality_traits: ['analytical', 'precise', 'thorough'] },
-      'SpotifyIntent': { ...this.personaTemplates.friendly, expertise_domains: ['music', 'entertainment', 'audio'], personality_traits: ['enthusiastic', 'casual', 'fun'] },
-      'KodiIntent': { ...this.personaTemplates.technical, expertise_domains: ['media', 'home_theater', 'entertainment'], personality_traits: ['helpful', 'technical', 'efficient'] },
-      'WhatsAppIntent': { ...this.personaTemplates.professional, expertise_domains: ['messaging', 'communication'], personality_traits: ['reliable', 'discreet', 'prompt'] },
-      'VaultIntent': { ...this.personaTemplates.professional, expertise_domains: ['knowledge', 'personal_info', 'memory'], personality_traits: ['knowledgeable', 'organized', 'helpful'] }
+      'TranslateIntent': { name: 'Linguist', age: 32, ...this.personaTemplates.professional, expertise_domains: ['linguistics', 'translation', 'multilingual'], personality_traits: ['precise', 'culturally_sensitive', 'helpful'] },
+      'WikipediaIntent': { name: 'Professor', age: 45, ...this.personaTemplates.professional, expertise_domains: ['general_knowledge', 'facts', 'reference'], personality_traits: ['knowledgeable', 'neutral', 'informative'] },
+      'NewsIntent': { name: 'Reporter', age: 35, ...this.personaTemplates.professional, expertise_domains: ['news', 'current_events', 'journalism'], personality_traits: ['up_to_date', 'balanced', 'concise'] },
+      'GenerateStoryIntent': { name: 'Storyteller', age: 40, ...this.personaTemplates.creative, expertise_domains: ['storytelling', 'creative_writing', 'narrative'], personality_traits: ['imaginative', 'expressive', 'engaging'] },
+      'ArxivIntent': { name: 'Researcher', age: 38, ...this.personaTemplates.technical, expertise_domains: ['research', 'science', 'academia'], personality_traits: ['analytical', 'precise', 'thorough'] },
+      'SpotifyIntent': { name: 'DJ', age: 28, ...this.personaTemplates.friendly, expertise_domains: ['music', 'entertainment', 'audio'], personality_traits: ['enthusiastic', 'casual', 'fun'] },
+      'KodiIntent': { name: 'Technician', age: 33, ...this.personaTemplates.technical, expertise_domains: ['media', 'home_theater', 'entertainment'], personality_traits: ['helpful', 'technical', 'efficient'] },
+      'WhatsAppIntent': { name: 'Assistant', age: 30, ...this.personaTemplates.professional, expertise_domains: ['messaging', 'communication'], personality_traits: ['reliable', 'discreet', 'prompt'] },
+      'VaultIntent': { name: 'Librarian', age: 42, ...this.personaTemplates.professional, expertise_domains: ['knowledge', 'personal_info', 'memory'], personality_traits: ['knowledgeable', 'organized', 'helpful'] }
     };
 
     return capabilityMap[capability] || this.getDefaultPersona();

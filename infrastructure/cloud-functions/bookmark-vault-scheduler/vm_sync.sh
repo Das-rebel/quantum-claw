@@ -1,6 +1,6 @@
 #!/bin/bash
 # Vault Sync Script - Run scrapers and upload to GCS
-# Run via cron: 0 */6 * * * /home/ubuntu/vault_scraper/sync.sh
+# Run via cron: 0 3 * * * /home/ubuntu/vault_scraper/sync.sh
 
 set -e
 

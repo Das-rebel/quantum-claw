@@ -1,23 +1,48 @@
 /**
- * Cache Manager Stub
- * Placeholder for cache manager module
+ * Cache Manager
+ * Provides synchronous caching functionality for API responses
  */
 class CacheManager {
   constructor(options = {}) {
     this.ttl = options.ttl || 3600;
+    this.cache = new Map();
   }
 
-  async get(key) {
-    return null;
+  get(key) {
+    const item = this.cache.get(key);
+    if (!item) return null;
+    if (Date.now() > item.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+    return item.value;
   }
 
-  async set(key, value) {
-    // No-op in stub
+  set(key, value, ttl = this.ttl) {
+    this.cache.set(key, {
+      value,
+      expiry: Date.now() + ttl
+    });
   }
 
-  async delete(key) {
-    // No-op in stub
+  delete(key) {
+    this.cache.delete(key);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+
+  getStats() {
+    return { size: this.cache.size };
   }
 }
 
-module.exports = CacheManager;
+/**
+ * Get a cache manager instance
+ */
+function getCacheManager(options = {}) {
+  return new CacheManager(options);
+}
+
+module.exports = { CacheManager, getCacheManager };

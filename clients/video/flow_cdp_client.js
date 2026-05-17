@@ -176,6 +176,42 @@ class FlowCDPClient {
     await this.cdp('Input.insertText', { text: prompt });
     await this._sleep(1500);
 
+    // FIX: Also update Zustand promptBoxStore directly.
+    // Input.insertText only triggers Slate's beforeinput/DOM events.
+    // The Create button validates Zustand state, not just DOM values.
+    // We must call the store's setPrompt action to sync state.
+    const storeUpdated = await this.evaluate(`(() => {
+      const promptText = ${JSON.stringify(prompt)};
+      
+      // Try all known store patterns
+      const storeKeys = [
+        'promptBoxStore',
+        '__zustandStore', 
+        'zustandStore',
+        'store',
+      ];
+      
+      for (const key of storeKeys) {
+        const s = window[key];
+        if (s && typeof s.setPrompt === 'function') {
+          s.setPrompt(promptText);
+          return 'ok:' + key;
+        }
+      }
+      
+      // Fallback: scan all window objects for setPrompt
+      for (const v of Object.values(window)) {
+        if (v && typeof v === 'object' && typeof v.setPrompt === 'function') {
+          v.setPrompt(promptText);
+          return 'ok:scanned';
+        }
+      }
+      
+      return 'not_found';
+    })()`);
+    console.log(`   Store update: ${storeUpdated}`);
+    await this._sleep(500);
+
     // Verify via innerText (placeholder check)
     const editorText = await this.evaluate(`(() => {
       const ed = document.querySelector('[data-slate-editor="true"]');
