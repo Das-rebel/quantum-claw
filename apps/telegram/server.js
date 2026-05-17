@@ -204,7 +204,7 @@ async function handleStart(chatId, fromName) {
 async function handleHelp(chatId) {
   await tg('sendMessage', {
     chat_id: chatId,
-    text: '🦞 OmniClaw Bot\n\n/start - Welcome\n/help - This message\n/status - Cloud endpoints health\n/vault <query> - Search knowledge graph\n/sync - Twitter & Instagram sync status\n/story <prompt> - Generate a story\n/search <query> - Wikipedia search\n/remind <time> <text> - Set reminder',
+    text: '🦞 OmniClaw Bot\n\n/start - Welcome\n/help - This message\n/status - Cloud endpoints health\n/vault <query> - Search knowledge graph\n/sync - Twitter & Instagram sync status\n/story <prompt> - Generate a story\n/search <query> - Wikipedia search\n/remind <time> <text> - Set reminder\n/drafts - Content queue (ghost writer)',
   });
 }
 
@@ -321,12 +321,50 @@ async function handleSync(chatId) {
 }
 
 async function handleGrowthOS(chatId, text) {
-  const DASHBOARD = 'https://growth-os-o36e7noe5a-el.a.run.app';
+  const DASHBOARD = 'https://fusion-dashboard-338789220059.asia-south1.run.app';
   const mode = text.replace(/^\/growthos\s*/i, '').trim().toLowerCase();
   if (mode === 'digest') {
     return tg('sendMessage', { chat_id: chatId, text: '📊 *Growth OS Digest*\n\n🌐 ' + DASHBOARD, parse_mode: 'Markdown', disable_web_page_preview: true });
   }
   return tg('sendMessage', { chat_id: chatId, text: '🧠 *Growth OS*\n\n🌐 ' + DASHBOARD + '\n\n/growthos digest - Daily digest', parse_mode: 'Markdown', disable_web_page_preview: true });
+}
+
+// ─── /drafts - Content queue for ghost writer ──────
+async function handleDrafts(chatId) {
+  await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
+  
+  try {
+    // Fetch from growth-workflow-os content drafts API
+    const res = await fetch('https://fusion-dashboard-338789220059.asia-south1.run.app/api/drafts', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    if (!res.ok) throw new Error('Dashboard API error');
+    const drafts = await res.json();
+    
+    if (!drafts || !drafts.length) {
+      return tg('sendMessage', { chat_id: chatId, text: '📝 No content drafts yet.\nRun the pipeline to generate LinkedIn + Twitter posts.' });
+    }
+    
+    const lines = ['📝 *Content Queue*\n'];
+    for (const d of drafts.slice(0, 10)) {
+      const icon = d.platform === 'linkedin' ? '🔗' : '🐦';
+      const status = d.status === 'draft' ? '⬜' : d.status === 'reviewed' ? '👀' : d.status === 'approved' ? '✅' : d.status === 'posted' ? '📤' : '❌';
+      const topic = d.topic || 'general';
+      const preview = (d.draft_text || '').slice(0, 80).replace(/\n/g, ' ');
+      lines.push(`${icon} ${status} *${d.platform.toUpperCase()}* | ${topic}`);
+      lines.push(`   ${preview}...`);
+      lines.push(`   ID: ${d.id} · ${d.generated_at?.slice(0, 10) || 'n/a'}`);
+      lines.push('');
+    }
+    
+    lines.push('\n*Reply with:* `approve <id>` or `reject <id>`');
+    await tg('sendMessage', { chat_id: chatId, text: lines.join('\n'), parse_mode: 'Markdown', disable_web_page_preview: true });
+  } catch(e) {
+    // Fallback: try direct SQLite on growth-workflow-os
+    await tg('sendMessage', { chat_id: chatId, text: '📝 Content Queue:\n\nNo drafts found. Generate content from the dashboard:\nhttps://fusion-dashboard-338789220059.asia-south1.run.app' });
+  }
 }
 app.get('/growthos', async (_req, res) => {
   res.json({
@@ -523,7 +561,18 @@ async function checkReminders(chatId) {
 
 // ─── Message router ───────────────────────────────────
 async function handleMessage(msg) {
-  const text = (msg && msg.text) || '';
+  // DEBUG: log raw update to diagnose empty text issue
+  console.log('📨 RAW msg fields:', JSON.stringify({
+    text: msg && msg.text,
+    caption: msg && msg.caption,
+    content_type: msg && msg.content_type,
+    chat_type: msg && msg.chat && msg.chat.type,
+    chat_title: msg && msg.chat && msg.chat.title,
+    entities: msg && msg.entities,
+    has_mention: msg && msg.text && msg.text.includes('@Dasomni_bot')
+  }).slice(0, 500));
+
+  const text = (msg && (msg.text || msg.caption)) || '';
   const chatId = msg && msg.chat && msg.chat.id;
   const fromName = (msg && msg.from && msg.from.first_name) || 'there';
 
@@ -539,6 +588,7 @@ async function handleMessage(msg) {
   if (text.startsWith('/vault') || text.startsWith('/vault@' + BOT_USERNAME)) return handleVault(chatId, text);
   if (text.startsWith('/sync') || text.startsWith('/sync@' + BOT_USERNAME)) return handleSync(chatId);
   if (text.startsWith('/growthos') || text.startsWith('/growthos@' + BOT_USERNAME)) return handleGrowthOS(chatId, text);
+  if (text.startsWith('/drafts') || text.startsWith('/drafts@' + BOT_USERNAME)) return handleDrafts(chatId);
 //   if (text.startsWith('/tts') || text.startsWith('/tts@' + BOT_USERNAME)) return handleTTS(chatId, text);
   if (text.startsWith('/story') || text.startsWith('/story@' + BOT_USERNAME)) return handleStory(chatId, text);
   if (text.startsWith('/search') || text.startsWith('/search@' + BOT_USERNAME)) return handleSearch(chatId, text);
@@ -557,7 +607,7 @@ async function handleMessage(msg) {
   // In groups: respond to mentions OR commands OR free text (if enabled)
   if (isGroup && !hasMention && !isCommand) {
     // Free text in group without mention - skip (don't auto-search)
-    console.log('📨 Group chat (no mention): "' + text.slice(0, 50) + '" - skipped');
+    console.log('📨 Group chat (no mention): "' + text.slice(0, 50) + '" textEmpty=' + (text === '') + ' isGroup=' + isGroup + ' hasMention=' + hasMention);
     return;
   }
 
