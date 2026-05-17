@@ -89,7 +89,22 @@ def search():
     except Exception as e:
         return jsonify({'query': query, 'results': [], 'error': str(e)})
 
-@app.route('/reload')@app.route('/sync')
+@app.route('/reload')
+def reload():
+    """Reload the vault.db from disk without restarting the server."""
+    try:
+        # Force a new connection to ensure we read fresh from disk
+        conn = sqlite3.connect(DB_FILE, timeout=10)
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM nodes")
+        count = cur.fetchone()[0]
+        conn.close()
+        return jsonify({'status': 'reloaded', 'nodes': count})
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
+
+
+@app.route('/sync')
 def sync():
     return jsonify({'status': 'ok', 'message': 'Keyword search - no sync needed'})
 
@@ -151,6 +166,6 @@ def api_search():
 
 if __name__ == '__main__':
     print('[Vault] Starting keyword search server on port 8766...')
-    app.run(host='0.0.0.0', port=8766, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=False, threaded=True)
 
-# Version: 2026-05-16-22538
+# Version: 2026-05-17-0047

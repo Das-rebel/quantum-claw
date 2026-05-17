@@ -1,0 +1,6 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--no-cache', '-t', 'gcr.io/omniclaw-personal-assistant/serve-vault-search:v10', '.']
+images:
+- 'gcr.io/omniclaw-personal-assistant/serve-vault-search:v10'
+timeout: '300s'
