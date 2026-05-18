@@ -222,15 +222,20 @@ async function handleStatus(chatId) {
 }
 
 async function handleVault(chatId, text) {
-  const query = text.replace(/^\/vault\s*/, '').trim();
+  // Strip /vault and any @mention of the bot
+  const query = text.replace(/^\/vault\s*/, '').replace(new RegExp('@' + BOT_USERNAME + '\s*', 'gi'), '').trim();
   if (!query) return tg('sendMessage', { chat_id: chatId, text: 'Usage: /vault <search query>' });
+  if (query.length < 2) return tg('sendMessage', { chat_id: chatId, text: 'Query too short. Try /vault <keyword>' });
 
   console.log('🔍 Searching vault for: "' + query + '"');
   await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
   const result = await searchVault(query);
   console.log('🔍 Vault got ' + (result ? result.total : 0) + ' results for: "' + query + '"');
   const items = result && result.results ? result.results : [];
-  if (!items.length) return tg('sendMessage', { chat_id: chatId, text: 'No results for "' + query + '".' });
+  if (!items.length) {
+    console.log('📤 Vault: No results for "' + query + '" - sending reply');
+    return tg('sendMessage', { chat_id: chatId, text: 'No results for "' + query + '". Try a different keyword.' });
+  }
 
   const lines = ['🔍 Vault: "' + query + '" (' + result.total + ' results)\n'];
   for (const item of items) {
@@ -335,23 +340,30 @@ let sqlitedbLoaded = 0;
 
 // ─── GCS SQLite helpers for content drafts ─────────────
 const GCS_DB_URL = 'https://storage.googleapis.com/growth-os-db-338789220059/growth_os.db';
+const SQL_WASM_URL = 'https://cdn.jsdelivr.net/gh/sql-js/sql.js@1.10.3/dist/sql-wasm.wasm';
 
 async function loadSqliteFromGCS() {
   // Cache for 5 minutes
   if (sqlitedb && Date.now() - sqlitedbLoaded < 300000) return sqlitedb;
   try {
+    // Step 1: Initialize sql.js with its wasm binary
+    const SQL = await initSqlJs({
+      locateFile: () => SQL_WASM_URL
+    });
+    // Step 2: Fetch the SQLite DB file from GCS
     const res = await fetch(GCS_DB_URL + '?cachebust=' + Date.now(), {
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
     if (!res.ok) throw new Error('GCS fetch failed: ' + res.status);
-    const buf = await res.arrayBuffer();
-    const SQL = await initSqlJs({ wasmBinary: buf });
-    sqlitedb = new SQL.Database(buf);
+    const dbBuf = await res.arrayBuffer();
+    // Step 3: Open the DB with sql.js
+    sqlitedb = new SQL.Database(new Uint8Array(dbBuf));
     sqlitedbLoaded = Date.now();
-    console.log('📝 SQLite loaded from GCS, size: ' + Math.round(buf.byteLength / 1024) + 'KB');
+    console.log('📝 SQLite loaded from GCS, size: ' + Math.round(dbBuf.byteLength / 1024) + 'KB');
     return sqlitedb;
   } catch(e) {
     console.error('❌ GCS SQLite load failed: ' + e.message);
+    sqlitedb = null;
     return null;
   }
 }
@@ -403,13 +415,16 @@ async function updateDraftStatusGCS(draftId, newStatus) {
 // ─── /drafts - Content queue for ghost writer ──────
 async function handleDrafts(chatId) {
   await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
-  
-  const drafts = await getDraftsFromGCS(10);
-  
-  if (!drafts || !drafts.length) {
+
+  // Wrap in try-catch so crash doesn't silent-fail
+  let drafts = [];
+  try {
+    drafts = await getDraftsFromGCS(10);
+  } catch(e) {
+    console.error('❌ handleDrafts crash: ' + e.message);
     return tg('sendMessage', {
       chat_id: chatId,
-      text: '📝 *Content Queue*\n\nNo drafts yet. Run the pipeline from:\nhttps://fusion-dashboard-338789220059.asia-south1.run.app\n\nOr use the 📝 Content tab in the dashboard.',
+      text: '📝 *Content Queue*\n\n⚠️ Could not load drafts from GCS. Try again in a few minutes.\n\nDashboard: https://fusion-dashboard-338789220059.asia-south1.run.app',
       parse_mode: 'Markdown'
     });
   }
@@ -673,20 +688,32 @@ async function handleMessage(msg) {
   if (approveMatch) {
     const draftId = parseInt(approveMatch[1]);
     await tg('sendChatAction', { chat_id: chatId, action: 'typing' });
-    const ok = await updateDraftStatusGCS(draftId, 'approved');
-    await tg('sendMessage', { chat_id: chatId, text: ok ? `✅ Draft ${draftId} approved! Post it and reply \`posted ${draftId}\`` : `❌ Could not approve draft ${draftId}.` });
+    try {
+      const ok = await updateDraftStatusGCS(draftId, 'approved');
+      await tg('sendMessage', { chat_id: chatId, text: ok ? `✅ Draft ${draftId} approved! Post it and reply \`posted ${draftId}\`` : `❌ Could not approve draft ${draftId}.` });
+    } catch(e) {
+      await tg('sendMessage', { chat_id: chatId, text: `⚠️ Error approving draft ${draftId}: ${e.message}` });
+    }
     return;
   }
   if (rejectMatch) {
     const draftId = parseInt(rejectMatch[1]);
-    const ok = await updateDraftStatusGCS(draftId, 'rejected');
-    await tg('sendMessage', { chat_id: chatId, text: ok ? `❌ Draft ${draftId} rejected.` : `❌ Could not reject draft ${draftId}.` });
+    try {
+      const ok = await updateDraftStatusGCS(draftId, 'rejected');
+      await tg('sendMessage', { chat_id: chatId, text: ok ? `❌ Draft ${draftId} rejected.` : `❌ Could not reject draft ${draftId}.` });
+    } catch(e) {
+      await tg('sendMessage', { chat_id: chatId, text: `⚠️ Error rejecting draft ${draftId}: ${e.message}` });
+    }
     return;
   }
   if (postedMatch) {
     const draftId = parseInt(postedMatch[1]);
-    const ok = await updateDraftStatusGCS(draftId, 'posted');
-    await tg('sendMessage', { chat_id: chatId, text: ok ? `📤 Draft ${draftId} marked as posted! 🎉` : `❌ Could not update draft ${draftId}.` });
+    try {
+      const ok = await updateDraftStatusGCS(draftId, 'posted');
+      await tg('sendMessage', { chat_id: chatId, text: ok ? `📤 Draft ${draftId} marked as posted! 🎉` : `❌ Could not update draft ${draftId}.` });
+    } catch(e) {
+      await tg('sendMessage', { chat_id: chatId, text: `⚠️ Error marking draft ${draftId} as posted: ${e.message}` });
+    }
     return;
   }
 
